@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mada Annonces – Petites annonces à Madagascar</title>
+<meta name="description" content="Déposez et consultez des petites annonces à Madagascar : auto, immobilier, emploi, formation et plus.">
+<style>
+:root{--ink:#14241f;--forest:#1f5a46;--forest2:#174536;--paper:#f4f6f1;--card:#fff;--saffron:#f2b705;--line:#dde3da;--muted:#5d6b64;--red:#b3261e}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.5 "Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--paper);color:var(--ink)}
+h1,h2,h3,.logo{font-family:Georgia,"Times New Roman",serif;margin:0}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+a{color:var(--forest)}
+:focus-visible{outline:3px solid var(--saffron);outline-offset:2px}
+header{background:var(--forest);color:#fff}
+.top{display:flex;gap:12px;align-items:center;flex-wrap:wrap;max-width:1100px;margin:auto;padding:14px 16px}
+.logo{font-size:1.7rem;font-weight:700;letter-spacing:-.5px;margin-right:auto}
+.logo span{color:var(--saffron)}
+.btn{border:0;border-radius:8px;padding:10px 16px;font-weight:600;background:#fff;color:var(--forest)}
+.btn.cta{background:var(--saffron);color:var(--ink)}
+.btn.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.5)}
+.btn.plain{background:var(--paper);color:var(--ink);border:1px solid var(--line)}
+.btn.danger{background:var(--red);color:#fff}
+.search{background:var(--forest2);padding:18px 16px}
+.search form{max-width:1100px;margin:auto;display:flex;gap:8px}
+.search input{flex:1;border:0;border-radius:8px;padding:12px 14px;min-width:0}
+nav{background:#fff;border-bottom:1px solid var(--line);overflow-x:auto;white-space:nowrap}
+nav div{max-width:1100px;margin:auto;padding:0 16px;display:flex}
+nav button{background:none;border:0;border-bottom:3px solid transparent;padding:13px 14px;color:var(--ink);font-weight:600}
+nav button.on{border-color:var(--saffron);color:var(--forest)}
+main{max-width:1100px;margin:auto;padding:24px 16px 60px}
+main h1{font-size:1.5rem;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+.ad{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;cursor:pointer;text-align:left;padding:0;display:block;width:100%}
+.ad:hover{border-color:var(--forest)}
+.ph{aspect-ratio:4/3;background:#e7ece4 center/cover no-repeat;display:grid;place-items:center;color:var(--muted);font-size:.9rem}
+.ad .b{padding:12px}
+.ad h3{font-size:1.05rem;line-height:1.25;margin-bottom:6px}
+.price{font-weight:700;color:var(--forest)}
+.meta{color:var(--muted);font-size:.85rem}
+.empty{padding:40px 0;color:var(--muted);text-align:center}
+.mask{position:fixed;inset:0;background:rgba(20,36,31,.6);display:none;align-items:flex-start;justify-content:center;padding:20px 12px;overflow:auto;z-index:10}
+.mask.open{display:flex}
+.box{background:#fff;border-radius:12px;max-width:520px;width:100%;padding:22px;position:relative}
+.box.wide{max-width:720px}
+.x{position:absolute;right:12px;top:10px;background:none;border:0;font-size:1.6rem;line-height:1}
+.box h2{font-size:1.4rem;margin-bottom:14px}
+label{display:block;font-weight:600;margin:12px 0 4px;font-size:.92rem}
+.box input,.box select,.box textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;background:#fff}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.msg{margin:12px 0 0;font-size:.92rem;color:var(--red)}
+.msg.ok{color:var(--forest)}
+.gal{display:flex;gap:8px;overflow-x:auto;margin-bottom:14px}
+.gal img{height:220px;border-radius:8px;object-fit:cover;max-width:100%}
+.desc{white-space:pre-wrap;margin:14px 0}
+.act{display:flex;gap:10px;flex-wrap:wrap}
+@media(max-width:560px){.row{flex-direction:column;gap:0}.logo{font-size:1.4rem}}
+@media(prefers-reduced-motion:no-preference){.ad{transition:border-color .15s}}
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <div class="logo">Mada<span>Annonces</span></div>
+    <button class="btn ghost" id="btnAuth">Se connecter</button>
+    <button class="btn cta" id="btnPost">Déposer une annonce</button>
+  </div>
+</header>
+<div class="search">
+  <form id="searchForm"><input id="q" type="search" placeholder="Que cherchez-vous ? Ex. : Toyota, appartement, cours d'anglais" aria-label="Rechercher"><button class="btn cta">Rechercher</button></form>
+</div>
+<nav><div id="cats"></div></nav>
+<main>
+  <h1 id="title">Dernières annonces</h1>
+  <div class="grid" id="list"></div>
+  <p class="empty" id="empty" hidden>Aucune annonce pour cette recherche. Soyez le premier à en déposer une.</p>
+</main>
+
+<!-- Connexion -->
+<div class="mask" id="mAuth"><div class="box" role="dialog" aria-modal="true">
+  <button class="x" data-close aria-label="Fermer">×</button>
+  <h2 id="authTitle">Se connecter</h2>
+  <form id="authForm">
+    <label for="email">Adresse e-mail</label><input id="email" type="email" required autocomplete="email">
+    <label for="pass">Mot de passe (6 caractères minimum)</label><input id="pass" type="password" minlength="6" required autocomplete="current-password">
+    <p class="msg" id="authMsg"></p>
+    <div class="act" style="margin-top:14px"><button class="btn cta" id="authGo">Se connecter</button><button type="button" class="btn plain" id="authSwitch">Créer un compte</button></div>
+  </form>
+</div></div>
+
+<!-- Dépôt -->
+<div class="mask" id="mPost"><div class="box" role="dialog" aria-modal="true">
+  <button class="x" data-close aria-label="Fermer">×</button>
+  <h2>Déposer une annonce</h2>
+  <form id="postForm">
+    <label for="pTitre">Titre</label><input id="pTitre" maxlength="90" required>
+    <label for="pCat">Catégorie</label><select id="pCat" required></select>
+    <div class="row"><div><label for="pPrix">Prix (Ar)</label><input id="pPrix" type="number" min="0" step="1"></div><div><label for="pVille">Ville</label><input id="pVille" placeholder="Antananarivo"></div></div>
+    <label for="pTel">Téléphone</label><input id="pTel" type="tel" placeholder="034 00 000 00" required>
+    <label for="pDesc">Description</label><textarea id="pDesc" rows="5"></textarea>
+    <label for="pPhotos">Photos (4 maximum)</label><input id="pPhotos" type="file" accept="image/*" multiple>
+    <p class="msg" id="postMsg"></p>
+    <div class="act" style="margin-top:14px"><button class="btn cta" id="postGo">Publier l'annonce</button></div>
+  </form>
+</div></div>
+
+<!-- Détail -->
+<div class="mask" id="mDet"><div class="box wide" role="dialog" aria-modal="true">
+  <button class="x" data-close aria-label="Fermer">×</button>
+  <div id="det"></div>
+</div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+const SB = supabase.createClient('https://ujxctcwkppmhamgkpvmg.supabase.co','sb_publishable_5TMigzGHfUs0RY9Jf-DTWA_K3YoBMh_');
+const $ = id => document.getElementById(id);
+let user = null, cats = [], cat = null, q = '', signup = false, ads = [];
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money = n => n == null || n === '' ? 'Prix à débattre' : new Intl.NumberFormat('fr-FR').format(n) + ' Ar';
+const ago = d => { const m = Math.round((Date.now() - new Date(d)) / 60000);
+  if (m < 60) return 'il y a ' + Math.max(m,1) + ' min'; if (m < 1440) return 'il y a ' + Math.round(m/60) + ' h';
+  return 'il y a ' + Math.round(m/1440) + ' j'; };
+const open = id => $(id).classList.add('open');
+const close = id => $(id).classList.remove('open');
+document.querySelectorAll('[data-close]').forEach(b => b.onclick = () => b.closest('.mask').classList.remove('open'));
+document.querySelectorAll('.mask').forEach(m => m.addEventListener('mousedown', e => { if (e.target === m) m.classList.remove('open'); }));
+document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.mask.open').forEach(m => m.classList.remove('open')); });
+
+function renderAuthBtn() {
+  $('btnAuth').textContent = user ? 'Se déconnecter' : 'Se connecter';
+}
+$('btnAuth').onclick = async () => {
+  if (user) { await SB.auth.signOut(); return; }
+  setAuthMode(false); open('mAuth');
+};
+$('btnPost').onclick = () => { if (!user) { setAuthMode(false); $('authMsg').className='msg'; $('authMsg').textContent='Connectez-vous pour déposer une annonce.'; open('mAuth'); } else { $('postMsg').textContent=''; open('mPost'); } };
+
+function setAuthMode(s) {
+  signup = s;
+  $('authTitle').textContent = s ? 'Créer un compte' : 'Se connecter';
+  $('authGo').textContent = s ? 'Créer mon compte' : 'Se connecter';
+  $('authSwitch').textContent = s ? 'J\'ai déjà un compte' : 'Créer un compte';
+  $('pass').autocomplete = s ? 'new-password' : 'current-password';
+  $('authMsg').textContent = '';
+}
+$('authSwitch').onclick = () => setAuthMode(!signup);
+$('authForm').onsubmit = async e => {
+  e.preventDefault();
+  const msg = $('authMsg'); msg.className = 'msg'; msg.textContent = 'Un instant…';
+  const creds = { email: $('email').value.trim(), password: $('pass').value };
+  const { data, error } = signup ? await SB.auth.signUp(creds) : await SB.auth.signInWithPassword(creds);
+  if (error) { msg.textContent = error.message.includes('Invalid login') ? 'E-mail ou mot de passe incorrect.' : error.message; return; }
+  if (signup && !data.session) { msg.className = 'msg ok'; msg.textContent = 'Compte créé. Vérifiez votre boîte e-mail pour confirmer, puis connectez-vous.'; return; }
+  close('mAuth');
+};
+SB.auth.onAuthStateChange((_ev, session) => { user = session ? session.user : null; renderAuthBtn(); });
+
+async function loadCats() {
+  const { data } = await SB.from('ann_categories').select('*').order('id');
+  cats = data || [];
+  $('cats').innerHTML = '<button data-c="" class="on">Toutes</button>' + cats.map(c => `<button data-c="${c.id}">${esc(c.nom)}</button>`).join('');
+  $('pCat').innerHTML = cats.map(c => `<option value="${c.id}">${esc(c.nom)}</option>`).join('');
+  $('cats').querySelectorAll('button').forEach(b => b.onclick = () => {
+    cat = b.dataset.c ? +b.dataset.c : null;
+    $('cats').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+    loadAds();
+  });
+}
+
+async function loadAds() {
+  let r = SB.from('ann_annonces').select('*, ann_categories(nom)').eq('statut', 'valide').order('cree_le', { ascending: false }).limit(60);
+  if (cat) r = r.eq('category_id', cat);
+  const t = q.replace(/[,()%*]/g, ' ').trim();
+  if (t) r = r.or(`titre.ilike.%${t}%,description.ilike.%${t}%`);
+  const { data, error } = await r;
+  ads = data || [];
+  $('title').textContent = t ? `Résultats pour « ${t} »` : (cat ? cats.find(c => c.id === cat).nom : 'Dernières annonces');
+  $('empty').hidden = ads.length > 0;
+  $('empty').textContent = error ? 'Impossible de charger les annonces. Vérifiez votre connexion et réessayez.' : 'Aucune annonce pour cette recherche. Soyez le premier à en déposer une.';
+  $('empty').hidden = ads.length > 0 ? true : false;
+  $('list').innerHTML = ads.map((a, i) => `
+    <button class="ad" data-i="${i}">
+      <div class="ph" ${a.photos && a.photos[0] ? `style="background-image:url('${esc(a.photos[0])}')"` : ''}>${a.photos && a.photos[0] ? '' : 'Pas de photo'}</div>
+      <div class="b"><h3>${esc(a.titre)}</h3><div class="price">${money(a.prix)}</div>
+      <div class="meta">${esc(a.ville || 'Madagascar')} · ${ago(a.cree_le)}</div></div>
+    </button>`).join('');
+  $('list').querySelectorAll('.ad').forEach(b => b.onclick = () => showAd(ads[+b.dataset.i]));
+}
+$('searchForm').onsubmit = e => { e.preventDefault(); q = $('q').value; loadAds(); };
+
+function showAd(a) {
+  const tel = String(a.telephone || '').replace(/[^\d+]/g, '');
+  $('det').innerHTML = `
+    ${a.photos && a.photos.length ? `<div class="gal">${a.photos.map(p => `<img src="${esc(p)}" alt="Photo de l'annonce">`).join('')}</div>` : ''}
+    <h2>${esc(a.titre)}</h2>
+    <div class="price" style="font-size:1.3rem">${money(a.prix)}</div>
+    <div class="meta">${esc(a.ann_categories ? a.ann_categories.nom : '')} · ${esc(a.ville || 'Madagascar')} · ${ago(a.cree_le)}</div>
+    <div class="desc">${esc(a.description)}</div>
+    <div class="act">${tel ? `<a class="btn cta" href="tel:${esc(tel)}" style="text-decoration:none">Appeler ${esc(a.telephone)}</a>` : ''}
+    ${user && user.id === a.user_id ? '<button class="btn danger" id="delAd">Supprimer mon annonce</button>' : ''}</div>`;
+  const d = $('delAd');
+  if (d) d.onclick = async () => {
+    if (!confirm('Supprimer cette annonce définitivement ?')) return;
+    const { error } = await SB.from('ann_annonces').delete().eq('id', a.id);
+    if (error) { alert('Suppression impossible : ' + error.message); return; }
+    close('mDet'); loadAds();
+  };
+  open('mDet');
+}
+
+$('postForm').onsubmit = async e => {
+  e.preventDefault();
+  const msg = $('postMsg'), go = $('postGo'); msg.className = 'msg';
+  const files = [...$('pPhotos').files].slice(0, 4);
+  if (files.some(f => f.size > 5 * 1024 * 1024)) { msg.textContent = 'Chaque photo doit faire moins de 5 Mo.'; return; }
+  go.disabled = true; msg.textContent = 'Envoi en cours…';
+  const urls = [];
+  for (const [i, f] of files.entries()) {
+    const ext = (f.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const path = `${user.id}/${Date.now()}_${i}.${ext}`;
+    const { error } = await SB.storage.from('annonces').upload(path, f);
+    if (error) { msg.textContent = 'Photo non envoyée : ' + error.message; go.disabled = false; return; }
+    urls.push(SB.storage.from('annonces').getPublicUrl(path).data.publicUrl);
+  }
+  const { error } = await SB.from('ann_annonces').insert({
+    category_id: +$('pCat').value, titre: $('pTitre').value.trim(), description: $('pDesc').value.trim(),
+    prix: $('pPrix').value === '' ? null : +$('pPrix').value, ville: $('pVille').value.trim(),
+    telephone: $('pTel').value.trim(), photos: urls
+  });
+  go.disabled = false;
+  if (error) { msg.textContent = 'Publication impossible : ' + error.message; return; }
+  $('postForm').reset(); close('mPost'); cat = null; q = ''; $('q').value = '';
+  $('cats').querySelectorAll('button').forEach((x, i) => x.classList.toggle('on', i === 0));
+  loadAds();
+};
+
+(async () => {
+  const { data } = await SB.auth.getSession();
+  user = data.session ? data.session.user : null; renderAuthBtn();
+  await loadCats(); loadAds();
+})();
+</script>
+</body>
+</html>
