@@ -56,6 +56,29 @@ label{display:block;font-weight:600;margin:12px 0 4px;font-size:.92rem}
 .gal img{height:220px;border-radius:8px;object-fit:cover;max-width:100%}
 .desc{white-space:pre-wrap;margin:14px 0}
 .act{display:flex;gap:10px;flex-wrap:wrap}
+
+/* Page d'accueil explicative */
+#welcome{background:#fff;border-bottom:1px solid var(--line)}
+#welcome[hidden]{display:none}
+.wrap{max-width:1100px;margin:auto;padding:36px 16px 40px}
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:28px;align-items:center}
+.hero h1{font-size:2.2rem;line-height:1.15;margin-bottom:12px}
+.hero p{color:var(--muted);max-width:52ch;margin:0 0 18px}
+.hero-pic{aspect-ratio:4/3;border-radius:14px;background:linear-gradient(135deg,var(--forest),var(--forest2));display:grid;place-items:center;font-size:5rem;letter-spacing:.3em;color:#fff}
+#welcome h2{font-size:1.4rem;margin:34px 0 14px}
+.steps,.catcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.step{border-left:4px solid var(--saffron);padding:4px 0 4px 14px}
+.step h3{font-size:1.1rem;margin-bottom:4px}
+.step p{margin:0;color:var(--muted);font-size:.95rem}
+.catcard{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+.catcard .pic{height:130px;display:grid;place-items:center;font-size:3.2rem;background-size:cover;background-position:center}
+.catcard .t{padding:12px}
+.catcard h3{font-size:1.05rem;margin-bottom:2px}
+.catcard p{margin:0;color:var(--muted);font-size:.9rem}
+.c1{background-color:#d7e8df}.c2{background-color:#f6e7b4}.c3{background-color:#dbe4f3}.c4{background-color:#f1dcd3}
+.go{margin-top:30px;text-align:center}
+
+@media(max-width:700px){.hero{grid-template-columns:1fr}.hero h1{font-size:1.7rem}.hero-pic{display:none}}
 @media(max-width:560px){.row{flex-direction:column;gap:0}.logo{font-size:1.4rem}}
 @media(prefers-reduced-motion:no-preference){.ad{transition:border-color .15s}}
 </style>
@@ -64,10 +87,43 @@ label{display:block;font-weight:600;margin:12px 0 4px;font-size:.92rem}
 <header>
   <div class="top">
     <div class="logo">ALL-<span>Hasintsoa</span></div>
+    <button class="btn ghost" id="btnHelp">Comment ça marche ?</button>
     <button class="btn ghost" id="btnAuth">Se connecter</button>
     <button class="btn cta" id="btnPost">Déposer une annonce</button>
   </div>
 </header>
+
+<!-- Page d'accueil : instructions + images -->
+<section id="welcome">
+  <div class="wrap">
+    <div class="hero">
+      <div>
+        <h1>Achetez, vendez et trouvez près de chez vous, partout à Madagascar</h1>
+        <p>ALL-Hasintsoa réunit les petites annonces de tout le pays : voitures, logements, emplois et formations. Déposer une annonce est gratuit.</p>
+        <button class="btn cta" id="startBtn">Voir les annonces</button>
+      </div>
+      <div class="hero-pic" aria-hidden="true">🚗🏠💼</div>
+    </div>
+
+    <h2>Comment déposer une annonce</h2>
+    <div class="steps">
+      <div class="step"><h3>1. Créez un compte</h3><p>Entrez votre e-mail et un mot de passe, puis confirmez avec le lien reçu par e-mail.</p></div>
+      <div class="step"><h3>2. Remplissez l'annonce</h3><p>Ajoutez un titre, le prix, votre ville, votre numéro de téléphone et jusqu'à 4 photos.</p></div>
+      <div class="step"><h3>3. Recevez des appels</h3><p>Les acheteurs vous appellent directement. Supprimez l'annonce une fois l'article vendu.</p></div>
+    </div>
+
+    <h2>Ce que vous pouvez trouver</h2>
+    <div class="catcards">
+      <div class="catcard"><div class="pic c1">🚗</div><div class="t"><h3>Auto & Moto</h3><p>Voitures, motos, pièces détachées.</p></div></div>
+      <div class="catcard"><div class="pic c2">🏠</div><div class="t"><h3>Immobilier</h3><p>Maisons, appartements, terrains.</p></div></div>
+      <div class="catcard"><div class="pic c3">💼</div><div class="t"><h3>Emploi</h3><p>Offres et demandes d'emploi.</p></div></div>
+      <div class="catcard"><div class="pic c4">🎓</div><div class="t"><h3>Formation</h3><p>Cours, ateliers, apprentissage.</p></div></div>
+    </div>
+
+    <div class="go"><button class="btn cta" id="startBtn2">Commencer</button></div>
+  </div>
+</section>
+
 <div class="search">
   <form id="searchForm"><input id="q" type="search" placeholder="Que cherchez-vous ? Ex. : Toyota, appartement, cours d'anglais" aria-label="Rechercher"><button class="btn cta">Rechercher</button></form>
 </div>
@@ -129,6 +185,17 @@ document.querySelectorAll('[data-close]').forEach(b => b.onclick = () => b.close
 document.querySelectorAll('.mask').forEach(m => m.addEventListener('mousedown', e => { if (e.target === m) m.classList.remove('open'); }));
 document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.mask.open').forEach(m => m.classList.remove('open')); });
 
+/* Page d'accueil : affichée à la première visite, rouvrable avec « Comment ça marche ? » */
+try { if (localStorage.getItem('welcomeSeen')) $('welcome').hidden = true; } catch (e) {}
+const closeWelcome = () => {
+  $('welcome').hidden = true;
+  try { localStorage.setItem('welcomeSeen', '1'); } catch (e) {}
+  window.scrollTo(0, 0);
+};
+$('startBtn').onclick = closeWelcome;
+$('startBtn2').onclick = closeWelcome;
+$('btnHelp').onclick = () => { $('welcome').hidden = false; window.scrollTo(0, 0); };
+
 function renderAuthBtn() {
   $('btnAuth').textContent = user ? 'Se déconnecter' : 'Se connecter';
 }
@@ -178,9 +245,8 @@ async function loadAds() {
   const { data, error } = await r;
   ads = data || [];
   $('title').textContent = t ? `Résultats pour « ${t} »` : (cat ? cats.find(c => c.id === cat).nom : 'Dernières annonces');
-  $('empty').hidden = ads.length > 0;
   $('empty').textContent = error ? 'Impossible de charger les annonces. Vérifiez votre connexion et réessayez.' : 'Aucune annonce pour cette recherche. Soyez le premier à en déposer une.';
-  $('empty').hidden = ads.length > 0 ? true : false;
+  $('empty').hidden = ads.length > 0;
   $('list').innerHTML = ads.map((a, i) => `
     <button class="ad" data-i="${i}">
       <div class="ph" ${a.photos && a.photos[0] ? `style="background-image:url('${esc(a.photos[0])}')"` : ''}>${a.photos && a.photos[0] ? '' : 'Pas de photo'}</div>
