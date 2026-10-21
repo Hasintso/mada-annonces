@@ -496,9 +496,9 @@ document.addEventListener('click', () => { menu.hidden = true; mb.setAttribute('
   let i = 0, del = false;
   const tick = () => {
     el.textContent = word.slice(0, i);
-    let d = del ? 70 : 140;
-    if (!del && i === word.length) { del = true; d = 1600; }
-    else if (del && i === 0) { del = false; d = 500; }
+    let d = del ? 90 : 110;
+    if (!del && i === word.length) { del = true; d = 2600; }
+    else if (del && i === 0) { del = false; d = 1000; }
     else i += del ? -1 : 1;
     setTimeout(tick, d);
   };
