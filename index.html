@@ -2,42 +2,82 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ALL-Hasintsoa – Petites annonces à Madagascar</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Hasintsoa – Petites annonces à Madagascar</title>
 <meta name="description" content="Déposez et consultez des petites annonces à Madagascar : auto, immobilier, emploi, formation et plus.">
-<meta name="theme-color" content="#1f5a46">
-<meta property="og:title" content="ALL-Hasintsoa – Petites annonces à Madagascar">
+<meta name="theme-color" content="#0a3b2d">
+<meta property="og:title" content="Hasintsoa – Petites annonces à Madagascar">
 <meta property="og:description" content="Achetez, vendez et trouvez près de chez vous, partout à Madagascar. Déposer une annonce est gratuit.">
 <meta property="og:type" content="website">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231f5a46'/%3E%3Ctext x='32' y='45' font-size='36' font-family='Georgia,serif' font-weight='700' text-anchor='middle' fill='%23f2b705'%3EA%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231f5a46'/%3E%3Ctext x='32' y='45' font-size='36' font-family='Georgia,serif' font-weight='700' text-anchor='middle' fill='%23f2b705'%3EH%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800&display=swap" rel="stylesheet">
 <style>
-:root{--ink:#14241f;--forest:#1f5a46;--forest2:#174536;--paper:#f4f6f1;--card:#fff;--saffron:#f2b705;--line:#dde3da;--muted:#5d6b64;--red:#b3261e;--lime:#a6e34b}
+/* ===== Base ===== */
+:root{--ink:#14241f;--forest:#1f5a46;--forest2:#174536;--deep:#0a3b2d;--paper:#f4f6f1;--card:#fff;--saffron:#f2b705;--line:#dde3da;--muted:#5d6b64;--red:#b3261e;--lime:#a6e34b;--w:1360px;--pad:clamp(16px,3vw,40px)}
 *{box-sizing:border-box}
 body{margin:0;font:16px/1.5 "Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--paper);color:var(--ink)}
-h1,h2,h3,.logo{font-family:Georgia,"Times New Roman",serif;margin:0}
+h1,h2,h3{font-family:Georgia,"Times New Roman",serif;margin:0}
 button,input,select,textarea{font:inherit}
 button{cursor:pointer}
 a{color:var(--forest)}
 :focus-visible{outline:3px solid var(--saffron);outline-offset:2px}
-header{background:var(--forest);color:#fff}
-.top{display:flex;gap:12px;align-items:center;flex-wrap:wrap;max-width:1100px;margin:auto;padding:14px 16px}
-.logo{font-size:1.7rem;font-weight:700;letter-spacing:-.5px;margin-right:auto}
-.logo span{color:var(--saffron)}
+
 .btn{border:0;border-radius:8px;padding:10px 16px;font-weight:600;background:#fff;color:var(--forest)}
 .btn.cta{background:var(--saffron);color:var(--ink)}
-.btn.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.5)}
 .btn.plain{background:var(--paper);color:var(--ink);border:1px solid var(--line)}
 .btn.danger{background:var(--red);color:#fff}
+
+/* ===== Bannière ===== */
+.hd{color:#fff;padding-bottom:18px}
+.hd-top{position:relative;background:linear-gradient(105deg,#0a3b2d 0%,#0f4f3c 55%,#0d5a43 100%);padding-bottom:46px}
+.hd-deco{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.hd-deco::before{content:"";position:absolute;right:-80px;top:-60px;width:560px;height:300px;background:radial-gradient(closest-side,rgba(31,168,106,.35),transparent)}
+.deco-leaf{position:absolute;right:14px;top:18px;width:70px;height:84px}
+.hd-in{position:relative;z-index:1;max-width:var(--w);margin:auto;padding:20px var(--pad);display:flex;align-items:center;gap:14px}
+
+.burger{width:52px;height:52px;flex:none;border:0;border-radius:16px;background:rgba(255,255,255,.12);display:grid;place-items:center}
+.burger svg{width:26px;height:26px;stroke:#fff;stroke-width:2.4;stroke-linecap:round;fill:none}
+
+.logo{display:flex;align-items:center;gap:8px;margin:0 auto 0 0;cursor:pointer;
+  font:800 clamp(2rem,2.6vw,2.6rem)/1 "Montserrat","Segoe UI",Roboto,Helvetica,Arial,sans-serif;letter-spacing:-.5px}
+.logo .w{color:#fff}
+.logo .y{color:var(--saffron);margin-left:-8px}
+.logo-leaf{width:clamp(40px,3.2vw,52px);height:clamp(40px,3.2vw,52px);flex:none}
+
+.cta-pill{display:flex;align-items:center;gap:10px;border:0;border-radius:999px;padding:16px 32px;
+  background:linear-gradient(90deg,#ffd447,#f8b912);color:var(--ink);font-weight:700;font-size:1.15rem;
+  box-shadow:0 6px 16px rgba(0,0,0,.25);white-space:nowrap}
+.cta-pill svg{width:22px;height:22px;flex:none;stroke:var(--ink);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+.menu{position:absolute;z-index:20;left:16px;top:calc(100% - 8px);min-width:230px;padding:6px;
+  background:#fff;color:var(--ink);border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.3);display:flex;flex-direction:column}
+.menu[hidden]{display:none}
+.menu button{background:none;border:0;text-align:left;padding:12px 14px;border-radius:10px;font-weight:600;color:var(--ink)}
+.menu button:hover{background:var(--paper)}
+
+/* Carte des 3 atouts */
+.hd-trust{max-width:var(--w);margin:-32px auto 0;padding:0 var(--pad);position:relative;z-index:2}
+.trust{list-style:none;margin:0;padding:26px 12px;display:grid;grid-template-columns:repeat(3,1fr);
+  background:linear-gradient(#f6fbf8,#eef8f2);border-radius:26px;box-shadow:0 10px 26px rgba(10,59,45,.16)}
+.trust li{display:flex;align-items:center;gap:14px;padding:0 20px;color:var(--muted);font-size:.95rem;line-height:1.35}
+.trust li+li{border-left:1px solid var(--line)}
+.trust b{display:block;color:#0d4a38;font-size:1.2rem;margin-bottom:2px}
+.tic{width:54px;height:54px;border-radius:18px;background:#d6f1e1;display:grid;place-items:center;flex:none}
+.tic svg{width:28px;height:28px;stroke:#0d4a38;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* ===== Recherche, catégories, liste ===== */
 .search{background:var(--forest2);padding:18px 16px}
-.search form{max-width:1100px;margin:auto;display:flex;gap:8px}
+.search form{max-width:var(--w);margin:auto;padding:0 calc(var(--pad) - 16px);display:flex;gap:8px}
 .search input{flex:1;border:0;border-radius:8px;padding:12px 14px;min-width:0}
 nav{background:#fff;border-bottom:1px solid var(--line);overflow-x:auto;white-space:nowrap}
-nav div{max-width:1100px;margin:auto;padding:0 16px;display:flex}
+nav div{max-width:var(--w);margin:auto;padding:0 var(--pad);display:flex}
 nav button{background:none;border:0;border-bottom:3px solid transparent;padding:13px 14px;color:var(--ink);font-weight:600}
 nav button.on{border-color:var(--saffron);color:var(--forest)}
-main{max-width:1100px;margin:auto;padding:24px 16px 60px}
+main{max-width:var(--w);margin:auto;padding:28px var(--pad) 60px}
 main h1{font-size:1.5rem;margin-bottom:16px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:20px}
 .ad{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;cursor:pointer;text-align:left;padding:0;display:block;width:100%}
 .ad:hover{border-color:var(--forest)}
 .ph{aspect-ratio:4/3;background:#e7ece4 center/cover no-repeat;display:grid;place-items:center;color:var(--muted);font-size:.9rem}
@@ -46,7 +86,12 @@ main h1{font-size:1.5rem;margin-bottom:16px}
 .price{font-weight:700;color:var(--forest)}
 .meta{color:var(--muted);font-size:.85rem}
 .empty{padding:40px 0;color:var(--muted);text-align:center}
-.mask{position:fixed;inset:0;background:rgba(20,36,31,.6);display:none;align-items:flex-start;justify-content:center;padding:20px 12px;overflow:auto;z-index:10}
+
+/* L'accueil et la liste des annonces ne s'affichent jamais en même temps */
+body.landing .search,body.landing nav,body.landing main{display:none}
+
+/* ===== Fenêtres (connexion, dépôt, détail) ===== */
+.mask{position:fixed;inset:0;background:rgba(20,36,31,.6);display:none;align-items:flex-start;justify-content:center;padding:20px 12px;overflow:auto;z-index:30}
 .mask.open{display:flex}
 .box{background:#fff;border-radius:12px;max-width:520px;width:100%;padding:22px;position:relative}
 .box.wide{max-width:720px}
@@ -62,47 +107,54 @@ label{display:block;font-weight:600;margin:12px 0 4px;font-size:.92rem}
 .desc{white-space:pre-wrap;margin:14px 0}
 .act{display:flex;gap:10px;flex-wrap:wrap}
 
-/* Accueil et liste des annonces ne s'affichent jamais en même temps */
-body.landing .search,body.landing nav,body.landing main{display:none}
-.logo{cursor:pointer}
+/* ===== Pied de page ===== */
 footer{background:var(--forest2);color:rgba(255,255,255,.8);font-size:.9rem}
-footer .in{max-width:1100px;margin:auto;padding:20px 16px;display:flex;gap:10px 20px;justify-content:space-between;flex-wrap:wrap}
+footer .in{max-width:var(--w);margin:auto;padding:20px var(--pad);display:flex;gap:10px 20px;justify-content:space-between;flex-wrap:wrap}
 footer button{background:none;border:0;color:#fff;text-decoration:underline;padding:0}
 
-/* ===== Page d'accueil (design vert « marketplace ») ===== */
-#welcome{position:relative;overflow:hidden;border-bottom:1px solid var(--line);
-  background-color:#fff;
-  background-image:
-    radial-gradient(circle at 0% 0%,rgba(31,90,70,.24),transparent 36%),
-    radial-gradient(circle at 100% 25%,rgba(166,227,75,.28),transparent 38%),
-    radial-gradient(circle at 55% 100%,rgba(31,90,70,.10),transparent 45%)}
-#welcome[hidden]{display:none}
-.wrap{max-width:1100px;margin:auto;padding:26px 16px 0}
+/* ===== Page d'accueil ===== */
+#welcome{position:relative;overflow:hidden;border-bottom:1px solid var(--line);background:#fbfdf9}
 
-/* Bandeau de 3 atouts */
-.trust{list-style:none;margin:0 0 28px;padding:0;display:flex;gap:26px;flex-wrap:wrap}
-.trust li{display:flex;gap:10px;align-items:center;font-size:.85rem;line-height:1.25;color:var(--muted)}
-.trust b{display:block;color:var(--ink);font-size:.92rem}
-.ico{width:30px;height:30px;flex:none;stroke:var(--forest);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+/* ---------- IMAGE HASHTAG EN ARRIÈRE-PLAN ----------
+   Fichier attendu : hashtag-bg.webp (ou .jpg/.png : changez l'extension ci-dessous), placé à côté de ce HTML.
+   - Couche 1 (dessus) : voile clair dégradé, plus opaque à gauche pour garder le texte lisible.
+   - Couche 2 (dessous) : l'image hashtag, qui remplit toute la zone (cover), centrée sur le hashtag.
+   - Le masque final fait disparaître l'image en douceur vers le bas. */
+#welcome::before{
+  content:"";
+  position:absolute;top:0;left:0;right:0;
+  height:clamp(640px,62vw,980px);
+  z-index:0;
+  background:
+    linear-gradient(90deg,rgba(251,253,249,.92) 0%,rgba(251,253,249,.70) 38%,rgba(251,253,249,.18) 72%,rgba(251,253,249,0) 100%),
+    url(hashtag-bg.png) 62% top/cover no-repeat;
+  background-color:#d9ecfb; /* couleur de secours si l'image ne charge pas */
+  -webkit-mask-image:linear-gradient(#000 72%,transparent);
+          mask-image:linear-gradient(#000 72%,transparent);
+  pointer-events:none;
+}
+#welcome>*{position:relative;z-index:1}
+#welcome[hidden]{display:none}
+.wrap{max-width:var(--w);margin:auto;padding:40px var(--pad) 0}
 
 /* Titre + photo */
-.hero{display:grid;grid-template-columns:1fr 200px;gap:30px;align-items:end}
-.hero h1{font-size:2.6rem;line-height:1.1;letter-spacing:-.5px;margin-bottom:14px}
+.hero{display:grid;grid-template-columns:1fr minmax(260px,360px);gap:clamp(30px,5vw,80px);align-items:center}
+.hero h1{font-size:clamp(2.6rem,4.6vw,4.2rem);line-height:1.08;letter-spacing:-.5px;margin-bottom:14px}
 .hero h1 em{display:block;color:var(--forest);font-style:normal}
-.hero p{color:var(--muted);max-width:50ch;margin:0 0 18px;font-size:1.05rem}
+.hero p{color:#3f4d46;max-width:56ch;margin:0 0 26px;font-size:clamp(1.05rem,1.4vw,1.25rem)}
+.hero .btn.cta{padding:15px 30px;font-size:1.1rem}
 .hero-pic{position:relative}
-.hero-pic img{display:block;width:100%;height:auto;border-radius:18px 18px 0 0}
-.badge{position:absolute;left:-70px;bottom:36px;max-width:190px;background:var(--forest);color:#fff;
+.hero-pic img{display:block;width:100%;height:clamp(380px,36vw,540px);object-fit:cover;object-position:top;border-radius:24px}
+.badge{position:absolute;left:-90px;bottom:40px;max-width:230px;background:var(--forest);color:#fff;
   font:italic 1rem/1.25 Georgia,"Times New Roman",serif;padding:12px 16px;border-radius:30px 8px 30px 8px;
   transform:rotate(-4deg);box-shadow:0 6px 16px rgba(20,36,31,.25)}
 
 /* Cases de catégories */
-.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-top:30px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:18px;margin-top:44px}
 .tile{display:flex;flex-direction:column;width:100%;padding:0;text-align:left;border:2px solid #fff;border-radius:14px;overflow:hidden;
   background:var(--forest);color:#fff;box-shadow:0 4px 14px rgba(20,36,31,.18)}
 .tile:hover{border-color:var(--saffron)}
-.tile .pic{height:110px;background-color:#dfe7dc;background-position:center;background-size:cover;background-repeat:no-repeat}
-.tile .pic.none{display:grid;place-items:center;font-size:3rem;background:linear-gradient(135deg,#d7e8df,#f6e7b4)}
+.tile .pic{height:clamp(110px,11vw,170px);background-color:#dfe7dc;background-position:center;background-size:cover;background-repeat:no-repeat}
 .tile .lab{display:flex;align-items:center;gap:10px;padding:10px 12px;font-weight:600;flex:1}
 .tile .ic{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.16);display:grid;place-items:center;flex:none}
 .tile .ic svg{width:19px;height:19px;stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -114,7 +166,7 @@ footer button{background:none;border:0;color:#fff;text-decoration:underline;padd
 .p-formation{background-image:url(cat-formation.webp)}
 
 /* Comment déposer une annonce */
-#welcome h2{font-size:1.4rem;margin:38px 0 18px}
+#welcome h2{font-size:clamp(1.4rem,2vw,1.9rem);margin:56px 0 22px}
 .num{width:42px;height:42px;border-radius:50%;background:var(--forest);color:#fff;display:grid;place-items:center;flex:none;
   font:700 1.2rem Georgia,"Times New Roman",serif;box-shadow:0 0 0 5px rgba(166,227,75,.38)}
 .steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
@@ -123,61 +175,119 @@ footer button{background:none;border:0;color:#fff;text-decoration:underline;padd
 .step h3{font-size:1.1rem;margin-bottom:4px}
 .step p{margin:0;color:var(--muted);font-size:.95rem}
 
-/* Panneau vert « Pourquoi ALL-Hasintsoa ? » */
-.why{position:relative;overflow:hidden;margin-top:34px;background:var(--forest);color:#fff;border-radius:28px;padding:28px 28px 30px}
+/* Panneau « Pourquoi Hasintsoa ? » */
+.why{position:relative;overflow:hidden;margin-top:44px;background:var(--forest);color:#fff;border-radius:28px;padding:36px var(--pad) 40px}
 #welcome .why h2{margin:0 0 18px;color:#fff}
-.why ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 28px;position:relative;max-width:760px}
+.why ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 28px;position:relative;max-width:900px}
 .why li{display:flex;gap:12px;align-items:flex-start;line-height:1.35}
 .why li b{display:block;font-size:1.02rem}
 .why li span{color:rgba(255,255,255,.82);font-size:.92rem}
 .why .num{width:36px;height:36px;font-size:1rem;background:var(--lime);color:var(--ink);box-shadow:none}
-.leaves{position:absolute;right:-18px;bottom:-26px;width:240px;height:240px;opacity:.28;pointer-events:none}
+.leaves{position:absolute;right:-18px;bottom:-26px;width:320px;height:320px;opacity:.28;pointer-events:none}
 
 /* Bandeau vert du bas */
 .band{margin-top:38px;background:var(--forest);color:#fff;border-radius:44px 44px 0 0}
-.band .in{max-width:1100px;margin:auto;padding:26px 24px;display:flex;gap:20px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.band .in{max-width:var(--w);margin:auto;padding:30px var(--pad);display:flex;gap:20px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .band p{margin:0;font:1.35rem/1.3 Georgia,"Times New Roman",serif;max-width:34ch}
 .band mark{background:none;color:var(--lime);border-bottom:3px solid var(--lime)}
 .band .btn{background:#fff;color:var(--forest);padding:14px 24px;border-radius:999px;font-size:1.05rem}
 
+@media(min-width:1700px){:root{--w:1560px}}
+
+/* ===== Mobile ===== */
 @media(max-width:760px){
+  .trust{grid-template-columns:1fr;padding:10px 8px}
+  .trust li{padding:10px 14px}
+  .trust li+li{border-left:0;border-top:1px solid var(--line)}
+  .logo{font-size:1.5rem}
+  .logo-leaf{width:30px;height:30px}
+  .burger{width:44px;height:44px}
+  .cta-pill{padding:11px 14px;font-size:.85rem}
+  .cta-pill .arr{display:none}
   .hero{grid-template-columns:1fr}
   .hero h1{font-size:1.9rem}
   .hero-pic{display:none}
   .band{border-radius:28px 28px 0 0}
+  /* Hashtag en fond sur mobile : zone plus courte, voile uniforme pour la lisibilité */
+  #welcome::before{
+    height:520px;
+    background:
+      linear-gradient(rgba(251,253,249,.80),rgba(251,253,249,.55)),
+      url(hashtag-bg.webp) 58% top/cover no-repeat;
+    background-color:#d9ecfb;
+  }
 }
-@media(max-width:560px){.row{flex-direction:column;gap:0}.logo{font-size:1.4rem}.why ul{grid-template-columns:1fr}.leaves{width:160px;height:160px}}
-@media(prefers-reduced-motion:no-preference){.ad{transition:border-color .15s}.tile{transition:transform .15s,border-color .15s}.tile:hover{transform:translateY(-3px)}}
+@media(max-width:560px){
+  .row{flex-direction:column;gap:0}
+  .why ul{grid-template-columns:1fr}
+  .leaves{width:160px;height:160px}
+}
+@media(max-width:430px){
+  .cta-pill svg:first-child{display:none}
+  .hd-in{gap:10px}
+}
+@media(prefers-reduced-motion:no-preference){
+  .ad{transition:border-color .15s}
+  .tile{transition:transform .15s,border-color .15s}
+  .tile:hover{transform:translateY(-3px)}
+}
 </style>
 </head>
 <body class="landing">
-<header>
-  <div class="top">
-    <div class="logo" id="logo" role="button" tabindex="0" title="Retour à l'accueil">ALL-<span>Hasintsoa</span></div>
-    <button class="btn ghost" id="btnHelp">Comment ça marche ?</button>
-    <button class="btn ghost" id="btnAuth">Se connecter</button>
-    <button class="btn cta" id="btnPost">Déposer une annonce</button>
+
+<!-- ===== Bannière ===== -->
+<header class="hd">
+  <div class="hd-top">
+    <div class="hd-deco" aria-hidden="true">
+      <svg class="deco-leaf" viewBox="0 0 100 120"><path d="M50 118C20 90 14 50 50 6c36 44 30 84 0 112z" fill="#1fa86a" opacity=".55"/><path d="M50 118V40" stroke="#0a3b2d" stroke-width="2" fill="none"/></svg>
+    </div>
+    <div class="hd-in">
+      <button class="burger" id="burger" aria-label="Menu" aria-expanded="false" aria-controls="menu">
+        <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+
+      <div class="logo" id="logo" role="button" tabindex="0" title="Retour à l'accueil">
+        <svg class="logo-leaf" viewBox="0 0 40 40" aria-hidden="true">
+          <path d="M20 38C8 34 3 22 6 12c10 0 16 8 14 26z" fill="#3fae49"/>
+          <path d="M21 36C20 22 24 10 36 3c3 14-3 28-15 33z" fill="#a6e34b"/>
+        </svg>
+        <span class="w">Ha</span><span class="y">sintsoa</span>
+      </div>
+
+      <button class="cta-pill" id="btnPost">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h2l8 4V6L6 10H4a1 1 0 0 0-1 1z"/><path d="M18 9a4 4 0 0 1 0 6M7 14l1 6h3l-1-5"/></svg>
+        Déposer une annonce
+        <svg class="arr" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+
+      <div class="menu" id="menu" hidden>
+        <button id="btnHelp">Comment ça marche ?</button>
+        <button id="btnAuth">Se connecter</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="hd-trust">
+    <ul class="trust">
+      <li>
+        <span class="tic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg></span>
+        <span><b>100 % gratuit</b>Déposer une annonce ne coûte rien</span>
+      </li>
+      <li>
+        <span class="tic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg></span>
+        <span><b>Contact direct</b>Les acheteurs vous appellent</span>
+      </li>
+      <li>
+        <span class="tic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+        <span><b>Partout à Madagascar</b>Annonces de tout le pays</span>
+      </li>
+    </ul>
   </div>
 </header>
 
-<!-- Page d'accueil : design vert + instructions -->
+<!-- ===== Page d'accueil ===== -->
 <section id="welcome">
   <div class="wrap">
-
-    <ul class="trust">
-      <li>
-        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg>
-        <span><b>100 % gratuit</b>Déposer une annonce<br>ne coûte rien</span>
-      </li>
-      <li>
-        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>
-        <span><b>Contact direct</b>Les acheteurs vous<br>appellent</span>
-      </li>
-      <li>
-        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        <span><b>Partout à Madagascar</b>Annonces de tout<br>le pays</span>
-      </li>
-    </ul>
 
     <div class="hero">
       <div>
@@ -234,7 +344,7 @@ footer button{background:none;border:0;color:#fff;text-decoration:underline;padd
         </g>
         <path d="M100 195V60" stroke="#1f5a46" stroke-width="2" fill="none"/>
       </svg>
-      <h2>Pourquoi choisir ALL-Hasintsoa ?</h2>
+      <h2>Pourquoi choisir Hasintsoa ?</h2>
       <ul>
         <li><div class="num">1</div><div><b>100 % gratuit</b><span>Déposer une annonce ne coûte rien.</span></div></li>
         <li><div class="num">2</div><div><b>Contact direct</b><span>Les acheteurs vous appellent, sans intermédiaire.</span></div></li>
@@ -252,6 +362,7 @@ footer button{background:none;border:0;color:#fff;text-decoration:underline;padd
   </div>
 </section>
 
+<!-- ===== Recherche + liste ===== -->
 <div class="search">
   <form id="searchForm"><input id="q" type="search" placeholder="Que cherchez-vous ? Ex. : Toyota, appartement, cours d'anglais" aria-label="Rechercher"><button class="btn cta">Rechercher</button></form>
 </div>
@@ -264,7 +375,7 @@ footer button{background:none;border:0;color:#fff;text-decoration:underline;padd
 
 <footer>
   <div class="in">
-    <span>© 2026 ALL-Hasintsoa · Petites annonces à Madagascar</span>
+    <span>© 2026 Hasintsoa · Petites annonces à Madagascar</span>
     <button type="button" id="footHelp">Comment ça marche ?</button>
   </div>
 </footer>
@@ -309,21 +420,36 @@ const SB = supabase.createClient('https://ujxctcwkppmhamgkpvmg.supabase.co','sb_
 const $ = id => document.getElementById(id);
 let user = null, cats = [], cat = null, q = '', signup = false, ads = [];
 
+/* ---------- Outils ---------- */
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money = n => n == null || n === '' ? 'Prix à débattre' : new Intl.NumberFormat('fr-FR').format(n) + ' Ar';
-const ago = d => { const m = Math.round((Date.now() - new Date(d)) / 60000);
-  if (m < 60) return 'il y a ' + Math.max(m,1) + ' min'; if (m < 1440) return 'il y a ' + Math.round(m/60) + ' h';
-  return 'il y a ' + Math.round(m/1440) + ' j'; };
+const ago = d => {
+  const m = Math.round((Date.now() - new Date(d)) / 60000);
+  if (m < 60) return 'il y a ' + Math.max(m, 1) + ' min';
+  if (m < 1440) return 'il y a ' + Math.round(m / 60) + ' h';
+  return 'il y a ' + Math.round(m / 1440) + ' j';
+};
+
+/* ---------- Fenêtres ---------- */
 const open = id => $(id).classList.add('open');
 const close = id => $(id).classList.remove('open');
+const closeAllModals = () => document.querySelectorAll('.mask.open').forEach(m => m.classList.remove('open'));
 document.querySelectorAll('[data-close]').forEach(b => b.onclick = () => b.closest('.mask').classList.remove('open'));
 document.querySelectorAll('.mask').forEach(m => m.addEventListener('mousedown', e => { if (e.target === m) m.classList.remove('open'); }));
-document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.mask.open').forEach(m => m.classList.remove('open')); });
 
-/* Page d'accueil : affichée seule à chaque nouvelle visite (une fois par session).
-   La recherche, les catégories et la liste des annonces apparaissent quand on entre dans le site
-   (« Voir les annonces », « Commencer maintenant », une case de catégorie, ou après connexion).
-   Pour l'afficher UNE SEULE FOIS pour toujours, remplacez sessionStorage par localStorage (2 endroits). */
+/* ---------- Menu ☰ de la bannière ---------- */
+const burger = $('burger'), menu = $('menu');
+const toggleMenu = show => { menu.hidden = !show; burger.setAttribute('aria-expanded', String(show)); };
+burger.onclick = e => { e.stopPropagation(); toggleMenu(menu.hidden); };
+menu.addEventListener('click', () => toggleMenu(false));
+document.addEventListener('click', e => { if (!menu.contains(e.target)) toggleMenu(false); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { toggleMenu(false); closeAllModals(); }
+});
+
+/* ---------- Page d'accueil ----------
+   Affichée seule à chaque nouvelle visite (une fois par session).
+   Pour l'afficher une seule fois pour toujours, remplacez sessionStorage par localStorage (2 endroits). */
 const showWelcome = () => {
   $('welcome').hidden = false;
   document.body.classList.add('landing');
@@ -335,13 +461,20 @@ const closeWelcome = () => {
   try { sessionStorage.setItem('welcomeSeen', '1'); } catch (e) {}
   window.scrollTo(0, 0);
 };
-try { if (sessionStorage.getItem('welcomeSeen')) { $('welcome').hidden = true; document.body.classList.remove('landing'); } } catch (e) {}
+try {
+  if (sessionStorage.getItem('welcomeSeen')) {
+    $('welcome').hidden = true;
+    document.body.classList.remove('landing');
+  }
+} catch (e) {}
+
 $('startBtn').onclick = closeWelcome;
 $('startBtn2').onclick = closeWelcome;
 $('btnHelp').onclick = showWelcome;
 $('footHelp').onclick = showWelcome;
 $('logo').onclick = showWelcome;
 $('logo').onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showWelcome(); } };
+
 /* Un clic sur une case de catégorie ouvre directement cette catégorie */
 document.querySelectorAll('.tile').forEach(t => t.onclick = () => {
   closeWelcome();
@@ -350,35 +483,61 @@ document.querySelectorAll('.tile').forEach(t => t.onclick = () => {
   if (b) b.click();
 });
 
-function renderAuthBtn() {
-  $('btnAuth').textContent = user ? 'Se déconnecter' : 'Se connecter';
-}
-$('btnAuth').onclick = async () => {
-  if (user) { await SB.auth.signOut(); return; }
-  setAuthMode(false); open('mAuth');
-};
-$('btnPost').onclick = () => { if (!user) { setAuthMode(false); $('authMsg').className='msg'; $('authMsg').textContent='Connectez-vous pour déposer une annonce.'; open('mAuth'); } else { $('postMsg').textContent=''; open('mPost'); } };
+/* ---------- Connexion ---------- */
+const renderAuthBtn = () => { $('btnAuth').textContent = user ? 'Se déconnecter' : 'Se connecter'; };
 
 function setAuthMode(s) {
   signup = s;
   $('authTitle').textContent = s ? 'Créer un compte' : 'Se connecter';
   $('authGo').textContent = s ? 'Créer mon compte' : 'Se connecter';
-  $('authSwitch').textContent = s ? 'J\'ai déjà un compte' : 'Créer un compte';
+  $('authSwitch').textContent = s ? "J'ai déjà un compte" : 'Créer un compte';
   $('pass').autocomplete = s ? 'new-password' : 'current-password';
   $('authMsg').textContent = '';
 }
+
+$('btnAuth').onclick = async () => {
+  if (user) { await SB.auth.signOut(); return; }
+  setAuthMode(false);
+  open('mAuth');
+};
+
+$('btnPost').onclick = () => {
+  if (!user) {
+    setAuthMode(false);
+    $('authMsg').className = 'msg';
+    $('authMsg').textContent = 'Connectez-vous pour déposer une annonce.';
+    open('mAuth');
+  } else {
+    $('postMsg').textContent = '';
+    open('mPost');
+  }
+};
+
 $('authSwitch').onclick = () => setAuthMode(!signup);
+
 $('authForm').onsubmit = async e => {
   e.preventDefault();
-  const msg = $('authMsg'); msg.className = 'msg'; msg.textContent = 'Un instant…';
+  const msg = $('authMsg');
+  msg.className = 'msg';
+  msg.textContent = 'Un instant…';
   const creds = { email: $('email').value.trim(), password: $('pass').value };
   const { data, error } = signup ? await SB.auth.signUp(creds) : await SB.auth.signInWithPassword(creds);
-  if (error) { msg.textContent = error.message.includes('Invalid login') ? 'E-mail ou mot de passe incorrect.' : error.message; return; }
-  if (signup && !data.session) { msg.className = 'msg ok'; msg.textContent = 'Compte créé. Vérifiez votre boîte e-mail pour confirmer, puis connectez-vous.'; return; }
-  close('mAuth'); closeWelcome();
+  if (error) {
+    msg.textContent = error.message.includes('Invalid login') ? 'E-mail ou mot de passe incorrect.' : error.message;
+    return;
+  }
+  if (signup && !data.session) {
+    msg.className = 'msg ok';
+    msg.textContent = 'Compte créé. Vérifiez votre boîte e-mail pour confirmer, puis connectez-vous.';
+    return;
+  }
+  close('mAuth');
+  closeWelcome();
 };
+
 SB.auth.onAuthStateChange((_ev, session) => { user = session ? session.user : null; renderAuthBtn(); });
 
+/* ---------- Catégories et annonces ---------- */
 async function loadCats() {
   const { data } = await SB.from('ann_categories').select('*').order('id');
   cats = data || [];
@@ -399,7 +558,9 @@ async function loadAds() {
   const { data, error } = await r;
   ads = data || [];
   $('title').textContent = t ? `Résultats pour « ${t} »` : (cat ? cats.find(c => c.id === cat).nom : 'Dernières annonces');
-  $('empty').textContent = error ? 'Impossible de charger les annonces. Vérifiez votre connexion et réessayez.' : 'Aucune annonce pour cette recherche. Soyez le premier à en déposer une.';
+  $('empty').textContent = error
+    ? 'Impossible de charger les annonces. Vérifiez votre connexion et réessayez.'
+    : 'Aucune annonce pour cette recherche. Soyez le premier à en déposer une.';
   $('empty').hidden = ads.length > 0;
   $('list').innerHTML = ads.map((a, i) => `
     <button class="ad" data-i="${i}">
@@ -409,8 +570,10 @@ async function loadAds() {
     </button>`).join('');
   $('list').querySelectorAll('.ad').forEach(b => b.onclick = () => showAd(ads[+b.dataset.i]));
 }
+
 $('searchForm').onsubmit = e => { e.preventDefault(); q = $('q').value; loadAds(); };
 
+/* ---------- Détail d'une annonce ---------- */
 function showAd(a) {
   const tel = String(a.telephone || '').replace(/[^\d+]/g, '');
   $('det').innerHTML = `
@@ -426,17 +589,22 @@ function showAd(a) {
     if (!confirm('Supprimer cette annonce définitivement ?')) return;
     const { error } = await SB.from('ann_annonces').delete().eq('id', a.id);
     if (error) { alert('Suppression impossible : ' + error.message); return; }
-    close('mDet'); loadAds();
+    close('mDet');
+    loadAds();
   };
   open('mDet');
 }
 
+/* ---------- Dépôt d'une annonce ---------- */
 $('postForm').onsubmit = async e => {
   e.preventDefault();
-  const msg = $('postMsg'), go = $('postGo'); msg.className = 'msg';
+  const msg = $('postMsg'), go = $('postGo');
+  msg.className = 'msg';
   const files = [...$('pPhotos').files].slice(0, 4);
   if (files.some(f => f.size > 5 * 1024 * 1024)) { msg.textContent = 'Chaque photo doit faire moins de 5 Mo.'; return; }
-  go.disabled = true; msg.textContent = 'Envoi en cours…';
+  go.disabled = true;
+  msg.textContent = 'Envoi en cours…';
+
   const urls = [];
   for (const [i, f] of files.entries()) {
     const ext = (f.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -445,22 +613,34 @@ $('postForm').onsubmit = async e => {
     if (error) { msg.textContent = 'Photo non envoyée : ' + error.message; go.disabled = false; return; }
     urls.push(SB.storage.from('annonces').getPublicUrl(path).data.publicUrl);
   }
+
   const { error } = await SB.from('ann_annonces').insert({
-    category_id: +$('pCat').value, titre: $('pTitre').value.trim(), description: $('pDesc').value.trim(),
-    prix: $('pPrix').value === '' ? null : +$('pPrix').value, ville: $('pVille').value.trim(),
-    telephone: $('pTel').value.trim(), photos: urls
+    category_id: +$('pCat').value,
+    titre: $('pTitre').value.trim(),
+    description: $('pDesc').value.trim(),
+    prix: $('pPrix').value === '' ? null : +$('pPrix').value,
+    ville: $('pVille').value.trim(),
+    telephone: $('pTel').value.trim(),
+    photos: urls
   });
   go.disabled = false;
   if (error) { msg.textContent = 'Publication impossible : ' + error.message; return; }
-  $('postForm').reset(); close('mPost'); cat = null; q = ''; $('q').value = '';
+
+  $('postForm').reset();
+  close('mPost');
+  cat = null; q = ''; $('q').value = '';
   $('cats').querySelectorAll('button').forEach((x, i) => x.classList.toggle('on', i === 0));
+  closeWelcome();
   loadAds();
 };
 
+/* ---------- Démarrage ---------- */
 (async () => {
   const { data } = await SB.auth.getSession();
-  user = data.session ? data.session.user : null; renderAuthBtn();
-  await loadCats(); loadAds();
+  user = data.session ? data.session.user : null;
+  renderAuthBtn();
+  await loadCats();
+  loadAds();
 })();
 </script>
 </body>
