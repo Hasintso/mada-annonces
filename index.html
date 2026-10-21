@@ -45,6 +45,9 @@ body.landing .logo{color:#0b2a5b}
 body.landing .logo span{color:#d98e00}
 body.landing .dots{color:#0b2a5b;border-color:rgba(11,42,91,.4);background:rgba(255,255,255,.55)}
 body.landing .post{color:#0b2a5b}
+.logo{min-width:10ch}
+.caret{display:inline-block;width:3px;height:1.1em;margin-left:3px;background:currentColor;vertical-align:-.15em;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
 .btn.danger{background:var(--red);color:#fff}
 .search{background:var(--forest2);padding:18px 16px}
 .search form{max-width:1100px;margin:auto;display:flex;gap:8px}
@@ -182,7 +185,7 @@ footer button{background:none;border:0;color:#fff;text-decoration:underline;padd
     </div>
   </div>
   <div class="top">
-    <div class="logo" id="logo" role="button" tabindex="0" title="Retour à l'accueil">ALL-<span>Hasintsoa</span></div>
+    <div class="logo" id="logo" role="button" tabindex="0" title="Retour à l'accueil" aria-label="Bienvenue, retour à l'accueil"><b id="typed"></b><i class="caret" aria-hidden="true"></i></div>
     <button class="post" id="btnPost">Déposer une annonce</button>
   </div>
 </header>
@@ -487,7 +490,20 @@ $('postForm').onsubmit = async e => {
 const menu = $('menuList'), mb = $('btnMenu');
 mb.onclick = e => { e.stopPropagation(); const o = menu.hidden; menu.hidden = !o; mb.setAttribute('aria-expanded', o); };
 document.addEventListener('click', () => { menu.hidden = true; mb.setAttribute('aria-expanded', 'false'); });
-
+(() => {
+  const el = $('typed'), word = 'Bienvenue.';
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) { el.textContent = word; return; }
+  let i = 0, del = false;
+  const tick = () => {
+    el.textContent = word.slice(0, i);
+    let d = del ? 70 : 140;
+    if (!del && i === word.length) { del = true; d = 1600; }
+    else if (del && i === 0) { del = false; d = 500; }
+    else i += del ? -1 : 1;
+    setTimeout(tick, d);
+  };
+  tick();
+})();
 (async () => {
   const { data } = await SB.auth.getSession();
   user = data.session ? data.session.user : null; renderAuthBtn();
