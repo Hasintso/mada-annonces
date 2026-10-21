@@ -491,7 +491,7 @@ const menu = $('menuList'), mb = $('btnMenu');
 mb.onclick = e => { e.stopPropagation(); const o = menu.hidden; menu.hidden = !o; mb.setAttribute('aria-expanded', o); };
 document.addEventListener('click', () => { menu.hidden = true; mb.setAttribute('aria-expanded', 'false'); });
 (() => {
-  const el = $('typed'), word = 'Bienvenue.';
+  const el = $('typed'), word = 'Bienvenue chez market price.';
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) { el.textContent = word; return; }
   let i = 0, del = false;
   const tick = () => {
