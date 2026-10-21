@@ -508,7 +508,7 @@ document.addEventListener('click', () => { menu.hidden = true; mb.setAttribute('
   (function tick() {
     el.textContent = texte.slice(0, i);
     let delai = efface ? 45 : 95;
-    if (!efface && i === texte.length) { efface = true; delai = 3600; }
+    if (!efface && i === texte.length) { efface = true; delai = 9200; }
     else if (efface && i === 0) { efface = false; delai = 1200; }
     else i += efface ? -1 : 1;
     setTimeout(tick, delai);
