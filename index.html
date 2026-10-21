@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ALL-Hasintsoa – Petites annonces à Madagascar</title>
 <meta name="description" content="Déposez et consultez des petites annonces à Madagascar : auto, immobilier, emploi, formation et plus.">
+<meta name="theme-color" content="#1f5a46">
+<meta property="og:title" content="ALL-Hasintsoa – Petites annonces à Madagascar">
+<meta property="og:description" content="Achetez, vendez et trouvez près de chez vous, partout à Madagascar. Déposer une annonce est gratuit.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231f5a46'/%3E%3Ctext x='32' y='45' font-size='36' font-family='Georgia,serif' font-weight='700' text-anchor='middle' fill='%23f2b705'%3EA%3C/text%3E%3C/svg%3E">
 <style>
 :root{--ink:#14241f;--forest:#1f5a46;--forest2:#174536;--paper:#f4f6f1;--card:#fff;--saffron:#f2b705;--line:#dde3da;--muted:#5d6b64;--red:#b3261e;--lime:#a6e34b}
 *{box-sizing:border-box}
@@ -57,6 +62,13 @@ label{display:block;font-weight:600;margin:12px 0 4px;font-size:.92rem}
 .desc{white-space:pre-wrap;margin:14px 0}
 .act{display:flex;gap:10px;flex-wrap:wrap}
 
+/* Accueil et liste des annonces ne s'affichent jamais en même temps */
+body.landing .search,body.landing nav,body.landing main{display:none}
+.logo{cursor:pointer}
+footer{background:var(--forest2);color:rgba(255,255,255,.8);font-size:.9rem}
+footer .in{max-width:1100px;margin:auto;padding:20px 16px;display:flex;gap:10px 20px;justify-content:space-between;flex-wrap:wrap}
+footer button{background:none;border:0;color:#fff;text-decoration:underline;padding:0}
+
 /* ===== Page d'accueil (design vert « marketplace ») ===== */
 #welcome{position:relative;overflow:hidden;border-bottom:1px solid var(--line);
   background-color:#fff;
@@ -86,12 +98,12 @@ label{display:block;font-weight:600;margin:12px 0 4px;font-size:.92rem}
 
 /* Cases de catégories */
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-top:30px}
-.tile{display:block;width:100%;padding:0;text-align:left;border:2px solid #fff;border-radius:14px;overflow:hidden;
+.tile{display:flex;flex-direction:column;width:100%;padding:0;text-align:left;border:2px solid #fff;border-radius:14px;overflow:hidden;
   background:var(--forest);color:#fff;box-shadow:0 4px 14px rgba(20,36,31,.18)}
 .tile:hover{border-color:var(--saffron)}
-.tile .pic{height:110px;background:#dfe7dc center/cover no-repeat}
+.tile .pic{height:110px;background-color:#dfe7dc;background-position:center;background-size:cover;background-repeat:no-repeat}
 .tile .pic.none{display:grid;place-items:center;font-size:3rem;background:linear-gradient(135deg,#d7e8df,#f6e7b4)}
-.tile .lab{display:flex;align-items:center;gap:10px;padding:10px 12px;font-weight:600}
+.tile .lab{display:flex;align-items:center;gap:10px;padding:10px 12px;font-weight:600;flex:1}
 .tile .ic{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.16);display:grid;place-items:center;flex:none}
 .tile .ic svg{width:19px;height:19px;stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .p-auto{background-image:url(cat-auto.webp)}
@@ -99,13 +111,27 @@ label{display:block;font-weight:600;margin:12px 0 4px;font-size:.92rem}
 .p-tech{background-image:url(cat-tech.webp)}
 .p-emploi{background-image:url(cat-emploi.webp)}
 .p-sakafo{background-image:url(cat-sakafo.webp)}
+.p-formation{background-image:url(cat-formation.webp)}
 
 /* Comment déposer une annonce */
-#welcome h2{font-size:1.4rem;margin:36px 0 14px}
-.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
-.step{border-left:4px solid var(--saffron);padding:4px 0 4px 14px}
+#welcome h2{font-size:1.4rem;margin:38px 0 18px}
+.num{width:42px;height:42px;border-radius:50%;background:var(--forest);color:#fff;display:grid;place-items:center;flex:none;
+  font:700 1.2rem Georgia,"Times New Roman",serif;box-shadow:0 0 0 5px rgba(166,227,75,.38)}
+.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.step{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 4px 14px rgba(20,36,31,.07)}
+.step .num{margin-bottom:12px}
 .step h3{font-size:1.1rem;margin-bottom:4px}
 .step p{margin:0;color:var(--muted);font-size:.95rem}
+
+/* Panneau vert « Pourquoi ALL-Hasintsoa ? » */
+.why{position:relative;overflow:hidden;margin-top:34px;background:var(--forest);color:#fff;border-radius:28px;padding:28px 28px 30px}
+#welcome .why h2{margin:0 0 18px;color:#fff}
+.why ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 28px;position:relative;max-width:760px}
+.why li{display:flex;gap:12px;align-items:flex-start;line-height:1.35}
+.why li b{display:block;font-size:1.02rem}
+.why li span{color:rgba(255,255,255,.82);font-size:.92rem}
+.why .num{width:36px;height:36px;font-size:1rem;background:var(--lime);color:var(--ink);box-shadow:none}
+.leaves{position:absolute;right:-18px;bottom:-26px;width:240px;height:240px;opacity:.28;pointer-events:none}
 
 /* Bandeau vert du bas */
 .band{margin-top:38px;background:var(--forest);color:#fff;border-radius:44px 44px 0 0}
@@ -120,14 +146,14 @@ label{display:block;font-weight:600;margin:12px 0 4px;font-size:.92rem}
   .hero-pic{display:none}
   .band{border-radius:28px 28px 0 0}
 }
-@media(max-width:560px){.row{flex-direction:column;gap:0}.logo{font-size:1.4rem}}
+@media(max-width:560px){.row{flex-direction:column;gap:0}.logo{font-size:1.4rem}.why ul{grid-template-columns:1fr}.leaves{width:160px;height:160px}}
 @media(prefers-reduced-motion:no-preference){.ad{transition:border-color .15s}.tile{transition:transform .15s,border-color .15s}.tile:hover{transform:translateY(-3px)}}
 </style>
 </head>
-<body>
+<body class="landing">
 <header>
   <div class="top">
-    <div class="logo">ALL-<span>Hasintsoa</span></div>
+    <div class="logo" id="logo" role="button" tabindex="0" title="Retour à l'accueil">ALL-<span>Hasintsoa</span></div>
     <button class="btn ghost" id="btnHelp">Comment ça marche ?</button>
     <button class="btn ghost" id="btnAuth">Se connecter</button>
     <button class="btn cta" id="btnPost">Déposer une annonce</button>
@@ -183,7 +209,7 @@ label{display:block;font-weight:600;margin:12px 0 4px;font-size:.92rem}
         <div class="lab"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></span>Emploi</div>
       </button>
       <button class="tile" data-cat="Formation">
-        <div class="pic none" aria-hidden="true">🎓</div>
+        <div class="pic p-formation"></div>
         <div class="lab"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/></svg></span>Formation</div>
       </button>
       <button class="tile" data-cat="Sakafo">
@@ -193,10 +219,28 @@ label{display:block;font-weight:600;margin:12px 0 4px;font-size:.92rem}
     </div>
 
     <h2>Comment déposer une annonce</h2>
-    <div class="steps">
-      <div class="step"><h3>1. Créez un compte</h3><p>Entrez votre e-mail et un mot de passe, puis confirmez avec le lien reçu par e-mail.</p></div>
-      <div class="step"><h3>2. Remplissez l'annonce</h3><p>Ajoutez un titre, le prix, votre ville, votre numéro de téléphone et jusqu'à 4 photos.</p></div>
-      <div class="step"><h3>3. Recevez des appels</h3><p>Les acheteurs vous appellent directement. Supprimez l'annonce une fois l'article vendu.</p></div>
+    <ol class="steps">
+      <li class="step"><div class="num">1</div><h3>Créez un compte</h3><p>Entrez votre e-mail et un mot de passe, puis confirmez avec le lien reçu par e-mail.</p></li>
+      <li class="step"><div class="num">2</div><h3>Remplissez l'annonce</h3><p>Ajoutez un titre, le prix, votre ville, votre numéro de téléphone et jusqu'à 4 photos.</p></li>
+      <li class="step"><div class="num">3</div><h3>Recevez des appels</h3><p>Les acheteurs vous appellent directement. Supprimez l'annonce une fois l'article vendu.</p></li>
+    </ol>
+
+    <div class="why">
+      <svg class="leaves" viewBox="0 0 200 200" aria-hidden="true">
+        <g fill="#a6e34b">
+          <path d="M100 195C62 152 56 92 100 18c44 74 38 134 0 177z"/>
+          <path d="M70 188C28 160 18 112 42 66c40 34 52 82 28 122z" transform="rotate(-18 70 188)"/>
+          <path d="M130 188c42-28 52-76 28-122-40 34-52 82-28 122z" transform="rotate(18 130 188)"/>
+        </g>
+        <path d="M100 195V60" stroke="#1f5a46" stroke-width="2" fill="none"/>
+      </svg>
+      <h2>Pourquoi choisir ALL-Hasintsoa ?</h2>
+      <ul>
+        <li><div class="num">1</div><div><b>100 % gratuit</b><span>Déposer une annonce ne coûte rien.</span></div></li>
+        <li><div class="num">2</div><div><b>Contact direct</b><span>Les acheteurs vous appellent, sans intermédiaire.</span></div></li>
+        <li><div class="num">3</div><div><b>Partout à Madagascar</b><span>Des annonces de toutes les régions du pays.</span></div></li>
+        <li><div class="num">4</div><div><b>Simple et rapide</b><span>Une annonce en quelques minutes, depuis votre téléphone.</span></div></li>
+      </ul>
     </div>
   </div>
 
@@ -217,6 +261,13 @@ label{display:block;font-weight:600;margin:12px 0 4px;font-size:.92rem}
   <div class="grid" id="list"></div>
   <p class="empty" id="empty" hidden>Aucune annonce pour cette recherche. Soyez le premier à en déposer une.</p>
 </main>
+
+<footer>
+  <div class="in">
+    <span>© 2026 ALL-Hasintsoa · Petites annonces à Madagascar</span>
+    <button type="button" id="footHelp">Comment ça marche ?</button>
+  </div>
+</footer>
 
 <!-- Connexion -->
 <div class="mask" id="mAuth"><div class="box" role="dialog" aria-modal="true">
@@ -269,18 +320,28 @@ document.querySelectorAll('[data-close]').forEach(b => b.onclick = () => b.close
 document.querySelectorAll('.mask').forEach(m => m.addEventListener('mousedown', e => { if (e.target === m) m.classList.remove('open'); }));
 document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.mask.open').forEach(m => m.classList.remove('open')); });
 
-/* Page d'accueil : affichée à chaque nouvelle visite (une fois par session),
-   rouvrable avec « Comment ça marche ? ».
+/* Page d'accueil : affichée seule à chaque nouvelle visite (une fois par session).
+   La recherche, les catégories et la liste des annonces apparaissent quand on entre dans le site
+   (« Voir les annonces », « Commencer maintenant », une case de catégorie, ou après connexion).
    Pour l'afficher UNE SEULE FOIS pour toujours, remplacez sessionStorage par localStorage (2 endroits). */
-try { if (sessionStorage.getItem('welcomeSeen')) $('welcome').hidden = true; } catch (e) {}
+const showWelcome = () => {
+  $('welcome').hidden = false;
+  document.body.classList.add('landing');
+  window.scrollTo(0, 0);
+};
 const closeWelcome = () => {
   $('welcome').hidden = true;
+  document.body.classList.remove('landing');
   try { sessionStorage.setItem('welcomeSeen', '1'); } catch (e) {}
   window.scrollTo(0, 0);
 };
+try { if (sessionStorage.getItem('welcomeSeen')) { $('welcome').hidden = true; document.body.classList.remove('landing'); } } catch (e) {}
 $('startBtn').onclick = closeWelcome;
 $('startBtn2').onclick = closeWelcome;
-$('btnHelp').onclick = () => { $('welcome').hidden = false; window.scrollTo(0, 0); };
+$('btnHelp').onclick = showWelcome;
+$('footHelp').onclick = showWelcome;
+$('logo').onclick = showWelcome;
+$('logo').onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showWelcome(); } };
 /* Un clic sur une case de catégorie ouvre directement cette catégorie */
 document.querySelectorAll('.tile').forEach(t => t.onclick = () => {
   closeWelcome();
@@ -314,7 +375,7 @@ $('authForm').onsubmit = async e => {
   const { data, error } = signup ? await SB.auth.signUp(creds) : await SB.auth.signInWithPassword(creds);
   if (error) { msg.textContent = error.message.includes('Invalid login') ? 'E-mail ou mot de passe incorrect.' : error.message; return; }
   if (signup && !data.session) { msg.className = 'msg ok'; msg.textContent = 'Compte créé. Vérifiez votre boîte e-mail pour confirmer, puis connectez-vous.'; return; }
-  close('mAuth');
+  close('mAuth'); closeWelcome();
 };
 SB.auth.onAuthStateChange((_ev, session) => { user = session ? session.user : null; renderAuthBtn(); });
 
