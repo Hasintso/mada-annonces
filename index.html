@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ALL-Hasintsoa – Petites annonces à Madagascar</title>
 <meta name="description" content="Déposez et consultez des petites annonces à Madagascar : auto, immobilier, emploi, formation et plus.">
+<meta name="theme-color" content="#1f5a46">
+<meta property="og:title" content="ALL-Hasintsoa – Petites annonces à Madagascar">
+<meta property="og:description" content="Achetez, vendez et trouvez près de chez vous, partout à Madagascar. Déposer une annonce est gratuit.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231f5a46'/%3E%3Ctext x='32' y='45' font-size='36' font-family='Georgia,serif' font-weight='700' text-anchor='middle' fill='%23f2b705'%3EA%3C/text%3E%3C/svg%3E">
 <style>
 :root{--ink:#14241f;--forest:#1f5a46;--forest2:#174536;--paper:#f4f6f1;--card:#fff;--saffron:#f2b705;--line:#dde3da;--muted:#5d6b64;--red:#b3261e;--lime:#a6e34b}
 *{box-sizing:border-box}
@@ -56,6 +61,13 @@ label{display:block;font-weight:600;margin:12px 0 4px;font-size:.92rem}
 .gal img{height:220px;border-radius:8px;object-fit:cover;max-width:100%}
 .desc{white-space:pre-wrap;margin:14px 0}
 .act{display:flex;gap:10px;flex-wrap:wrap}
+
+/* Accueil et liste des annonces ne s'affichent jamais en même temps */
+body.landing .search,body.landing nav,body.landing main{display:none}
+.logo{cursor:pointer}
+footer{background:var(--forest2);color:rgba(255,255,255,.8);font-size:.9rem}
+footer .in{max-width:1100px;margin:auto;padding:20px 16px;display:flex;gap:10px 20px;justify-content:space-between;flex-wrap:wrap}
+footer button{background:none;border:0;color:#fff;text-decoration:underline;padding:0}
 
 /* ===== Page d'accueil (design vert « marketplace ») ===== */
 #welcome{position:relative;overflow:hidden;border-bottom:1px solid var(--line);
@@ -137,10 +149,10 @@ label{display:block;font-weight:600;margin:12px 0 4px;font-size:.92rem}
 @media(prefers-reduced-motion:no-preference){.ad{transition:border-color .15s}.tile{transition:transform .15s,border-color .15s}.tile:hover{transform:translateY(-3px)}}
 </style>
 </head>
-<body>
+<body class="landing">
 <header>
   <div class="top">
-    <div class="logo">ALL-<span>Hasintsoa</span></div>
+    <div class="logo" id="logo" role="button" tabindex="0" title="Retour à l'accueil">ALL-<span>Hasintsoa</span></div>
     <button class="btn ghost" id="btnHelp">Comment ça marche ?</button>
     <button class="btn ghost" id="btnAuth">Se connecter</button>
     <button class="btn cta" id="btnPost">Déposer une annonce</button>
@@ -249,6 +261,13 @@ label{display:block;font-weight:600;margin:12px 0 4px;font-size:.92rem}
   <p class="empty" id="empty" hidden>Aucune annonce pour cette recherche. Soyez le premier à en déposer une.</p>
 </main>
 
+<footer>
+  <div class="in">
+    <span>© 2026 ALL-Hasintsoa · Petites annonces à Madagascar</span>
+    <button type="button" id="footHelp">Comment ça marche ?</button>
+  </div>
+</footer>
+
 <!-- Connexion -->
 <div class="mask" id="mAuth"><div class="box" role="dialog" aria-modal="true">
   <button class="x" data-close aria-label="Fermer">×</button>
@@ -300,18 +319,28 @@ document.querySelectorAll('[data-close]').forEach(b => b.onclick = () => b.close
 document.querySelectorAll('.mask').forEach(m => m.addEventListener('mousedown', e => { if (e.target === m) m.classList.remove('open'); }));
 document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.mask.open').forEach(m => m.classList.remove('open')); });
 
-/* Page d'accueil : affichée à chaque nouvelle visite (une fois par session),
-   rouvrable avec « Comment ça marche ? ».
+/* Page d'accueil : affichée seule à chaque nouvelle visite (une fois par session).
+   La recherche, les catégories et la liste des annonces apparaissent quand on entre dans le site
+   (« Voir les annonces », « Commencer maintenant », une case de catégorie, ou après connexion).
    Pour l'afficher UNE SEULE FOIS pour toujours, remplacez sessionStorage par localStorage (2 endroits). */
-try { if (sessionStorage.getItem('welcomeSeen')) $('welcome').hidden = true; } catch (e) {}
+const showWelcome = () => {
+  $('welcome').hidden = false;
+  document.body.classList.add('landing');
+  window.scrollTo(0, 0);
+};
 const closeWelcome = () => {
   $('welcome').hidden = true;
+  document.body.classList.remove('landing');
   try { sessionStorage.setItem('welcomeSeen', '1'); } catch (e) {}
   window.scrollTo(0, 0);
 };
+try { if (sessionStorage.getItem('welcomeSeen')) { $('welcome').hidden = true; document.body.classList.remove('landing'); } } catch (e) {}
 $('startBtn').onclick = closeWelcome;
 $('startBtn2').onclick = closeWelcome;
-$('btnHelp').onclick = () => { $('welcome').hidden = false; window.scrollTo(0, 0); };
+$('btnHelp').onclick = showWelcome;
+$('footHelp').onclick = showWelcome;
+$('logo').onclick = showWelcome;
+$('logo').onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showWelcome(); } };
 /* Un clic sur une case de catégorie ouvre directement cette catégorie */
 document.querySelectorAll('.tile').forEach(t => t.onclick = () => {
   closeWelcome();
@@ -345,7 +374,7 @@ $('authForm').onsubmit = async e => {
   const { data, error } = signup ? await SB.auth.signUp(creds) : await SB.auth.signInWithPassword(creds);
   if (error) { msg.textContent = error.message.includes('Invalid login') ? 'E-mail ou mot de passe incorrect.' : error.message; return; }
   if (signup && !data.session) { msg.className = 'msg ok'; msg.textContent = 'Compte créé. Vérifiez votre boîte e-mail pour confirmer, puis connectez-vous.'; return; }
-  close('mAuth');
+  close('mAuth'); closeWelcome();
 };
 SB.auth.onAuthStateChange((_ev, session) => { user = session ? session.user : null; renderAuthBtn(); });
 
