@@ -19,14 +19,32 @@ button,input,select,textarea{font:inherit}
 button{cursor:pointer}
 a{color:var(--forest)}
 :focus-visible{outline:3px solid var(--saffron);outline-offset:2px}
-header{background:var(--forest);color:#fff}
-.top{display:flex;gap:12px;align-items:center;flex-wrap:wrap;max-width:1100px;margin:auto;padding:14px 16px}
+header{background:linear-gradient(#2f7fe0,#2a6fd0);color:#fff;position:relative}
+.top{display:flex;gap:12px;align-items:center;flex-wrap:wrap;max-width:1100px;margin:auto;padding:14px 16px 14px 76px}
 .logo{font-size:1.7rem;font-weight:700;letter-spacing:-.5px;margin-right:auto}
 .logo span{color:var(--saffron)}
 .btn{border:0;border-radius:8px;padding:10px 16px;font-weight:600;background:#fff;color:var(--forest)}
 .btn.cta{background:var(--saffron);color:var(--ink)}
 .btn.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.5)}
 .btn.plain{background:var(--paper);color:var(--ink);border:1px solid var(--line)}
+.menu-wrap{position:absolute;left:16px;top:50%;transform:translateY(-50%);z-index:20}
+.dots{width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.6);background:rgba(255,255,255,.15);display:grid;place-items:center;color:#fff;padding:0}
+.dots svg{width:22px;height:22px;fill:currentColor}
+.dd{position:absolute;top:54px;left:0;min-width:220px;background:#fff;border-radius:12px;box-shadow:0 10px 30px rgba(10,30,70,.25);padding:6px;display:flex;flex-direction:column}
+.dd[hidden]{display:none}
+.dd button{background:none;border:0;text-align:left;padding:12px 14px;border-radius:8px;font-weight:600;color:var(--ink)}
+.dd button:hover{background:#eef4fb}
+.post{background:none;border:2px solid currentColor;border-radius:999px;padding:9px 22px;color:#fff;
+  font:italic 700 1.1rem Georgia,"Times New Roman",serif;letter-spacing:.3px}
+.post:hover{background:rgba(255,255,255,.18)}
+
+/* Page d'accueil : l'entête devient transparente sur le fond bleu (plus de bande verte) */
+body.landing header{position:absolute;top:0;left:0;right:0;background:transparent;z-index:5}
+body.landing #welcome{padding-top:74px}
+body.landing .logo{color:#0b2a5b}
+body.landing .logo span{color:#d98e00}
+body.landing .dots{color:#0b2a5b;border-color:rgba(11,42,91,.4);background:rgba(255,255,255,.55)}
+body.landing .post{color:#0b2a5b}
 .btn.danger{background:var(--red);color:#fff}
 .search{background:var(--forest2);padding:18px 16px}
 .search form{max-width:1100px;margin:auto;display:flex;gap:8px}
@@ -154,11 +172,18 @@ footer button{background:none;border:0;color:#fff;text-decoration:underline;padd
 </head>
 <body class="landing">
 <header>
+  <div class="menu-wrap">
+    <button class="dots" id="btnMenu" aria-label="Menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+    </button>
+    <div class="dd" id="menuList" hidden>
+      <button id="btnHelp">Comment ça marche ?</button>
+      <button id="btnAuth">Se connecter</button>
+    </div>
+  </div>
   <div class="top">
     <div class="logo" id="logo" role="button" tabindex="0" title="Retour à l'accueil">ALL-<span>Hasintsoa</span></div>
-    <button class="btn ghost" id="btnHelp">Comment ça marche ?</button>
-    <button class="btn ghost" id="btnAuth">Se connecter</button>
-    <button class="btn cta" id="btnPost">Déposer une annonce</button>
+    <button class="post" id="btnPost">Déposer une annonce</button>
   </div>
 </header>
 
@@ -458,6 +483,10 @@ $('postForm').onsubmit = async e => {
   $('cats').querySelectorAll('button').forEach((x, i) => x.classList.toggle('on', i === 0));
   loadAds();
 };
+
+const menu = $('menuList'), mb = $('btnMenu');
+mb.onclick = e => { e.stopPropagation(); const o = menu.hidden; menu.hidden = !o; mb.setAttribute('aria-expanded', o); };
+document.addEventListener('click', () => { menu.hidden = true; mb.setAttribute('aria-expanded', 'false'); });
 
 (async () => {
   const { data } = await SB.auth.getSession();
