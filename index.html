@@ -20,7 +20,13 @@ button{cursor:pointer}
 a{color:var(--forest)}
 :focus-visible{outline:3px solid var(--saffron);outline-offset:2px}
 header{background:linear-gradient(#2f7fe0,#2a6fd0);color:#fff;position:relative}
-.top{padding-left:64px}
+.top{display:flex;gap:12px;align-items:center;flex-wrap:wrap;max-width:1100px;margin:auto;padding:14px 16px 14px 76px}
+.logo{font-size:1.7rem;font-weight:700;letter-spacing:-.5px;margin-right:auto}
+.logo span{color:var(--saffron)}
+.btn{border:0;border-radius:8px;padding:10px 16px;font-weight:600;background:#fff;color:var(--forest)}
+.btn.cta{background:var(--saffron);color:var(--ink)}
+.btn.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.5)}
+.btn.plain{background:var(--paper);color:var(--ink);border:1px solid var(--line)}
 .menu-wrap{position:absolute;left:16px;top:50%;transform:translateY(-50%);z-index:20}
 .dots{width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.6);background:rgba(255,255,255,.15);display:grid;place-items:center;color:#fff;padding:0}
 .dots svg{width:22px;height:22px;fill:currentColor}
@@ -475,9 +481,6 @@ $('postForm').onsubmit = async e => {
   if (error) { msg.textContent = 'Publication impossible : ' + error.message; return; }
   $('postForm').reset(); close('mPost'); cat = null; q = ''; $('q').value = '';
   $('cats').querySelectorAll('button').forEach((x, i) => x.classList.toggle('on', i === 0));
-  loadAds();
-};
-
   loadAds();
 };
 
