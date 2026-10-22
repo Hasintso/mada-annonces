@@ -12,7 +12,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231f5a46'/%3E%3Ctext x='32' y='45' font-size='36' font-family='Georgia,serif' font-weight='700' text-anchor='middle' fill='%23f2b705'%3EA%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet"> 
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Bangers&family=Nunito:wght@600;800&display=swap" rel="stylesheet"> 
 <style>
 :root{--ink:#14241f;--forest:#1f5a46;--forest2:#174536;--paper:#f4f6f1;--card:#fff;--saffron:#f2b705;--line:#dde3da;--muted:#5d6b64;--red:#b3261e;--lime:#a6e34b}
 *{box-sizing:border-box}
@@ -188,6 +188,70 @@ footer button{background:none;border:0;color:#fff;text-decoration:underline;padd
 }
 @media(max-width:560px){.row{flex-direction:column;gap:0}.logo{font-size:1.5rem}.why ul{grid-template-columns:1fr}.leaves{width:160px;height:160px}}
 @media(prefers-reduced-motion:no-preference){.ad{transition:border-color .15s}.tile{transition:transform .15s,border-color .15s}.tile:hover{transform:translateY(-3px)}}
+  
+/* ===== Style manga en couleur ===== */
+.manga{--ink:#14110f;--bubble:#fff;--spot:#1fa35f;--c1:#ffd23f;--c2:#7fd6ff;--c3:#ff9ec4;--orange:#ff7a1a;
+  margin-top:40px;font:600 17px/1.5 "Nunito","Trebuchet MS",sans-serif;color:var(--ink)}
+.manga h3,.manga .mg-num,.manga .mg-sfx,.manga .mg-perk b,#welcome .manga h2{
+  font-family:"Bangers","Impact",sans-serif;font-weight:400;letter-spacing:.04em;line-height:1;margin:0}
+.manga .mg-rays{position:absolute;inset:0;pointer-events:none}
+
+/* titre */
+.manga .mg-head{position:relative;border:6px solid var(--ink);padding:34px 20px 30px;text-align:center;
+  background:linear-gradient(135deg,#ffe066,#ff9ec4);overflow:hidden;margin-bottom:22px}
+.manga .mg-tone{position:absolute;inset:0;opacity:.15;background-image:radial-gradient(circle,var(--ink) 22%,transparent 24%);background-size:9px 9px}
+#welcome .manga .mg-head h2{position:relative;font-size:clamp(34px,6.4vw,64px);text-transform:uppercase;
+  -webkit-text-stroke:2px var(--ink);color:#fff;text-shadow:5px 5px 0 var(--ink)}
+.manga .mg-head .mg-sfx{position:absolute;top:8px;right:14px;font-size:30px;rotate:8deg;color:#fff;-webkit-text-stroke:1.5px var(--ink)}
+
+/* les 3 cases */
+.manga .mg-panels{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:14px}
+.manga .mg-panel{position:relative;border:6px solid var(--ink);padding:24px 18px 22px;overflow:hidden;min-height:330px;display:flex;flex-direction:column}
+.manga .mg-panel:nth-child(1){background:var(--c1);clip-path:polygon(0 0,100% 0,100% 94%,0 100%)}
+.manga .mg-panel:nth-child(2){background:var(--c2);clip-path:polygon(0 3%,100% 0,100% 100%,0 96%)}
+.manga .mg-panel:nth-child(3){background:var(--c3);clip-path:polygon(0 0,100% 4%,100% 100%,0 100%)}
+.manga .mg-panel>*{position:relative}
+.manga .mg-panel .mg-rays{opacity:.35;background:repeating-conic-gradient(from 0deg at 50% 38%,#fff 0 3deg,transparent 3deg 9deg)}
+.manga .mg-num{font-size:74px;line-height:.9;color:#fff;-webkit-text-stroke:3px var(--ink);text-shadow:4px 4px 0 var(--ink)}
+.manga .mg-panel h3{font-size:31px;margin:6px 0 10px;text-transform:uppercase}
+.manga .mg-speech{position:relative;background:#fff;border:4px solid var(--ink);border-radius:22px;padding:12px 14px;margin-top:auto}
+.manga .mg-speech::after{content:"";position:absolute;top:-17px;left:30px;width:22px;height:22px;background:#fff;
+  border-left:4px solid var(--ink);border-top:4px solid var(--ink);rotate:45deg}
+.manga .mg-speech p{margin:0}
+.manga .mg-panel .mg-sfx{position:absolute;right:10px;top:12px;font-size:30px;rotate:-10deg;color:#fff;-webkit-text-stroke:1.5px var(--ink)}
+
+/* pourquoi choisir */
+.manga .mg-why{position:relative;margin-top:22px;border:6px solid var(--ink);background:#1e1b4b;color:#fffdf5;padding:36px 30px;overflow:hidden}
+.manga .mg-why>*{position:relative}
+.manga .mg-why .mg-rays{opacity:.16;background:repeating-conic-gradient(from 0deg at 85% 90%,#fff 0 1.5deg,transparent 1.5deg 7deg)}
+#welcome .manga .mg-why h2{font-size:clamp(30px,5vw,48px);margin-bottom:22px;text-transform:uppercase;color:var(--c1)}
+.manga .mg-perks{display:grid;grid-template-columns:1fr 1fr;gap:16px 26px}
+.manga .mg-perk{--c:var(--c1);display:flex;gap:12px;align-items:flex-start;border-left:6px solid var(--c);padding-left:12px}
+.manga .mg-perk:nth-child(2){--c:var(--c2)}
+.manga .mg-perk:nth-child(3){--c:var(--c3)}
+.manga .mg-perk:nth-child(4){--c:#7dffb0}
+.manga .mg-perk b{font-size:46px;line-height:.9;color:var(--c)}
+.manga .mg-perk h3{font-size:25px;text-transform:uppercase;margin-bottom:3px}
+.manga .mg-perk p{margin:0;opacity:.92}
+
+/* bandeau final */
+.manga.mg-bottom{padding-bottom:40px}
+.manga .mg-cta{display:flex;align-items:center;gap:26px;flex-wrap:wrap;justify-content:center}
+.manga .mg-burst{flex:1 1 440px;min-height:210px;display:grid;place-items:center;padding:56px 70px;text-align:center;
+  background:linear-gradient(135deg,#ffd23f,#ff7a1a);
+  clip-path:polygon(0 50%,6% 36%,2% 22%,14% 24%,18% 8%,29% 18%,38% 2%,47% 16%,57% 0,64% 17%,75% 6%,80% 22%,93% 14%,92% 32%,100% 42%,94% 56%,99% 72%,87% 74%,84% 92%,72% 82%,63% 100%,53% 84%,43% 98%,35% 82%,23% 94%,20% 78%,7% 84%,9% 66%)}
+#welcome .manga .mg-burst h2{font-size:clamp(23px,3.2vw,32px);letter-spacing:.03em;line-height:1.1;color:var(--ink)}
+.manga .mg-btn{font:400 30px "Bangers",sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--spot);
+  border:0;padding:16px 34px;cursor:pointer;clip-path:polygon(4% 0,100% 6%,96% 100%,0 92%);transition:transform .1s,background .1s}
+.manga .mg-btn:hover{background:var(--orange);transform:rotate(-2deg) scale(1.06)}
+.manga .mg-btn:active{transform:scale(.96)}
+
+@media(max-width:820px){
+  .manga .mg-panels,.manga .mg-perks{grid-template-columns:1fr}
+  .manga .mg-panel{min-height:0}
+  .manga .mg-why{padding:28px 18px}
+  .manga .mg-burst{padding:56px 46px}
+}  
 </style>
 </head>
 <body class="landing">
@@ -265,38 +329,57 @@ footer button{background:none;border:0;color:#fff;text-decoration:underline;padd
       </button>
     </div>
 
-    <h2>Comment déposer une annonce</h2>
-    <ol class="steps">
-      <li class="step"><div class="num">1</div><h3>Créez un compte</h3><p>Entrez votre e-mail et un mot de passe, puis confirmez avec le lien reçu par e-mail.</p></li>
-      <li class="step"><div class="num">2</div><h3>Remplissez l'annonce</h3><p>Ajoutez un titre, le prix, votre ville, votre numéro de téléphone et jusqu'à 4 photos.</p></li>
-      <li class="step"><div class="num">3</div><h3>Recevez des appels</h3><p>Les acheteurs vous appellent directement. Supprimez l'annonce une fois l'article vendu.</p></li>
-    </ol>
+    <div class="manga">
+      <div class="mg-head">
+        <div class="mg-tone"></div>
+        <span class="mg-sfx">Go !</span>
+        <h2>Comment déposer une annonce</h2>
+      </div>
 
-    <div class="why">
-      <svg class="leaves" viewBox="0 0 200 200" aria-hidden="true">
-        <g fill="#a6e34b">
-          <path d="M100 195C62 152 56 92 100 18c44 74 38 134 0 177z"/>
-          <path d="M70 188C28 160 18 112 42 66c40 34 52 82 28 122z" transform="rotate(-18 70 188)"/>
-          <path d="M130 188c42-28 52-76 28-122-40 34-52 82-28 122z" transform="rotate(18 130 188)"/>
-        </g>
-        <path d="M100 195V60" stroke="#1f5a46" stroke-width="2" fill="none"/>
-      </svg>
-      <h2>Pourquoi choisir ALL-Hasintsoa ?</h2>
-      <ul>
-        <li><div class="num">1</div><div><b>100 % gratuit</b><span>Déposer une annonce ne coûte rien.</span></div></li>
-        <li><div class="num">2</div><div><b>Contact direct</b><span>Les acheteurs vous appellent, sans intermédiaire.</span></div></li>
-        <li><div class="num">3</div><div><b>Partout à Madagascar</b><span>Des annonces de toutes les régions du pays.</span></div></li>
-        <li><div class="num">4</div><div><b>Simple et rapide</b><span>Une annonce en quelques minutes, depuis votre téléphone.</span></div></li>
-      </ul>
-    </div>
-  </div>
+      <div class="mg-panels">
+        <div class="mg-panel">
+          <div class="mg-rays"></div><span class="mg-sfx">Clic !</span>
+          <div class="mg-num">1</div>
+          <h3>Créez un compte</h3>
+          <svg viewBox="0 0 120 80" width="120" height="80" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round" style="margin:0 0 14px"><circle cx="60" cy="26" r="16" fill="var(--bubble)"/><path d="M44 22q8-14 32 0" fill="currentColor"/><path d="M52 28l5 1M68 28l-5 1M54 36q6 5 12 0"/><path d="M24 80c4-20 20-26 36-26s32 6 36 26"/></svg>
+          <div class="mg-speech"><p>Entrez votre e-mail et un mot de passe, puis confirmez avec le lien reçu par e-mail.</p></div>
+        </div>
+        <div class="mg-panel">
+          <div class="mg-rays"></div><span class="mg-sfx">Zip !</span>
+          <div class="mg-num">2</div>
+          <h3>Remplissez l’annonce</h3>
+          <svg viewBox="0 0 120 80" width="120" height="80" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round" style="margin:0 0 14px"><rect x="22" y="6" width="54" height="68" fill="var(--bubble)"/><path d="M32 22h34M32 34h34M32 46h20"/><path d="M104 18L58 62l-3 12 12-3 46-44z" fill="var(--spot)"/></svg>
+          <div class="mg-speech"><p>Ajoutez un titre, le prix, votre ville, votre numéro de téléphone et jusqu’à 4 photos.</p></div>
+        </div>
+        <div class="mg-panel">
+          <div class="mg-rays"></div><span class="mg-sfx">Dring !</span>
+          <div class="mg-num">3</div>
+          <h3>Recevez des appels</h3>
+          <svg viewBox="0 0 120 80" width="120" height="80" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round" style="margin:0 0 14px"><rect x="38" y="4" width="40" height="72" rx="6" fill="var(--bubble)"/><path d="M50 66h16"/><path d="M90 20q10 8 0 20M98 12q18 18 0 36M26 20q-10 8 0 20M18 12q-18 18 0 36"/></svg>
+          <div class="mg-speech"><p>Les acheteurs vous appellent directement. Supprimez l’annonce une fois l’article vendu.</p></div>
+        </div>
+      </div>
 
-  <div class="band">
-    <div class="in">
-      <p>Si vous cherchez de bonnes affaires près de chez vous, ici c'est le <mark>bon endroit</mark> !</p>
-      <button class="btn" id="startBtn2">Commencer maintenant &rarr;</button>
+      <div class="mg-why">
+        <div class="mg-rays"></div>
+        <h2>Pourquoi choisir ALL-Hasintsoa ?</h2>
+        <div class="mg-perks">
+          <div class="mg-perk"><b>1</b><div><h3>100 % gratuit</h3><p>Déposer une annonce ne coûte rien.</p></div></div>
+          <div class="mg-perk"><b>2</b><div><h3>Contact direct</h3><p>Les acheteurs vous appellent, sans intermédiaire.</p></div></div>
+          <div class="mg-perk"><b>3</b><div><h3>Partout à Madagascar</h3><p>Des annonces de toutes les régions du pays.</p></div></div>
+          <div class="mg-perk"><b>4</b><div><h3>Simple et rapide</h3><p>Une annonce en quelques minutes, depuis votre téléphone.</p></div></div>
+        </div>
+      </div>
+    </div>    
+
+  <div class="manga mg-bottom">
+    <div class="wrap">
+      <div class="mg-cta">
+        <div class="mg-burst"><h2>Si vous cherchez de bonnes affaires près de chez vous, ici c’est le bon endroit !</h2></div>
+        <button class="mg-btn" id="startBtn2">Commencer maintenant</button>
+      </div>
     </div>
-  </div>
+  </div>  
 </section>
 
 <div class="search">
