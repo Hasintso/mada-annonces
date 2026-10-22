@@ -10,6 +10,9 @@
 <meta property="og:description" content="Achetez, vendez et trouvez près de chez vous, partout à Madagascar. Déposer une annonce est gratuit.">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231f5a46'/%3E%3Ctext x='32' y='45' font-size='36' font-family='Georgia,serif' font-weight='700' text-anchor='middle' fill='%23f2b705'%3EA%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet"> 
 <style>
 :root{--ink:#14241f;--forest:#1f5a46;--forest2:#174536;--paper:#f4f6f1;--card:#fff;--saffron:#f2b705;--line:#dde3da;--muted:#5d6b64;--red:#b3261e;--lime:#a6e34b}
 *{box-sizing:border-box}
@@ -21,8 +24,9 @@ a{color:var(--forest)}
 :focus-visible{outline:3px solid var(--saffron);outline-offset:2px}
 header{background:linear-gradient(#2f7fe0,#2a6fd0);color:#fff;position:relative}
 .top{display:flex;gap:12px;align-items:center;flex-wrap:wrap;max-width:1100px;margin:auto;padding:14px 16px 14px 76px}
-.logo{font-size:1.7rem;font-weight:700;letter-spacing:-.5px;margin-right:auto}
-.logo span{color:var(--saffron)}
+.logo{margin-right:auto;min-height:1.3em;color:#fff;
+  font:700 2.1rem/1.2 "Dancing Script","Brush Script MT","Segoe Script",cursive;
+  text-shadow:0 2px 10px rgba(11,42,91,.55)}
 .btn{border:0;border-radius:8px;padding:10px 16px;font-weight:600;background:#fff;color:var(--forest)}
 .btn.cta{background:var(--saffron);color:var(--ink)}
 .btn.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.5)}
@@ -41,8 +45,7 @@ header{background:linear-gradient(#2f7fe0,#2a6fd0);color:#fff;position:relative}
 /* Page d'accueil : l'entête devient transparente sur le fond bleu (plus de bande verte) */
 body.landing header{position:absolute;top:0;left:0;right:0;background:transparent;z-index:5}
 body.landing #welcome{padding-top:74px}
-body.landing .logo{color:#0b2a5b}
-body.landing .logo span{color:#d98e00}
+body.landing .logo{color:#fff}
 body.landing .dots{color:#0b2a5b;border-color:rgba(11,42,91,.4);background:rgba(255,255,255,.55)}
 body.landing .post{color:#0b2a5b}
 .btn.danger{background:var(--red);color:#fff}
@@ -166,7 +169,7 @@ footer button{background:none;border:0;color:#fff;text-decoration:underline;padd
   .hero-pic{display:none}
   .band{border-radius:28px 28px 0 0}
 }
-@media(max-width:560px){.row{flex-direction:column;gap:0}.logo{font-size:1.4rem}.why ul{grid-template-columns:1fr}.leaves{width:160px;height:160px}}
+@media(max-width:560px){.row{flex-direction:column;gap:0}.logo{font-size:1.5rem}.why ul{grid-template-columns:1fr}.leaves{width:160px;height:160px}}
 @media(prefers-reduced-motion:no-preference){.ad{transition:border-color .15s}.tile{transition:transform .15s,border-color .15s}.tile:hover{transform:translateY(-3px)}}
 </style>
 </head>
@@ -182,7 +185,7 @@ footer button{background:none;border:0;color:#fff;text-decoration:underline;padd
     </div>
   </div>
   <div class="top">
-    <div class="logo" id="logo" role="button" tabindex="0" title="Retour à l'accueil">ALL-<span>Hasintsoa</span></div>
+    <div class="logo" id="logo" role="button" tabindex="0" title="Retour à l'accueil" aria-label="Bienvenue dans vos rêves"><span id="typed"></span></div>
     <button class="post" id="btnPost">Déposer une annonce</button>
   </div>
 </header>
@@ -493,6 +496,22 @@ document.addEventListener('click', () => { menu.hidden = true; mb.setAttribute('
   user = data.session ? data.session.user : null; renderAuthBtn();
   await loadCats(); loadAds();
 })();
+  
+/* Texte de l'en-tête : écrit puis effacé en boucle */
+(() => {
+  const el = document.getElementById('typed');
+  const texte = 'Bienvenue dans vos rêves';
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { el.textContent = texte; return; }
+  let i = 0, efface = false;
+  (function tick() {
+    el.textContent = texte.slice(0, i);
+    let delai = efface ? 45 : 95;
+    if (!efface && i === texte.length) { efface = true; delai = 9200; }
+    else if (efface && i === 0) { efface = false; delai = 1200; }
+    else i += efface ? -1 : 1;
+    setTimeout(tick, delai);
+  })();
+})();  
 </script>
 </body>
 </html>
