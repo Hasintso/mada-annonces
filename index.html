@@ -288,7 +288,25 @@ main h1{border-left:6px solid var(--forest);padding-left:12px}
 .ad{border-radius:14px;box-shadow:0 4px 14px rgba(20,36,31,.08)}
 .ad .price{font-size:1.25rem}
 .ph{position:relative}
-.tag{position:absolute;left:10px;top:10px;background:var(--forest);color:#fff;font-size:.78rem;font-weight:700;padding:4px 10px;border-radius:999px}  
+.tag{position:absolute;left:10px;top:10px;background:var(--forest);color:#fff;font-size:.78rem;font-weight:700;padding:4px 10px;border-radius:999px}
+  
+/* ===== En-tête façon maquette ===== */
+.brand{display:none;line-height:1}
+.brand b{display:block;font:700 2rem/1 Georgia,"Times New Roman",serif;color:var(--forest);letter-spacing:-.5px}
+.brand small{display:block;font:600 .78rem "Segoe UI",Roboto,Arial,sans-serif;color:var(--forest);text-align:center;margin-top:3px}
+body:not(.landing) #typed{display:none}
+body:not(.landing) .brand{display:block}
+body:not(.landing) .logo{margin-right:0}
+
+.links{display:none;gap:6px;margin:0 auto 0 18px}
+body:not(.landing) .links{display:flex}
+.links button{background:none;border:0;border-bottom:3px solid transparent;padding:8px 12px;font-weight:600;color:var(--ink)}
+.links button:hover{color:var(--forest)}
+.links button.on{color:var(--forest);border-color:var(--forest)}
+@media(max-width:900px){.links{display:none!important}body:not(.landing) .logo{margin-right:auto}}
+
+.post span{display:inline-grid;place-items:center;width:24px;height:24px;margin-right:8px;
+  border:2px solid currentColor;border-radius:50%;font:700 1rem/1 Arial,sans-serif;font-style:normal;vertical-align:middle}  
 </style>
 </head>
 <body class="landing">
@@ -303,9 +321,14 @@ main h1{border-left:6px solid var(--forest);padding-left:12px}
     </div>
   </div>
   <div class="top">
-    <div class="logo" id="logo" role="button" tabindex="0" title="Retour à l'accueil" aria-label="Bienvenue dans vos rêves"><span id="typed"></span></div>
-    <button class="post" id="btnPost">Déposer une annonce</button>
+   <div class="logo" id="logo" role="button" tabindex="0" title="Retour à l'accueil" aria-label="Bienvenue dans vos rêves"><span id="typed"></span><span class="brand"><b>Hasintsoa</b><small>Tout en un seul endroit</small></span></div>
+   <div class="links">
+    <button id="lkHome">Accueil</button>
+    <button id="lkAds" class="on">Annonces</button>
+    <button id="lkCats">Catégories</button>
   </div>
+  <button class="post" id="btnPost"><span aria-hidden="true">+</span>Déposer une annonce</button>
+</div>
 </header>
 
 <!-- Page d'accueil : design vert + instructions -->
@@ -505,6 +528,9 @@ $('btnHelp').onclick = showWelcome;
 $('footHelp').onclick = showWelcome;
 $('logo').onclick = showWelcome;
 $('logo').onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showWelcome(); } };
+$('lkHome').onclick = showWelcome;
+$('lkAds').onclick = closeWelcome;
+$('lkCats').onclick = () => document.querySelector('nav').scrollIntoView({ behavior: 'smooth' });  
 /* Un clic sur une case de catégorie ouvre directement cette catégorie */
 document.querySelectorAll('.tile').forEach(t => t.onclick = () => {
   closeWelcome();
