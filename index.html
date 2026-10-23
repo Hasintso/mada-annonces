@@ -307,7 +307,38 @@ body:not(.landing) .links{display:flex}
 
 .post span{display:inline-grid;place-items:center;width:24px;height:24px;margin-right:8px;
   border:2px solid currentColor;border-radius:50%;font:700 1rem/1 Arial,sans-serif;font-style:normal;vertical-align:middle}
-@media(max-width:560px){.brand b{font-size:1.5rem}.post{padding:9px 14px;font-size:1rem}}  
+@media(max-width:560px){.brand b{font-size:1.5rem}.post{padding:9px 14px;font-size:1rem}}
+/* ===== Finitions maquette ===== */
+.search .in{position:relative}
+.search p{font-size:1.05rem}
+.search form{align-items:center;padding:8px 8px 8px 18px}
+.search .mag{width:22px;height:22px;flex:none;fill:none;stroke:var(--muted);stroke-width:2;stroke-linecap:round}
+.search form select,.search form .ville{flex:none;border:0;border-left:1px solid var(--line);border-radius:0;background:transparent;padding:12px 14px;color:var(--ink);min-width:0}
+.search form select{width:190px}
+.search form .ville{width:140px}
+.slogan{position:absolute;right:0;top:4px;text-align:center;transform:rotate(-8deg);
+  font:700 1.9rem/1.15 "Dancing Script","Brush Script MT",cursive;text-shadow:0 2px 8px rgba(0,0,0,.4)}
+.slogan::after{content:"";display:block;height:3px;margin-top:6px;background:#fff;border-radius:3px;transform:rotate(-3deg)}
+@media(max-width:800px){.slogan{display:none}}
+@media(max-width:700px){
+  .search form{flex-wrap:wrap;border-radius:22px;padding:10px}
+  .search form input#q{flex:1 1 100%}
+  .search form select,.search form .ville{flex:1 1 45%;width:auto;border:1px solid var(--line);border-radius:999px}
+}
+
+nav{scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav div{justify-content:space-between}
+nav button{flex:none}
+
+main .head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+main .head h1{margin:0}
+main .head a{font-weight:600;text-decoration:none}
+
+footer .in{align-items:center;padding:22px 16px}
+.fbrand b{display:block;font:700 1.6rem/1 Georgia,"Times New Roman",serif;color:#fff}
+.fbrand small{font-size:.75rem;opacity:.85}
+.fend{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:.82rem}  
 </style>
 </head>
 <body class="landing">
@@ -438,24 +469,31 @@ body:not(.landing) .links{display:flex}
 <div class="search">
   <div class="in">
     <h2>Achetez, vendez et trouvez <em>près de vous</em></h2>
-    <p>Des milliers d'annonces partout à Madagascar. Tout en un seul endroit.</p>
-    <form id="searchForm"><input id="q" type="search" placeholder="Que cherchez-vous ? Ex. : Toyota, appartement, cours d'anglais" aria-label="Rechercher"><button class="btn">Rechercher</button></form>
+    <p>Des milliers d'annonces, des produits de qualité, des vendeurs de confiance.<br>Tout en <b>un seul endroit</b>.</p>
+    <div class="slogan">Des bonnes affaires<br>près de chez vous !</div>
+    <form id="searchForm">
+      <svg class="mag" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+      <input id="q" type="search" placeholder="Que cherchez-vous ? Ex. : Toyota, appartement…" aria-label="Rechercher">
+      <select id="qCat" aria-label="Catégorie"><option value="">Toutes catégories</option></select>
+      <input id="qVille" class="ville" type="text" placeholder="Ville" aria-label="Ville">
+      <button class="btn">Rechercher</button>
+    </form>
   </div>
 </div>
 <nav><div id="cats"></div></nav>
 <main>
-  <h1 id="title">Dernières annonces</h1>
+  <div class="head"><h1 id="title">Dernières annonces</h1><a href="#" id="seeAll">Voir toutes les annonces →</a></div>
   <div class="grid" id="list"></div>
   <p class="empty" id="empty" hidden>Aucune annonce pour cette recherche. Soyez le premier à en déposer une.</p>
 </main>
 
 <footer>
   <div class="in">
-    <span>© 2026 ALL-Hasintsoa · Petites annonces à Madagascar</span>
+    <div class="fbrand"><b>Hasintsoa</b><small>Tout en un seul endroit</small></div>
     <button type="button" id="footHelp">Comment ça marche ?</button>
+    <div class="fend"><span>© 2026 Hasintsoa. Tous droits réservés.</span><span>Madagascar</span></div>
   </div>
 </footer>
-
 <!-- Connexion -->
 <div class="mask" id="mAuth"><div class="box" role="dialog" aria-modal="true">
   <button class="x" data-close aria-label="Fermer">×</button>
@@ -574,6 +612,7 @@ async function loadCats() {
   cats = data || [];
   $('cats').innerHTML = '<button data-c="" class="on">Toutes</button>' + cats.map(c => `<button data-c="${c.id}">${esc(c.nom)}</button>`).join('');
   $('pCat').innerHTML = cats.map(c => `<option value="${c.id}">${esc(c.nom)}</option>`).join('');
+  $('qCat').innerHTML = '<option value="">Toutes catégories</option>' + cats.map(c => `<option value="${c.id}">${esc(c.nom)}</option>`).join('');
   $('cats').querySelectorAll('button').forEach(b => b.onclick = () => {
     cat = b.dataset.c ? +b.dataset.c : null;
     $('cats').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
@@ -584,6 +623,8 @@ async function loadCats() {
 async function loadAds() {
   let r = SB.from('ann_annonces').select('*, ann_categories(nom)').eq('statut', 'valide').order('cree_le', { ascending: false }).limit(60);
   if (cat) r = r.eq('category_id', cat);
+  const v = $('qVille').value.replace(/[,()%*]/g, ' ').trim();
+  if (v) r = r.ilike('ville', `%${v}%`);
   const t = q.replace(/[,()%*]/g, ' ').trim();
   if (t) r = r.or(`titre.ilike.%${t}%,description.ilike.%${t}%`);
   const { data, error } = await r;
@@ -599,8 +640,20 @@ async function loadAds() {
     </button>`).join('');
   $('list').querySelectorAll('.ad').forEach(b => b.onclick = () => showAd(ads[+b.dataset.i]));
 }
-$('searchForm').onsubmit = e => { e.preventDefault(); q = $('q').value; loadAds(); };
-
+$('searchForm').onsubmit = e => {
+  e.preventDefault(); q = $('q').value;
+  if ($('qCat').value) {
+    cat = +$('qCat').value;
+    $('cats').querySelectorAll('button').forEach(x => x.classList.toggle('on', x.dataset.c === String(cat)));
+  }
+  loadAds();
+};
+$('seeAll').onclick = e => {
+  e.preventDefault(); cat = null; q = '';
+  $('q').value = ''; $('qVille').value = ''; $('qCat').value = '';
+  $('cats').querySelectorAll('button').forEach((x, i) => x.classList.toggle('on', i === 0));
+  loadAds();
+};
 function showAd(a) {
   const tel = String(a.telephone || '').replace(/[^\d+]/g, '');
   $('det').innerHTML = `
