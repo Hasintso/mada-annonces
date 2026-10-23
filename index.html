@@ -12,7 +12,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231f5a46'/%3E%3Ctext x='32' y='45' font-size='36' font-family='Georgia,serif' font-weight='700' text-anchor='middle' fill='%23f2b705'%3EA%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Bangers&family=Nunito:wght@600;800&display=swap" rel="stylesheet"> 
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Bangers&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
 <style>
 :root{--ink:#14241f;--forest:#1f5a46;--forest2:#174536;--paper:#f4f6f1;--card:#fff;--saffron:#f2b705;--line:#dde3da;--muted:#5d6b64;--red:#b3261e;--lime:#a6e34b}
 *{box-sizing:border-box}
@@ -24,13 +24,13 @@ a{color:var(--forest)}
 :focus-visible{outline:3px solid var(--saffron);outline-offset:2px}
 header{background:linear-gradient(#2f7fe0,#2a6fd0);color:#fff;position:relative}
 .top{display:flex;gap:12px;align-items:center;flex-wrap:wrap;max-width:1100px;margin:auto;padding:14px 16px 14px 94px}
-.logo{margin-right:auto;min-height:1.3em;color:#fff;
+.logo{margin-right:auto;min-height:1.3em;color:#fff;cursor:pointer;
   font:700 2.1rem/1.2 "Dancing Script","Brush Script MT","Segoe Script",cursive;
   text-shadow:0 2px 10px rgba(11,42,91,.55)}
 .btn{border:0;border-radius:8px;padding:10px 16px;font-weight:600;background:#fff;color:var(--forest)}
 .btn.cta{background:var(--saffron);color:var(--ink)}
-.btn.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.5)}
 .btn.plain{background:var(--paper);color:var(--ink);border:1px solid var(--line)}
+.btn.danger{background:var(--red);color:#fff}
 .menu-wrap{position:absolute;left:16px;top:50%;transform:translateY(-50%);z-index:20}
 .dots{position:relative;overflow:hidden;width:58px;height:58px;padding:0;display:grid;place-items:center;
   border-radius:18px;border:1.5px solid rgba(255,255,255,.85);color:#fff;
@@ -50,7 +50,7 @@ header{background:linear-gradient(#2f7fe0,#2a6fd0);color:#fff;position:relative}
 .dd button:hover{background:#eef4fb}
 .post{background:var(--saffron);border:0;border-radius:999px;padding:10px 22px;color:var(--ink);
   font:italic 700 1.1rem Georgia,"Times New Roman",serif;letter-spacing:.3px}
-.post:hover{filter:brightness(.95)}  
+.post:hover{filter:brightness(.95)}
 .verre{--p:clamp(28px,6vw,60px);position:relative;width:min(100%,640px);height:clamp(130px,22vw,210px);margin:0 0 28px}
 .vitre{position:absolute;inset:0;display:flex;align-items:center;gap:clamp(12px,3vw,26px);
   padding:0 calc(var(--p) + 18px) 0 calc(var(--p) + 22px);
@@ -67,28 +67,29 @@ header{background:linear-gradient(#2f7fe0,#2a6fd0);color:#fff;position:relative}
   3%,30%{opacity:1;transform:none}
   33.3%,100%{opacity:0;transform:translateX(40px)}
 }
-@media(prefers-reduced-motion:reduce){.vitre{animation:none}.vitre:first-child{opacity:1}} 
+@media(prefers-reduced-motion:reduce){.vitre{animation:none}.vitre:first-child{opacity:1}}
 
-/* Page d'accueil : l'entête devient transparente sur le fond bleu (plus de bande verte) */
+/* Page d'accueil : l'entête devient transparente */
 body.landing header{position:absolute;top:0;left:0;right:0;background:transparent;z-index:5}
 body.landing #welcome{padding-top:74px}
-body.landing .logo{color:#fff}
-.btn.danger{background:var(--red);color:#fff}
-nav{background:#fff;border-bottom:1px solid var(--line);overflow-x:auto;white-space:nowrap}
-nav div{max-width:1100px;margin:auto;padding:0 16px;display:flex}
-nav button{background:none;border:0;border-bottom:3px solid transparent;padding:13px 14px;color:var(--ink);font-weight:600}
-nav button.on{border-color:var(--saffron);color:var(--forest)}
+nav{background:#fff;border-bottom:1px solid var(--line);overflow-x:auto;white-space:nowrap;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav div{max-width:1100px;margin:auto;padding:0 16px;display:flex;justify-content:space-between}
+nav button{flex:none;background:none;border:0;border-bottom:3px solid transparent;padding:13px 14px;color:var(--ink);font-weight:600}
+nav button.on{border-color:var(--forest);color:var(--forest)}
 main{max-width:1100px;margin:auto;padding:24px 16px 60px}
-main h1{font-size:1.5rem;margin-bottom:16px}
+main h1{font-size:1.5rem;margin-bottom:16px;border-left:6px solid var(--forest);padding-left:12px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
-.ad{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;cursor:pointer;text-align:left;padding:0;display:block;width:100%}
+.ad{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 4px 14px rgba(20,36,31,.08);overflow:hidden;cursor:pointer;text-align:left;padding:0;display:block;width:100%}
 .ad:hover{border-color:var(--forest)}
-.ph{aspect-ratio:4/3;background:#e7ece4 center/cover no-repeat;display:grid;place-items:center;color:var(--muted);font-size:.9rem}
+.ph{position:relative;aspect-ratio:4/3;background:#e7ece4 center/cover no-repeat;display:grid;place-items:center;color:var(--muted);font-size:.9rem}
 .ad .b{padding:12px}
 .ad h3{font-size:1.05rem;line-height:1.25;margin-bottom:6px}
 .price{font-weight:700;color:var(--forest)}
+.ad .price{font-size:1.25rem}
 .meta{color:var(--muted);font-size:.85rem}
 .empty{padding:40px 0;color:var(--muted);text-align:center}
+.tag{position:absolute;left:10px;top:10px;background:var(--forest);color:#fff;font-size:.78rem;font-weight:700;padding:4px 10px;border-radius:999px}
 .mask{position:fixed;inset:0;background:rgba(20,36,31,.6);display:none;align-items:flex-start;justify-content:center;padding:20px 12px;overflow:auto;z-index:10}
 .mask.open{display:flex}
 .box{background:#fff;border-radius:12px;max-width:520px;width:100%;padding:22px;position:relative}
@@ -107,30 +108,22 @@ label{display:block;font-weight:600;margin:12px 0 4px;font-size:.92rem}
 
 /* Accueil et liste des annonces ne s'affichent jamais en même temps */
 body.landing .search,body.landing nav,body.landing main{display:none}
-.logo{cursor:pointer}
 footer{background:var(--forest2);color:rgba(255,255,255,.8);font-size:.9rem}
-footer .in{max-width:1100px;margin:auto;padding:20px 16px;display:flex;gap:10px 20px;justify-content:space-between;flex-wrap:wrap}
+footer .in{max-width:1100px;margin:auto;padding:22px 16px;display:flex;gap:10px 20px;justify-content:space-between;align-items:center;flex-wrap:wrap}
 footer button{background:none;border:0;color:#fff;text-decoration:underline;padding:0}
+.fbrand b{display:block;font:700 1.6rem/1 Georgia,"Times New Roman",serif;color:#fff}
+.fbrand small{font-size:.75rem;opacity:.85}
+.fend{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:.82rem}
 
-/* ===== Page d'accueil (design vert « marketplace ») ===== */
+/* ===== Page d'accueil ===== */
 #welcome{position:relative;overflow:hidden;border-bottom:1px solid var(--line);
   background-color:#fff;
-  background-image:
-    linear-gradient(90deg,rgba(255,255,255,.85) 0%,rgba(255,255,255,.45) 50%,rgba(255,255,255,0) 100%),
-    url(hashtag-bg.png);
-  background-size:auto,cover;
-  background-position:center,center;
-  background-repeat:no-repeat}
+  background-image:linear-gradient(90deg,rgba(255,255,255,.85) 0%,rgba(255,255,255,.45) 50%,rgba(255,255,255,0) 100%),url(hashtag-bg.png);
+  background-size:auto,cover;background-position:center,center;background-repeat:no-repeat}
 #welcome[hidden]{display:none}
 .wrap{max-width:1100px;margin:auto;padding:26px 16px 0}
-
-/* Bandeau de 3 atouts */
-.trust{list-style:none;margin:0 0 28px;padding:0;display:flex;gap:26px;flex-wrap:wrap}
-.trust li{display:flex;gap:10px;align-items:center;font-size:.85rem;line-height:1.25;color:var(--muted)}
-.trust b{display:block;color:var(--ink);font-size:.92rem}
 .ico{width:30px;height:30px;flex:none;stroke:var(--forest);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 
-/* Titre + photo */
 .hero{display:grid;grid-template-columns:1fr 200px;gap:30px;align-items:end}
 .hero h1{font-size:2.6rem;line-height:1.1;letter-spacing:-.5px;margin-bottom:14px}
 .hero h1 em{display:block;color:var(--forest);font-style:normal}
@@ -141,13 +134,11 @@ footer button{background:none;border:0;color:#fff;text-decoration:underline;padd
   font:italic 1rem/1.25 Georgia,"Times New Roman",serif;padding:12px 16px;border-radius:30px 8px 30px 8px;
   transform:rotate(-4deg);box-shadow:0 6px 16px rgba(20,36,31,.25)}
 
-/* Cases de catégories */
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-top:30px}
 .tile{display:flex;flex-direction:column;width:100%;padding:0;text-align:left;border:2px solid #fff;border-radius:14px;overflow:hidden;
   background:var(--forest);color:#fff;box-shadow:0 4px 14px rgba(20,36,31,.18)}
 .tile:hover{border-color:var(--saffron)}
 .tile .pic{height:110px;background-color:#dfe7dc;background-position:center;background-size:cover;background-repeat:no-repeat}
-.tile .pic.none{display:grid;place-items:center;font-size:3rem;background:linear-gradient(135deg,#d7e8df,#f6e7b4)}
 .tile .lab{display:flex;align-items:center;gap:10px;padding:10px 12px;font-weight:600;flex:1}
 .tile .ic{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.16);display:grid;place-items:center;flex:none}
 .tile .ic svg{width:19px;height:19px;stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -157,62 +148,29 @@ footer button{background:none;border:0;color:#fff;text-decoration:underline;padd
 .p-emploi{background-image:url(cat-emploi.webp)}
 .p-sakafo{background-image:url(cat-sakafo.webp)}
 .p-formation{background-image:url(cat-formation.webp)}
-
-/* Comment déposer une annonce */
 #welcome h2{font-size:1.4rem;margin:38px 0 18px}
-.num{width:42px;height:42px;border-radius:50%;background:var(--forest);color:#fff;display:grid;place-items:center;flex:none;
-  font:700 1.2rem Georgia,"Times New Roman",serif;box-shadow:0 0 0 5px rgba(166,227,75,.38)}
-.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
-.step{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 4px 14px rgba(20,36,31,.07)}
-.step .num{margin-bottom:12px}
-.step h3{font-size:1.1rem;margin-bottom:4px}
-.step p{margin:0;color:var(--muted);font-size:.95rem}
-
-/* Panneau vert « Pourquoi ALL-Hasintsoa ? » */
-.why{position:relative;overflow:hidden;margin-top:34px;background:var(--forest);color:#fff;border-radius:28px;padding:28px 28px 30px}
-#welcome .why h2{margin:0 0 18px;color:#fff}
-.why ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 28px;position:relative;max-width:760px}
-.why li{display:flex;gap:12px;align-items:flex-start;line-height:1.35}
-.why li b{display:block;font-size:1.02rem}
-.why li span{color:rgba(255,255,255,.82);font-size:.92rem}
-.why .num{width:36px;height:36px;font-size:1rem;background:var(--lime);color:var(--ink);box-shadow:none}
-.leaves{position:absolute;right:-18px;bottom:-26px;width:240px;height:240px;opacity:.28;pointer-events:none}
-
-/* Bandeau vert du bas */
-.band{margin-top:38px;background:var(--forest);color:#fff;border-radius:44px 44px 0 0}
-.band .in{max-width:1100px;margin:auto;padding:26px 24px;display:flex;gap:20px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-.band p{margin:0;font:1.35rem/1.3 Georgia,"Times New Roman",serif;max-width:34ch}
-.band mark{background:none;color:var(--lime);border-bottom:3px solid var(--lime)}
-.band .btn{background:#fff;color:var(--forest);padding:14px 24px;border-radius:999px;font-size:1.05rem}
 
 @media(max-width:760px){
   .hero{grid-template-columns:1fr}
   .hero h1{font-size:1.9rem}
   .hero-pic{display:none}
-  .band{border-radius:28px 28px 0 0}
 }
-@media(max-width:560px){.row{flex-direction:column;gap:0}.logo{font-size:1.5rem}.why ul{grid-template-columns:1fr}.leaves{width:160px;height:160px}}
+@media(max-width:560px){.row{flex-direction:column;gap:0}.logo{font-size:1.5rem}}
 @media(prefers-reduced-motion:no-preference){.ad{transition:border-color .15s}.tile{transition:transform .15s,border-color .15s}.tile:hover{transform:translateY(-3px)}}
-  
+
 /* ===== Manga 3D en couleur ===== */
 .manga3d{--ink:#0d0d0d;--bubble:#fff;--navy:#1b1a4a;--y:#ffd23f;--b:#6fcfff;--p:#ff9ec7;--g:#2fa36b;
   margin-top:40px;color:var(--ink);font:600 17px/1.5 "Nunito","Trebuchet MS",sans-serif}
 .manga3d h3,.manga3d .m3-num,.manga3d .m3-sfx,.manga3d .m3-perk b,#welcome .manga3d h2{
   font-family:"Bangers","Impact",sans-serif;font-weight:400;letter-spacing:.04em;line-height:1;margin:0}
-
-/* extrusion 3D */
 .manga3d .m3-ext{color:#fff;text-transform:uppercase;-webkit-text-stroke:2px var(--ink);
   text-shadow:1px 1px 0 var(--ink),2px 2px 0 var(--ink),3px 3px 0 var(--ink),4px 4px 0 var(--ink),5px 5px 0 var(--ink),6px 6px 0 var(--ink),7px 7px 0 var(--ink),8px 8px 0 var(--ink),12px 14px 18px rgba(0,0,0,.35)}
 .manga3d .m3-thick{box-shadow:1px 1px 0 var(--ink),2px 2px 0 var(--ink),3px 3px 0 var(--ink),4px 4px 0 var(--ink),5px 5px 0 var(--ink),6px 6px 0 var(--ink),7px 7px 0 var(--ink),8px 8px 0 var(--ink),9px 9px 0 var(--ink),10px 10px 0 var(--ink),22px 26px 30px rgba(0,0,0,.35)}
-
-/* titre */
 .manga3d .m3-stage{perspective:1000px;margin-bottom:46px}
 .manga3d .m3-head{transform:rotateX(14deg) rotateY(-5deg);transform-origin:50% 100%;border:6px solid var(--ink);
   background:linear-gradient(100deg,var(--y),var(--p));padding:36px 18px;text-align:center;position:relative}
 .manga3d .m3-head::before{content:"";position:absolute;inset:0;background:radial-gradient(circle,rgba(0,0,0,.28) 20%,transparent 22%) 0 0/9px 9px;opacity:.5}
 #welcome .manga3d .m3-head h2{position:relative;font-size:clamp(32px,6.2vw,62px)}
-
-/* cases 3D */
 .manga3d .m3-panels{display:grid;grid-template-columns:repeat(3,1fr);gap:34px}
 .manga3d .m3-panel{perspective:1100px}
 .manga3d .m3-card{position:relative;transform-style:preserve-3d;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));
@@ -230,7 +188,6 @@ footer button{background:none;border:0;color:#fff;text-decoration:underline;padd
   text-shadow:2px 2px 0 var(--ink),3px 3px 0 var(--ink);transform:translateZ(110px) rotate(-10deg);animation:m3bob 2.4s ease-in-out infinite alternate}
 @keyframes m3bob{to{transform:translateZ(135px) rotate(-6deg) translateY(-5px)}}
 
-/* pourquoi choisir */
 .manga3d .m3-why{margin-top:60px;background:var(--navy);border:6px solid var(--ink);padding:36px 28px;position:relative;color:#fff}
 .manga3d .m3-why::before{content:"";position:absolute;inset:0;background:repeating-conic-gradient(from 0deg at 88% 100%,rgba(255,255,255,.14) 0 1.5deg,transparent 1.5deg 7deg)}
 .manga3d .m3-why>*{position:relative}
@@ -245,7 +202,6 @@ footer button{background:none;border:0;color:#fff;text-decoration:underline;padd
 .manga3d .m3-perk p{margin:0;opacity:.92}
 .manga3d .m3-leave{transition:transform .5s cubic-bezier(.2,1.6,.4,1)}
 
-/* bandeau final */
 .manga3d.m3-bottom{padding-bottom:40px}
 .manga3d .m3-cta{display:flex;align-items:center;justify-content:center;gap:28px;flex-wrap:wrap}
 .manga3d .m3-burstwrap{flex:1 1 440px;filter:drop-shadow(8px 10px 0 var(--ink))}
@@ -267,51 +223,16 @@ footer button{background:none;border:0;color:#fff;text-decoration:underline;padd
 }
 @media(prefers-reduced-motion:reduce){.manga3d .m3-sfx{animation:none}.manga3d .m3-card,.manga3d .m3-perk{transition:none}}
 
-  /* ===== Page des annonces : style marketplace ===== */
+/* ===== Page des annonces ===== */
 .search{padding:34px 16px 38px;color:#fff;
   background:linear-gradient(90deg,rgba(14,70,45,.92) 0%,rgba(14,70,45,.55) 55%,rgba(14,70,45,.1) 100%),url(hero-tana.jpg) center/cover,var(--forest)}
-.search .in{max-width:1100px;margin:auto}
+.search .in{max-width:1100px;margin:auto;position:relative}
 .search h2{font-size:clamp(1.8rem,5vw,2.8rem);line-height:1.1;margin-bottom:8px}
 .search h2 em{display:block;color:var(--lime);font-style:normal}
-.search p{margin:0 0 20px;opacity:.92}
-.search form{display:flex;gap:8px;background:#fff;border-radius:999px;padding:8px;box-shadow:0 10px 28px rgba(0,0,0,.25)}
+.search p{margin:0 0 20px;opacity:.92;font-size:1.05rem}
+.search form{display:flex;gap:8px;align-items:center;background:#fff;border-radius:999px;padding:8px 8px 8px 18px;box-shadow:0 10px 28px rgba(0,0,0,.25)}
 .search input{flex:1;border:0;border-radius:999px;padding:12px 18px;min-width:0;background:transparent}
 .search form .btn{background:var(--forest);color:#fff;border-radius:999px;padding:12px 26px}
-
-body:not(.landing) header{background:#fff;box-shadow:0 2px 10px rgba(20,36,31,.1)}
-body:not(.landing) .logo{color:var(--forest);text-shadow:none}
-body:not(.landing) .post{background:var(--forest);color:#fff}
-body:not(.landing) .dots{background:var(--forest);border-color:var(--forest);-webkit-backdrop-filter:none;backdrop-filter:none}
-
-nav button.on{border-color:var(--forest)}
-main h1{border-left:6px solid var(--forest);padding-left:12px}
-.ad{border-radius:14px;box-shadow:0 4px 14px rgba(20,36,31,.08)}
-.ad .price{font-size:1.25rem}
-.ph{position:relative}
-.tag{position:absolute;left:10px;top:10px;background:var(--forest);color:#fff;font-size:.78rem;font-weight:700;padding:4px 10px;border-radius:999px}
-  
-/* ===== En-tête façon maquette ===== */
-.brand{display:none;line-height:1}
-.brand b{display:block;font:700 2rem/1 Georgia,"Times New Roman",serif;color:var(--forest);letter-spacing:-.5px}
-.brand small{display:block;font:600 .78rem "Segoe UI",Roboto,Arial,sans-serif;color:var(--forest);text-align:center;margin-top:3px}
-body:not(.landing) #typed{display:none}
-body:not(.landing) .brand{display:block}
-body:not(.landing) .logo{margin-right:0}
-
-.links{display:none;gap:6px;margin:0 auto 0 18px}
-body:not(.landing) .links{display:flex}
-.links button{background:none;border:0;border-bottom:3px solid transparent;padding:8px 12px;font-weight:600;color:var(--ink)}
-.links button:hover{color:var(--forest)}
-.links button.on{color:var(--forest);border-color:var(--forest)}
-@media(max-width:900px){.links{display:none!important}body:not(.landing) .logo{margin-right:auto}}
-
-.post span{display:inline-grid;place-items:center;width:24px;height:24px;margin-right:8px;
-  border:2px solid currentColor;border-radius:50%;font:700 1rem/1 Arial,sans-serif;font-style:normal;vertical-align:middle}
-@media(max-width:560px){.brand b{font-size:1.5rem}.post{padding:9px 14px;font-size:1rem}}
-/* ===== Finitions maquette ===== */
-.search .in{position:relative}
-.search p{font-size:1.05rem}
-.search form{align-items:center;padding:8px 8px 8px 18px}
 .search .mag{width:22px;height:22px;flex:none;fill:none;stroke:var(--muted);stroke-width:2;stroke-linecap:round}
 .search form select,.search form .ville{flex:none;border:0;border-left:1px solid var(--line);border-radius:0;background:transparent;padding:12px 14px;color:var(--ink);min-width:0}
 .search form select{width:190px}
@@ -326,19 +247,29 @@ body:not(.landing) .links{display:flex}
   .search form select,.search form .ville{flex:1 1 45%;width:auto;border:1px solid var(--line);border-radius:999px}
 }
 
-nav{scrollbar-width:none}
-nav::-webkit-scrollbar{display:none}
-nav div{justify-content:space-between}
-nav button{flex:none}
+body:not(.landing) header{background:#fff;box-shadow:0 2px 10px rgba(20,36,31,.1)}
+body:not(.landing) .logo{color:var(--forest);text-shadow:none;margin-right:0}
+body:not(.landing) .post{background:var(--forest);color:#fff}
+body:not(.landing) .dots{background:var(--forest);border-color:var(--forest);-webkit-backdrop-filter:none;backdrop-filter:none}
+
+.brand{display:none;line-height:1}
+.brand b{display:block;font:700 2rem/1 Georgia,"Times New Roman",serif;color:var(--forest);letter-spacing:-.5px}
+.brand small{display:block;font:600 .78rem "Segoe UI",Roboto,Arial,sans-serif;color:var(--forest);text-align:center;margin-top:3px}
+body:not(.landing) #typed{display:none}
+body:not(.landing) .brand{display:block}
+.links{display:none;gap:6px;margin:0 auto 0 18px}
+body:not(.landing) .links{display:flex}
+.links button{background:none;border:0;border-bottom:3px solid transparent;padding:8px 12px;font-weight:600;color:var(--ink)}
+.links button:hover{color:var(--forest)}
+.links button.on{color:var(--forest);border-color:var(--forest)}
+@media(max-width:900px){.links{display:none!important}body:not(.landing) .logo{margin-right:auto}}
+.post span{display:inline-grid;place-items:center;width:24px;height:24px;margin-right:8px;
+  border:2px solid currentColor;border-radius:50%;font:700 1rem/1 Arial,sans-serif;font-style:normal;vertical-align:middle}
+@media(max-width:560px){.brand b{font-size:1.5rem}.post{padding:9px 14px;font-size:1rem}}
 
 main .head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
 main .head h1{margin:0}
 main .head a{font-weight:600;text-decoration:none}
-
-footer .in{align-items:center;padding:22px 16px}
-.fbrand b{display:block;font:700 1.6rem/1 Georgia,"Times New Roman",serif;color:#fff}
-.fbrand small{font-size:.75rem;opacity:.85}
-.fend{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:.82rem}  
 </style>
 </head>
 <body class="landing">
@@ -358,29 +289,29 @@ footer .in{align-items:center;padding:22px 16px}
     <button id="lkHome">Accueil</button>
     <button id="lkAds" class="on">Annonces</button>
     <button id="lkCats">Catégories</button>
+   </div>
+   <button class="post" id="btnPost"><span aria-hidden="true">+</span>Déposer une annonce</button>
   </div>
-  <button class="post" id="btnPost"><span aria-hidden="true">+</span>Déposer une annonce</button>
-</div>
 </header>
 
-<!-- Page d'accueil : design vert + instructions -->
+<!-- Page d'accueil -->
 <section id="welcome">
   <div class="wrap">
 
-<div class="verre">
-  <div class="vitre" style="--d:0s">
-    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg>
-    <span><b>100 % gratuit</b><small>Rechercher et déposer, tout est gratuit</small></span>
-  </div>
-  <div class="vitre" style="--d:20s">
-    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>
-    <span><b>Contact direct</b><small>Parlez aux clients ou aux vendeurs</small></span>
-  </div>
-  <div class="vitre" style="--d:40s">
-    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-    <span><b>Livraison partout</b><small>à Madagascar</small></span>
-  </div>
-</div>    
+    <div class="verre">
+      <div class="vitre" style="--d:0s">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg>
+        <span><b>100 % gratuit</b><small>Rechercher et déposer, tout est gratuit</small></span>
+      </div>
+      <div class="vitre" style="--d:20s">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>
+        <span><b>Contact direct</b><small>Parlez aux clients ou aux vendeurs</small></span>
+      </div>
+      <div class="vitre" style="--d:40s">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span><b>Livraison partout</b><small>à Madagascar</small></span>
+      </div>
+    </div>
 
     <div class="hero">
       <div>
@@ -389,7 +320,7 @@ footer .in{align-items:center;padding:22px 16px}
         <button class="btn cta" id="startBtn">Voir les annonces</button>
       </div>
       <div class="hero-pic">
-        <img src="hero-homme.webp" alt="" width="168" height="390">
+        <img src="hero-homme.webp" alt="" width="168" height="390" fetchpriority="high">
         <div class="badge">Tout Madagascar, une seule plateforme !</div>
       </div>
     </div>
@@ -421,26 +352,26 @@ footer .in{align-items:center;padding:22px 16px}
       </button>
     </div>
 
-      <div class="manga3d">
+    <div class="manga3d">
       <div class="m3-stage"><div class="m3-head m3-thick"><h2 class="m3-ext">Comment déposer une annonce</h2></div></div>
 
       <div class="m3-panels">
         <div class="m3-panel"><div class="m3-card" data-tilt style="--c:var(--y)">
-          <div class="m3-face m3-thick"></div><span class="m3-sfx">Clic !</span>
+          <div class="m3-face m3-thick"></div><span class="m3-sfx" aria-hidden="true">Clic !</span>
           <div class="m3-num">1</div><h3>Créez un compte</h3>
-          <svg class="m3-icon" viewBox="0 0 120 80" fill="none" stroke="#0d0d0d" stroke-width="4" stroke-linejoin="round"><circle cx="60" cy="26" r="16" fill="#fff"/><path d="M44 22q8-14 32 0" fill="#0d0d0d"/><path d="M52 28l5 1M68 28l-5 1M54 36q6 5 12 0"/><path d="M24 80c4-20 20-26 36-26s32 6 36 26" fill="#fff"/></svg>
+          <svg class="m3-icon" viewBox="0 0 120 80" fill="none" stroke="#0d0d0d" stroke-width="4" stroke-linejoin="round" aria-hidden="true"><circle cx="60" cy="26" r="16" fill="#fff"/><path d="M44 22q8-14 32 0" fill="#0d0d0d"/><path d="M52 28l5 1M68 28l-5 1M54 36q6 5 12 0"/><path d="M24 80c4-20 20-26 36-26s32 6 36 26" fill="#fff"/></svg>
           <div class="m3-speech"><p>Entrez votre e-mail et un mot de passe, puis confirmez avec le lien reçu par e-mail.</p></div>
         </div></div>
         <div class="m3-panel"><div class="m3-card" data-tilt style="--c:var(--b)">
-          <div class="m3-face m3-thick"></div><span class="m3-sfx">Zip !</span>
+          <div class="m3-face m3-thick"></div><span class="m3-sfx" aria-hidden="true">Zip !</span>
           <div class="m3-num">2</div><h3>Remplissez l’annonce</h3>
-          <svg class="m3-icon" viewBox="0 0 120 80" fill="none" stroke="#0d0d0d" stroke-width="4" stroke-linejoin="round"><rect x="22" y="6" width="54" height="68" fill="#fff"/><path d="M32 22h34M32 34h34M32 46h20"/><path d="M104 18L58 62l-3 12 12-3 46-44z" fill="#2fa36b"/></svg>
+          <svg class="m3-icon" viewBox="0 0 120 80" fill="none" stroke="#0d0d0d" stroke-width="4" stroke-linejoin="round" aria-hidden="true"><rect x="22" y="6" width="54" height="68" fill="#fff"/><path d="M32 22h34M32 34h34M32 46h20"/><path d="M104 18L58 62l-3 12 12-3 46-44z" fill="#2fa36b"/></svg>
           <div class="m3-speech"><p>Ajoutez un titre, le prix, votre ville, votre numéro de téléphone et jusqu’à 4 photos.</p></div>
         </div></div>
         <div class="m3-panel"><div class="m3-card" data-tilt style="--c:var(--p)">
-          <div class="m3-face m3-thick"></div><span class="m3-sfx">Dring !</span>
+          <div class="m3-face m3-thick"></div><span class="m3-sfx" aria-hidden="true">Dring !</span>
           <div class="m3-num">3</div><h3>Recevez des appels</h3>
-          <svg class="m3-icon" viewBox="0 0 120 80" fill="none" stroke="#0d0d0d" stroke-width="4" stroke-linejoin="round"><rect x="38" y="4" width="40" height="72" rx="6" fill="#fff"/><path d="M50 66h16"/><path d="M90 20q10 8 0 20M98 12q18 18 0 36M26 20q-10 8 0 20M18 12q-18 18 0 36"/></svg>
+          <svg class="m3-icon" viewBox="0 0 120 80" fill="none" stroke="#0d0d0d" stroke-width="4" stroke-linejoin="round" aria-hidden="true"><rect x="38" y="4" width="40" height="72" rx="6" fill="#fff"/><path d="M50 66h16"/><path d="M90 20q10 8 0 20M98 12q18 18 0 36M26 20q-10 8 0 20M18 12q-18 18 0 36"/></svg>
           <div class="m3-speech"><p>Les acheteurs vous appellent directement. Supprimez l’annonce une fois l’article vendu.</p></div>
         </div></div>
       </div>
@@ -454,16 +385,16 @@ footer .in{align-items:center;padding:22px 16px}
           <div class="m3-perkwrap"><div class="m3-perk" data-tilt><b>4</b><div><h3>Simple et rapide</h3><p>Une annonce en quelques minutes, depuis votre téléphone.</p></div></div></div>
         </div>
       </div>
-    </div>      
+    </div>
 
-  <div class="manga3d m3-bottom">
-    <div class="wrap">
+    <div class="manga3d m3-bottom">
       <div class="m3-cta">
         <div class="m3-burstwrap"><div class="m3-burst"><h2>Si vous cherchez de bonnes affaires près de chez vous, ici c’est le bon endroit !</h2></div></div>
         <button class="m3-btn" id="startBtn2">Commencer maintenant</button>
       </div>
     </div>
-  </div>  
+
+  </div><!-- /.wrap (fermeture manquante dans l'original) -->
 </section>
 
 <div class="search">
@@ -494,36 +425,37 @@ footer .in{align-items:center;padding:22px 16px}
     <div class="fend"><span>© 2026 Hasintsoa. Tous droits réservés.</span><span>Madagascar</span></div>
   </div>
 </footer>
+
 <!-- Connexion -->
-<div class="mask" id="mAuth"><div class="box" role="dialog" aria-modal="true">
+<div class="mask" id="mAuth"><div class="box" role="dialog" aria-modal="true" aria-labelledby="authTitle">
   <button class="x" data-close aria-label="Fermer">×</button>
   <h2 id="authTitle">Se connecter</h2>
   <form id="authForm">
     <label for="email">Adresse e-mail</label><input id="email" type="email" required autocomplete="email">
     <label for="pass">Mot de passe (6 caractères minimum)</label><input id="pass" type="password" minlength="6" required autocomplete="current-password">
-    <p class="msg" id="authMsg"></p>
+    <p class="msg" id="authMsg" role="status"></p>
     <div class="act" style="margin-top:14px"><button class="btn cta" id="authGo">Se connecter</button><button type="button" class="btn plain" id="authSwitch">Créer un compte</button></div>
   </form>
 </div></div>
 
 <!-- Dépôt -->
-<div class="mask" id="mPost"><div class="box" role="dialog" aria-modal="true">
+<div class="mask" id="mPost"><div class="box" role="dialog" aria-modal="true" aria-labelledby="postTitle">
   <button class="x" data-close aria-label="Fermer">×</button>
-  <h2>Déposer une annonce</h2>
+  <h2 id="postTitle">Déposer une annonce</h2>
   <form id="postForm">
     <label for="pTitre">Titre</label><input id="pTitre" maxlength="90" required>
     <label for="pCat">Catégorie</label><select id="pCat" required></select>
     <div class="row"><div><label for="pPrix">Prix (Ar)</label><input id="pPrix" type="number" min="0" step="1"></div><div><label for="pVille">Ville</label><input id="pVille" placeholder="Antananarivo"></div></div>
     <label for="pTel">Téléphone</label><input id="pTel" type="tel" placeholder="034 00 000 00" required>
     <label for="pDesc">Description</label><textarea id="pDesc" rows="5"></textarea>
-    <label for="pPhotos">Photos (4 maximum)</label><input id="pPhotos" type="file" accept="image/*" multiple>
-    <p class="msg" id="postMsg"></p>
+    <label for="pPhotos">Photos (4 maximum)</label><input id="pPhotos" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
+    <p class="msg" id="postMsg" role="status"></p>
     <div class="act" style="margin-top:14px"><button class="btn cta" id="postGo">Publier l'annonce</button></div>
   </form>
 </div></div>
 
 <!-- Détail -->
-<div class="mask" id="mDet"><div class="box wide" role="dialog" aria-modal="true">
+<div class="mask" id="mDet"><div class="box wide" role="dialog" aria-modal="true" aria-label="Détail de l'annonce">
   <button class="x" data-close aria-label="Fermer">×</button>
   <div id="det"></div>
 </div></div>
@@ -532,13 +464,17 @@ footer .in{align-items:center;padding:22px 16px}
 <script>
 const SB = supabase.createClient('https://ujxctcwkppmhamgkpvmg.supabase.co','sb_publishable_5TMigzGHfUs0RY9Jf-DTWA_K3YoBMh_');
 const $ = id => document.getElementById(id);
-let user = null, cats = [], cat = null, q = '', signup = false, ads = [];
+let user = null, cats = [], cat = null, q = '', signup = false, ads = [], reqId = 0;
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money = n => n == null || n === '' ? 'Prix à débattre' : new Intl.NumberFormat('fr-FR').format(n) + ' Ar';
-const ago = d => { const m = Math.round((Date.now() - new Date(d)) / 60000);
-  if (m < 60) return 'il y a ' + Math.max(m,1) + ' min'; if (m < 1440) return 'il y a ' + Math.round(m/60) + ' h';
+const ago = d => { const m = Math.max(Math.round((Date.now() - new Date(d)) / 60000), 1);
+  if (m < 60) return 'il y a ' + m + ' min'; if (m < 1440) return 'il y a ' + Math.round(m/60) + ' h';
   return 'il y a ' + Math.round(m/1440) + ' j'; };
+const norm = s => String(s ?? '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+const clean = s => String(s ?? '').replace(/[,()%*"\\:]/g, ' ').trim();          // filtres PostgREST
+const safeUrl = u => /^https:\/\//.test(u || '') ? u : '';
+const cssUrl = u => safeUrl(u).replace(/['"()\s]/g, c => '%' + c.charCodeAt(0).toString(16));
 const open = id => $(id).classList.add('open');
 const close = id => $(id).classList.remove('open');
 document.querySelectorAll('[data-close]').forEach(b => b.onclick = () => b.closest('.mask').classList.remove('open'));
@@ -546,9 +482,7 @@ document.querySelectorAll('.mask').forEach(m => m.addEventListener('mousedown', 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.mask.open').forEach(m => m.classList.remove('open')); });
 
 /* Page d'accueil : affichée seule à chaque nouvelle visite (une fois par session).
-   La recherche, les catégories et la liste des annonces apparaissent quand on entre dans le site
-   (« Voir les annonces », « Commencer maintenant », une case de catégorie, ou après connexion).
-   Pour l'afficher UNE SEULE FOIS pour toujours, remplacez sessionStorage par localStorage (2 endroits). */
+   Pour l'afficher UNE SEULE FOIS pour toujours, remplacez sessionStorage par localStorage (3 endroits). */
 const showWelcome = () => {
   $('welcome').hidden = false;
   document.body.classList.add('landing');
@@ -569,13 +503,17 @@ $('logo').onclick = showWelcome;
 $('logo').onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showWelcome(); } };
 $('lkHome').onclick = showWelcome;
 $('lkAds').onclick = closeWelcome;
-$('lkCats').onclick = () => document.querySelector('nav').scrollIntoView({ behavior: 'smooth' });  
-/* Un clic sur une case de catégorie ouvre directement cette catégorie */
+$('lkCats').onclick = () => document.querySelector('nav').scrollIntoView({ behavior: 'smooth' });
+
+const markCat = () => $('cats').querySelectorAll('button').forEach(x => x.classList.toggle('on', x.dataset.c === String(cat ?? '')));
+
+/* Un clic sur une case de catégorie ouvre directement cette catégorie (recherche tolérante aux accents et à « & ») */
 document.querySelectorAll('.tile').forEach(t => t.onclick = () => {
   closeWelcome();
-  const c = cats.find(x => String(x.nom).toLowerCase().includes(t.dataset.cat.toLowerCase()));
-  const b = c && $('cats').querySelector(`button[data-c="${c.id}"]`);
-  if (b) b.click();
+  const key = norm(t.dataset.cat.split(' ')[0]);
+  const c = cats.find(x => norm(x.nom).includes(key));
+  cat = c ? c.id : null; q = ''; $('q').value = ''; $('qCat').value = c ? c.id : '';
+  markCat(); loadAds();
 });
 
 function renderAuthBtn() {
@@ -605,7 +543,10 @@ $('authForm').onsubmit = async e => {
   if (signup && !data.session) { msg.className = 'msg ok'; msg.textContent = 'Compte créé. Vérifiez votre boîte e-mail pour confirmer, puis connectez-vous.'; return; }
   close('mAuth'); closeWelcome();
 };
-SB.auth.onAuthStateChange((_ev, session) => { user = session ? session.user : null; renderAuthBtn(); });
+SB.auth.onAuthStateChange((_ev, session) => {
+  user = session ? session.user : null; renderAuthBtn();
+  if (!user) close('mPost');
+});
 
 async function loadCats() {
   const { data } = await SB.from('ann_categories').select('*').order('id');
@@ -615,49 +556,54 @@ async function loadCats() {
   $('qCat').innerHTML = '<option value="">Toutes catégories</option>' + cats.map(c => `<option value="${c.id}">${esc(c.nom)}</option>`).join('');
   $('cats').querySelectorAll('button').forEach(b => b.onclick = () => {
     cat = b.dataset.c ? +b.dataset.c : null;
-    $('cats').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
-    loadAds();
+    $('qCat').value = cat ?? '';
+    markCat(); loadAds();
   });
 }
 
 async function loadAds() {
+  const my = ++reqId;
   let r = SB.from('ann_annonces').select('*, ann_categories(nom)').eq('statut', 'valide').order('cree_le', { ascending: false }).limit(60);
   if (cat) r = r.eq('category_id', cat);
-  const v = $('qVille').value.replace(/[,()%*]/g, ' ').trim();
+  const v = clean($('qVille').value);
   if (v) r = r.ilike('ville', `%${v}%`);
-  const t = q.replace(/[,()%*]/g, ' ').trim();
+  const t = clean(q);
   if (t) r = r.or(`titre.ilike.%${t}%,description.ilike.%${t}%`);
   const { data, error } = await r;
+  if (my !== reqId) return;                        // une recherche plus récente est en cours : on ignore celle-ci
   ads = data || [];
-  $('title').textContent = t ? `Résultats pour « ${t} »` : (cat ? cats.find(c => c.id === cat).nom : 'Dernières annonces');
+  $('title').textContent = t ? `Résultats pour « ${t} »` : (cats.find(c => c.id === cat)?.nom || 'Dernières annonces');
   $('empty').textContent = error ? 'Impossible de charger les annonces. Vérifiez votre connexion et réessayez.' : 'Aucune annonce pour cette recherche. Soyez le premier à en déposer une.';
   $('empty').hidden = ads.length > 0;
-  $('list').innerHTML = ads.map((a, i) => `
-    <button class="ad" data-i="${i}">
-      <div class="ph" ${a.photos && a.photos[0] ? `style="background-image:url('${esc(a.photos[0])}')"` : ''}>${a.photos && a.photos[0] ? '' : 'Pas de photo'}<span class="tag">${esc(a.ann_categories ? a.ann_categories.nom : '')}</span></div>
+  $('list').innerHTML = ads.map((a, i) => {
+    const p0 = cssUrl(a.photos && a.photos[0]);
+    return `
+    <article class="ad" data-i="${i}" role="button" tabindex="0">
+      <div class="ph" ${p0 ? `style="background-image:url('${p0}')"` : ''}>${p0 ? '' : 'Pas de photo'}<span class="tag">${esc(a.ann_categories ? a.ann_categories.nom : '')}</span></div>
       <div class="b"><h3>${esc(a.titre)}</h3><div class="price">${money(a.prix)}</div>
       <div class="meta">${esc(a.ville || 'Madagascar')} · ${ago(a.cree_le)}</div></div>
-    </button>`).join('');
-  $('list').querySelectorAll('.ad').forEach(b => b.onclick = () => showAd(ads[+b.dataset.i]));
+    </article>`;
+  }).join('');
+  $('list').querySelectorAll('.ad').forEach(b => {
+    const go = () => showAd(ads[+b.dataset.i]);
+    b.onclick = go;
+    b.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } };
+  });
 }
 $('searchForm').onsubmit = e => {
   e.preventDefault(); q = $('q').value;
-  if ($('qCat').value) {
-    cat = +$('qCat').value;
-    $('cats').querySelectorAll('button').forEach(x => x.classList.toggle('on', x.dataset.c === String(cat)));
-  }
-  loadAds();
+  cat = $('qCat').value ? +$('qCat').value : null;
+  markCat(); loadAds();
 };
 $('seeAll').onclick = e => {
   e.preventDefault(); cat = null; q = '';
   $('q').value = ''; $('qVille').value = ''; $('qCat').value = '';
-  $('cats').querySelectorAll('button').forEach((x, i) => x.classList.toggle('on', i === 0));
-  loadAds();
+  markCat(); loadAds();
 };
 function showAd(a) {
   const tel = String(a.telephone || '').replace(/[^\d+]/g, '');
   $('det').innerHTML = `
-    ${a.photos && a.photos.length ? `<div class="gal">${a.photos.map(p => `<img src="${esc(p)}" alt="Photo de l'annonce">`).join('')}</div>` : ''}
+    ${a.photos && a.photos.length ? `<div class="gal">${a.photos.filter(safeUrl).map(p => `<img src="${esc(p)}" alt="Photo de l'annonce" loading="lazy">`).join('')}</div>` : ''}
     <h2>${esc(a.titre)}</h2>
     <div class="price" style="font-size:1.3rem">${money(a.prix)}</div>
     <div class="meta">${esc(a.ann_categories ? a.ann_categories.nom : '')} · ${esc(a.ville || 'Madagascar')} · ${ago(a.cree_le)}</div>
@@ -677,27 +623,36 @@ function showAd(a) {
 $('postForm').onsubmit = async e => {
   e.preventDefault();
   const msg = $('postMsg'), go = $('postGo'); msg.className = 'msg';
+  if (!user) { close('mPost'); setAuthMode(false); open('mAuth'); return; }
   const files = [...$('pPhotos').files].slice(0, 4);
+  if (files.some(f => !/^image\/(jpeg|png|webp|gif)$/.test(f.type))) { msg.textContent = 'Formats acceptés : JPG, PNG, WebP, GIF.'; return; }
   if (files.some(f => f.size > 5 * 1024 * 1024)) { msg.textContent = 'Chaque photo doit faire moins de 5 Mo.'; return; }
+  const digits = $('pTel').value.replace(/\D/g, '');
+  if (digits.length < 9 || digits.length > 13) { msg.textContent = 'Numéro de téléphone invalide.'; return; }
+
   go.disabled = true; msg.textContent = 'Envoi en cours…';
-  const urls = [];
-  for (const [i, f] of files.entries()) {
-    const ext = (f.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
-    const path = `${user.id}/${Date.now()}_${i}.${ext}`;
-    const { error } = await SB.storage.from('annonces').upload(path, f);
-    if (error) { msg.textContent = 'Photo non envoyée : ' + error.message; go.disabled = false; return; }
-    urls.push(SB.storage.from('annonces').getPublicUrl(path).data.publicUrl);
+  const bucket = SB.storage.from('annonces'), paths = [], urls = [];
+  try {
+    for (const [i, f] of files.entries()) {
+      const ext = f.type.split('/')[1].replace('jpeg', 'jpg');
+      const path = `${user.id}/${Date.now()}_${i}.${ext}`;
+      const { error } = await bucket.upload(path, f);
+      if (error) throw new Error('Photo non envoyée : ' + error.message);
+      paths.push(path); urls.push(bucket.getPublicUrl(path).data.publicUrl);
+    }
+    const { error } = await SB.from('ann_annonces').insert({
+      category_id: +$('pCat').value, titre: $('pTitre').value.trim(), description: $('pDesc').value.trim(),
+      prix: $('pPrix').value === '' ? null : +$('pPrix').value, ville: $('pVille').value.trim(),
+      telephone: $('pTel').value.trim(), photos: urls
+    });
+    if (error) throw new Error('Publication impossible : ' + error.message);
+  } catch (err) {
+    if (paths.length) bucket.remove(paths);        // supprime les photos déjà envoyées si l'annonce échoue
+    msg.textContent = err.message; go.disabled = false; return;
   }
-  const { error } = await SB.from('ann_annonces').insert({
-    category_id: +$('pCat').value, titre: $('pTitre').value.trim(), description: $('pDesc').value.trim(),
-    prix: $('pPrix').value === '' ? null : +$('pPrix').value, ville: $('pVille').value.trim(),
-    telephone: $('pTel').value.trim(), photos: urls
-  });
   go.disabled = false;
-  if (error) { msg.textContent = 'Publication impossible : ' + error.message; return; }
-  $('postForm').reset(); close('mPost'); cat = null; q = ''; $('q').value = '';
-  $('cats').querySelectorAll('button').forEach((x, i) => x.classList.toggle('on', i === 0));
-  loadAds();
+  $('postForm').reset(); close('mPost'); cat = null; q = ''; $('q').value = ''; $('qCat').value = '';
+  markCat(); loadAds();
 };
 
 const menu = $('menuList'), mb = $('btnMenu');
@@ -709,7 +664,7 @@ document.addEventListener('click', () => { menu.hidden = true; mb.setAttribute('
   user = data.session ? data.session.user : null; renderAuthBtn();
   await loadCats(); loadAds();
 })();
-  
+
 /* Texte de l'en-tête : écrit puis effacé en boucle */
 (() => {
   const el = document.getElementById('typed');
@@ -725,7 +680,7 @@ document.addEventListener('click', () => { menu.hidden = true; mb.setAttribute('
     setTimeout(tick, delai);
   })();
 })();
-  
+
 /* Effet 3D : les cases bougent avec la souris ou le doigt */
 (function(){
   if(matchMedia("(prefers-reduced-motion:reduce)").matches)return;
@@ -742,7 +697,7 @@ document.addEventListener('click', () => { menu.hidden = true; mb.setAttribute('
       el.style.setProperty("--rx","0deg");el.style.setProperty("--ry","0deg");
     });
   });
-})();  
+})();
 </script>
 </body>
 </html>
