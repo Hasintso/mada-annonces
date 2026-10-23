@@ -43,6 +43,18 @@ header{background:linear-gradient(#2f7fe0,#2a6fd0);color:#fff;position:relative}
 .post{background:var(--saffron);border:0;border-radius:999px;padding:10px 22px;color:var(--ink);
   font:italic 700 1.1rem Georgia,"Times New Roman",serif;letter-spacing:.3px}
 .post:hover{filter:brightness(.95)}
+.home{position:relative;overflow:hidden;width:54px;height:54px;padding:0;display:grid;place-items:center;
+  border-radius:18px;border:1.5px solid rgba(255,255,255,.85);color:#fff;
+  background:linear-gradient(135deg,rgba(255,255,255,.55) 0%,rgba(255,255,255,.10) 50%,rgba(255,255,255,.35) 100%);
+  -webkit-backdrop-filter:blur(10px) saturate(1.5);backdrop-filter:blur(10px) saturate(1.5);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9),inset 0 -10px 16px rgba(255,255,255,.12),0 8px 18px rgba(10,30,70,.28);
+  transition:transform .15s,box-shadow .15s}
+.home::before{content:"";position:absolute;left:6px;right:6px;top:3px;height:42%;border-radius:14px 14px 40% 40%;
+  background:linear-gradient(rgba(255,255,255,.65),rgba(255,255,255,0))}
+.home svg{position:relative;width:30px;height:30px;fill:rgba(255,255,255,.35);stroke:#fff;stroke-width:1.9;
+  stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 2px 3px rgba(11,42,91,.55))}
+.home:hover{transform:translateY(-2px);box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 12px 22px rgba(10,30,70,.35)}
+.home:active{transform:translateY(1px)}  
 .verre{--p:clamp(28px,6vw,60px);position:relative;width:min(100%,640px);height:clamp(130px,22vw,210px);margin:0 0 28px}
 .vitre{position:absolute;inset:0;display:flex;align-items:center;gap:clamp(12px,3vw,26px);
   padding:0 calc(var(--p) + 18px) 0 calc(var(--p) + 22px);
@@ -284,6 +296,9 @@ footer button{background:none;border:0;color:#fff;text-decoration:underline;padd
   </div>
   <div class="top">
     <div class="logo" id="logo" role="button" tabindex="0" title="Retour à l'accueil" aria-label="Bienvenue dans vos rêves"><span id="typed"></span></div>
+    <button class="home" id="btnHome" aria-label="Accueil" title="Accueil">
+     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5L12 3.5l9 8"/><path d="M5.5 10v10.5h4.5v-6h4v6h4.5V10"/></svg>
+    </button>
     <button class="post" id="btnPost">Déposer une annonce</button>
   </div>
 </header>
@@ -480,6 +495,7 @@ $('startBtn2').onclick = closeWelcome;
 $('btnHelp').onclick = showWelcome;
 $('footHelp').onclick = showWelcome;
 $('logo').onclick = showWelcome;
+$('btnHome').onclick = showWelcome;  
 $('logo').onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showWelcome(); } };
 /* Un clic sur une case de catégorie ouvre directement cette catégorie */
 document.querySelectorAll('.tile').forEach(t => t.onclick = () => {
