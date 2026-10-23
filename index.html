@@ -86,9 +86,6 @@ body.landing header{position:absolute;top:0;left:0;right:0;background:transparen
 body.landing #welcome{padding-top:74px}
 body.landing .logo{color:#fff}
 .btn.danger{background:var(--red);color:#fff}
-.search{background:var(--forest2);padding:18px 16px}
-.search form{max-width:1100px;margin:auto;display:flex;gap:8px}
-.search input{flex:1;border:0;border-radius:8px;padding:12px 14px;min-width:0}
 nav{background:#fff;border-bottom:1px solid var(--line);overflow-x:auto;white-space:nowrap}
 nav div{max-width:1100px;margin:auto;padding:0 16px;display:flex}
 nav button{background:none;border:0;border-bottom:3px solid transparent;padding:13px 14px;color:var(--ink);font-weight:600}
@@ -280,7 +277,30 @@ footer button{background:none;border:0;color:#fff;text-decoration:underline;padd
   .manga3d .m3-burst{padding:56px 44px}
   .manga3d .m3-head{transform:rotateX(8deg)}
 }
-@media(prefers-reduced-motion:reduce){.manga3d .m3-sfx{animation:none}.manga3d .m3-card,.manga3d .m3-perk{transition:none}}  
+@media(prefers-reduced-motion:reduce){.manga3d .m3-sfx{animation:none}.manga3d .m3-card,.manga3d .m3-perk{transition:none}}
+
+  /* ===== Page des annonces : style marketplace ===== */
+.search{padding:34px 16px 38px;color:#fff;
+  background:linear-gradient(90deg,rgba(14,70,45,.92) 0%,rgba(14,70,45,.55) 55%,rgba(14,70,45,.1) 100%),url(hero-tana.jpg) center/cover,var(--forest)}
+.search .in{max-width:1100px;margin:auto}
+.search h2{font-size:clamp(1.8rem,5vw,2.8rem);line-height:1.1;margin-bottom:8px}
+.search h2 em{display:block;color:var(--lime);font-style:normal}
+.search p{margin:0 0 20px;opacity:.92}
+.search form{display:flex;gap:8px;background:#fff;border-radius:999px;padding:8px;box-shadow:0 10px 28px rgba(0,0,0,.25)}
+.search input{flex:1;border:0;border-radius:999px;padding:12px 18px;min-width:0;background:transparent}
+.search form .btn{background:var(--forest);color:#fff;border-radius:999px;padding:12px 26px}
+
+body:not(.landing) header{background:#fff;box-shadow:0 2px 10px rgba(20,36,31,.1)}
+body:not(.landing) .logo{color:var(--forest);text-shadow:none}
+body:not(.landing) .post{background:var(--forest);color:#fff}
+body:not(.landing) .dots{background:var(--forest);border-color:var(--forest);-webkit-backdrop-filter:none;backdrop-filter:none}
+
+nav button.on{border-color:var(--forest)}
+main h1{border-left:6px solid var(--forest);padding-left:12px}
+.ad{border-radius:14px;box-shadow:0 4px 14px rgba(20,36,31,.08)}
+.ad .price{font-size:1.25rem}
+.ph{position:relative}
+.tag{position:absolute;left:10px;top:10px;background:var(--forest);color:#fff;font-size:.78rem;font-weight:700;padding:4px 10px;border-radius:999px}  
 </style>
 </head>
 <body class="landing">
@@ -404,7 +424,11 @@ footer button{background:none;border:0;color:#fff;text-decoration:underline;padd
 </section>
 
 <div class="search">
-  <form id="searchForm"><input id="q" type="search" placeholder="Que cherchez-vous ? Ex. : Toyota, appartement, cours d'anglais" aria-label="Rechercher"><button class="btn cta">Rechercher</button></form>
+  <div class="in">
+    <h2>Achetez, vendez et trouvez <em>près de vous</em></h2>
+    <p>Des milliers d'annonces partout à Madagascar. Tout en un seul endroit.</p>
+    <form id="searchForm"><input id="q" type="search" placeholder="Que cherchez-vous ? Ex. : Toyota, appartement, cours d'anglais" aria-label="Rechercher"><button class="btn">Rechercher</button></form>
+  </div>
 </div>
 <nav><div id="cats"></div></nav>
 <main>
@@ -554,7 +578,7 @@ async function loadAds() {
   $('empty').hidden = ads.length > 0;
   $('list').innerHTML = ads.map((a, i) => `
     <button class="ad" data-i="${i}">
-      <div class="ph" ${a.photos && a.photos[0] ? `style="background-image:url('${esc(a.photos[0])}')"` : ''}>${a.photos && a.photos[0] ? '' : 'Pas de photo'}</div>
+      <div class="ph" ${a.photos && a.photos[0] ? `style="background-image:url('${esc(a.photos[0])}')"` : ''}>${a.photos && a.photos[0] ? '' : 'Pas de photo'}<span class="tag">${esc(a.ann_categories ? a.ann_categories.nom : '')}</span></div>
       <div class="b"><h3>${esc(a.titre)}</h3><div class="price">${money(a.prix)}</div>
       <div class="meta">${esc(a.ville || 'Madagascar')} · ${ago(a.cree_le)}</div></div>
     </button>`).join('');
