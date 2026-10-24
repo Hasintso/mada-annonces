@@ -108,19 +108,22 @@ label{display:block;font-weight:600;margin:12px 0 4px;font-size:.92rem}
 
 /* Accueil et liste des annonces ne s'affichent jamais en même temps */
 body.landing .search,body.landing nav,body.landing main{display:none}
-footer{background:#fff;border-top:1px solid var(--line);color:var(--ink);font-size:.92rem}
-.fgrid{max-width:1100px;margin:auto;padding:36px 16px 10px;display:grid;grid-template-columns:1.6fr 1fr 1fr 1.2fr;gap:28px}
-.fgrid h4{margin:0 0 12px;font:600 .78rem "Segoe UI",Roboto,Arial,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.fgrid p{margin:0 0 8px;color:var(--muted)}
-.ftitle{font:700 1.25rem/1.25 Georgia,"Times New Roman",serif;color:var(--forest);margin-bottom:10px}
-footer button.flink{display:block;background:none;border:0;padding:5px 0;color:var(--ink);text-align:left}
-footer button.flink:hover{color:var(--forest);text-decoration:underline}
-.pays{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-.pay{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-weight:600;font-size:.85rem;background:#fff}
+footer{background:#0f3f33;color:#fff;font-size:.92rem}
+.fhero{min-height:clamp(340px,26vw,470px);display:flex;align-items:center;
+  background:linear-gradient(90deg,rgba(15,63,51,.55) 0%,rgba(15,63,51,0) 45%),url(footer-bg.webp) right center/cover no-repeat,#0f3f33}
+.fhero-in{max-width:400px;padding:34px 16px 34px clamp(16px,5vw,72px)}
+.ftitle{font:700 1.7rem/1.2 Georgia,"Times New Roman",serif;color:#fff;margin-bottom:12px}
+.fhero p{margin:0 0 8px;color:rgba(255,255,255,.92)}
+.pays{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.pay{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 13px;font-weight:600;font-size:.85rem;background:#fff;color:var(--ink)}
 .pay svg{width:16px;height:16px;fill:none;stroke:var(--forest);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.fbottom{max-width:1100px;margin:auto;padding:16px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;color:var(--muted);font-size:.82rem}
-@media(max-width:800px){.fgrid{grid-template-columns:1fr 1fr}}
-@media(max-width:480px){.fgrid{grid-template-columns:1fr}}
+.fgrid{padding:28px clamp(16px,5vw,72px) 10px;display:grid;grid-template-columns:repeat(3,minmax(140px,220px));gap:28px;justify-content:start}
+.fgrid h4{margin:0 0 12px;font:600 .78rem "Segoe UI",Roboto,Arial,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.6)}
+.fgrid p{margin:0 0 8px;color:rgba(255,255,255,.85)}
+footer button.flink{display:block;background:none;border:0;padding:5px 0;color:#fff;text-align:left}
+footer button.flink:hover{text-decoration:underline}
+.fbottom{margin:0 clamp(16px,5vw,72px);padding:16px 0;border-top:1px solid rgba(255,255,255,.2);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;color:rgba(255,255,255,.7);font-size:.82rem}
+@media(max-width:700px){.fgrid{grid-template-columns:1fr 1fr}.fhero-in{max-width:none}.fhero{background:linear-gradient(90deg,rgba(15,63,51,.8),rgba(15,63,51,.45)),url(footer-bg.webp) right center/cover no-repeat,#0f3f33}}
 
 /* ===== Page d'accueil ===== */
 #welcome{position:relative;overflow:hidden;border-bottom:1px solid var(--line);
@@ -426,17 +429,19 @@ main .head a{font-weight:600;text-decoration:none}
 </main>
 
 <footer>
-  <div class="fgrid">
-    <div>
+  <div class="fhero">
+    <div class="fhero-in">
       <div class="ftitle">Annonces des meilleurs produits</div>
       <p>Achetez, vendez et trouvez près de chez vous, partout à Madagascar.</p>
-      <p style="margin-top:14px;font-size:.85rem">Moyens de paiement courants entre acheteurs et vendeurs :</p>
+      <p style="margin-top:14px;font-size:.88rem">Moyens de paiement courants entre acheteurs et vendeurs :</p>
       <div class="pays">
         <span class="pay"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>Mvola</span>
         <span class="pay"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>Orange Money</span>
         <span class="pay"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>Visa</span>
       </div>
     </div>
+  </div>
+  <div class="fgrid">
     <div>
       <h4>Découvrir</h4>
       <button class="flink" id="fHome">Accueil</button>
@@ -453,8 +458,8 @@ main .head a{font-weight:600;text-decoration:none}
     </div>
     <div>
       <h4>Contact</h4>
-      <p>hasintsorh@email.com</p>
-      <p>038 69 493 66</p>
+      <p>votre@email.com</p>
+      <p>034 00 000 00</p>
       <p>Madagascar</p>
     </div>
   </div>
