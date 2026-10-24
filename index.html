@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ALL-Hasintsoa – Petites annonces à Madagascar</title>
 <meta name="description" content="Déposez et consultez des petites annonces à Madagascar : auto, immobilier, emploi, formation et plus.">
-<meta name="theme-color" content="#b5179e">
+<meta name="theme-color" content="#1f5a46">
 <meta property="og:title" content="ALL-Hasintsoa – Petites annonces à Madagascar">
 <meta property="og:description" content="Achetez, vendez et trouvez près de chez vous, partout à Madagascar. Déposer une annonce est gratuit.">
 <meta property="og:type" content="website">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23b5179e'/%3E%3Ctext x='32' y='45' font-size='36' font-family='Georgia,serif' font-weight='700' text-anchor='middle' fill='%23f2b705'%3EA%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231f5a46'/%3E%3Ctext x='32' y='45' font-size='36' font-family='Georgia,serif' font-weight='700' text-anchor='middle' fill='%23f2b705'%3EA%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Bangers&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
 <style>
-:root{--ink:#1a0b2e;--forest:#b5179e;--forest2:#7209b7;--paper:#f6f3fa;--card:#fff;--saffron:#f2b705;--line:#e3dcee;--muted:#5d6b64;--red:#b3261e;--lime:#22e4f0}
+:root{--ink:#14241f;--forest:#1f5a46;--forest2:#174536;--paper:#f4f6f1;--card:#fff;--saffron:#f2b705;--line:#dde3da;--muted:#5d6b64;--red:#b3261e;--lime:#a6e34b}
 *{box-sizing:border-box}
 body{margin:0;font:16px/1.5 "Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--paper);color:var(--ink)}
 h1,h2,h3,.logo{font-family:Georgia,"Times New Roman",serif;margin:0}
@@ -51,17 +51,17 @@ header{background:linear-gradient(#2f7fe0,#2a6fd0);color:#fff;position:relative}
 .post{background:var(--saffron);border:0;border-radius:999px;padding:10px 22px;color:var(--ink);
   font:italic 700 1.1rem Georgia,"Times New Roman",serif;letter-spacing:.3px}
 .post:hover{filter:brightness(.95)}
-.verre{position:relative;width:min(100%,640px);height:clamp(230px,38vw,270px);margin:0 0 28px}
-.vitre{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
-  gap:6px;text-align:center;padding:18px 22% 0;
+.verre{--p:clamp(28px,6vw,60px);position:relative;width:min(100%,640px);height:clamp(130px,22vw,210px);margin:0 0 28px}
+.vitre{position:absolute;inset:0;display:flex;align-items:center;gap:clamp(12px,3vw,26px);
+  padding:0 calc(var(--p) + 18px) 0 calc(var(--p) + 22px);
   color:#0b3d2e;opacity:0;line-height:1.15;
   background:linear-gradient(115deg,rgba(255,255,255,.55) 0%,rgba(255,255,255,.08) 45%,rgba(255,255,255,.32) 100%);
   -webkit-backdrop-filter:blur(12px) saturate(1.4);backdrop-filter:blur(12px) saturate(1.4);
-  clip-path:polygon(0 0,100% 0,50% 100%);
+  clip-path:polygon(0 0,calc(100% - var(--p)) 0,100% 50%,calc(100% - var(--p)) 100%,0 100%,var(--p) 50%);
   animation:vitre 60s ease-in-out infinite;animation-delay:var(--d)}
-.vitre b{display:block;font:700 clamp(1.1rem,3.6vw,1.9rem)/1.1 Georgia,"Times New Roman",serif}
-.vitre small{display:block;margin-top:4px;font-size:clamp(.8rem,2vw,1rem);opacity:.88}
-.vitre .ico{stroke:currentColor;flex:none;width:clamp(30px,6vw,48px);height:clamp(30px,6vw,48px)}
+.vitre b{display:block;font:700 clamp(1.3rem,4.2vw,2.4rem)/1.1 Georgia,"Times New Roman",serif}
+.vitre small{display:block;margin-top:6px;font-size:clamp(.9rem,2.2vw,1.2rem);opacity:.88}
+.vitre .ico{stroke:currentColor;flex:none;width:clamp(38px,8vw,72px);height:clamp(38px,8vw,72px)}
 @keyframes vitre{
   0%{opacity:0;transform:translateX(-40px)}
   3%,30%{opacity:1;transform:none}
@@ -108,23 +108,12 @@ label{display:block;font-weight:600;margin:12px 0 4px;font-size:.92rem}
 
 /* Accueil et liste des annonces ne s'affichent jamais en même temps */
 body.landing .search,body.landing nav,body.landing main{display:none}
-footer{color:#fff;font-size:.9rem}
-.fhero{min-height:clamp(540px,44vw,680px);display:flex;align-items:flex-end;
-  background:linear-gradient(90deg,rgba(11,6,20,.88) 0,rgba(11,6,20,.8) 480px,rgba(11,6,20,0) 740px),url(footer-bg.webp) right center/cover no-repeat,#0b0614}
-.fhero-in{width:min(100%,700px);padding:20px 16px 22px clamp(16px,3vw,40px)}
-.frow{display:flex;flex-wrap:wrap;align-items:flex-start;gap:20px 28px}
-.fbrand{flex:0 0 300px;max-width:100%}
-.ftitle{font:700 1.4rem/1.2 Georgia,"Times New Roman",serif;color:#fff;margin-bottom:8px}
-.fbrand p{margin:0 0 6px;color:rgba(255,255,255,.92);font-size:.88rem;line-height:1.45}
-.pays{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-.pay{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 11px;font-weight:600;font-size:.8rem;background:#fff;color:var(--ink)}
-.pay svg{width:15px;height:15px;fill:none;stroke:var(--forest);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.fcol{margin-top:6px}
-.fcol h4{margin:0 0 8px;font:600 .72rem "Segoe UI",Roboto,Arial,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.75);text-shadow:0 1px 4px rgba(0,0,0,.65)}
-footer button.flink{display:block;background:none;border:0;padding:4px 0;color:#fff;text-align:left;font-size:.88rem;text-shadow:0 1px 4px rgba(0,0,0,.65)}
-footer button.flink:hover{text-decoration:underline}
-.fbottom{margin-top:26px;padding-top:12px;border-top:1px solid rgba(255,255,255,.25);display:flex;flex-wrap:wrap;gap:6px 18px;color:rgba(255,255,255,.85);font-size:.8rem;text-shadow:0 1px 4px rgba(0,0,0,.65)}
-@media(max-width:700px){.fbrand{flex-basis:100%}.fcol{margin-top:0}.fhero{background:linear-gradient(90deg,rgba(11,6,20,.85),rgba(11,6,20,.6)),url(footer-bg.webp) right center/cover no-repeat,#0b0614}
+footer{background:var(--forest2);color:rgba(255,255,255,.8);font-size:.9rem}
+footer .in{max-width:1100px;margin:auto;padding:22px 16px;display:flex;gap:10px 20px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+footer button{background:none;border:0;color:#fff;text-decoration:underline;padding:0}
+.fbrand b{display:block;font:700 1.6rem/1 Georgia,"Times New Roman",serif;color:#fff}
+.fbrand small{font-size:.75rem;opacity:.85}
+.fend{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:.82rem}
 
 /* ===== Page d'accueil ===== */
 #welcome{position:relative;overflow:hidden;border-bottom:1px solid var(--line);
@@ -169,8 +158,7 @@ footer button.flink:hover{text-decoration:underline}
 @media(max-width:560px){.row{flex-direction:column;gap:0}.logo{font-size:1.5rem}}
 @media(prefers-reduced-motion:no-preference){.ad{transition:border-color .15s}.tile{transition:transform .15s,border-color .15s}.tile:hover{transform:translateY(-3px)}}
 
-/* ===== Section 3D professionnelle ===== */
-/* ===== Manga 3D (haut) + style professionnel (bas) ===== */
+/* ===== Manga 3D en couleur ===== */
 .manga3d{--ink:#0d0d0d;--bubble:#fff;--navy:#1b1a4a;--y:#ffd23f;--b:#6fcfff;--p:#ff9ec7;--g:#2fa36b;
   margin-top:40px;color:var(--ink);font:600 17px/1.5 "Nunito","Trebuchet MS",sans-serif}
 .manga3d h3,.manga3d .m3-num,.manga3d .m3-sfx,.manga3d .m3-perk b,#welcome .manga3d h2{
@@ -200,46 +188,44 @@ footer button.flink:hover{text-decoration:underline}
   text-shadow:2px 2px 0 var(--ink),3px 3px 0 var(--ink);transform:translateZ(110px) rotate(-10deg);animation:m3bob 2.4s ease-in-out infinite alternate}
 @keyframes m3bob{to{transform:translateZ(135px) rotate(-6deg) translateY(-5px)}}
 
-/* --- Panneau « Pourquoi choisir » : professionnel --- */
-.manga3d .m3-why{margin-top:56px;border:1px solid rgba(255,61,216,.55);border-radius:24px;padding:40px 30px;position:relative;color:#fff;overflow:hidden;
-  background:radial-gradient(circle at 10% 0,rgba(255,61,216,.28),transparent 45%),radial-gradient(circle at 90% 100%,rgba(34,228,240,.22),transparent 45%),linear-gradient(135deg,#0b0614,#1a0b2e 60%,#2a0f4a);
-  box-shadow:0 0 28px rgba(255,61,216,.35),0 20px 40px rgba(5,0,15,.5)}
-.manga3d .m3-why::before{display:none}
+.manga3d .m3-why{margin-top:60px;background:var(--navy);border:6px solid var(--ink);padding:36px 28px;position:relative;color:#fff}
+.manga3d .m3-why::before{content:"";position:absolute;inset:0;background:repeating-conic-gradient(from 0deg at 88% 100%,rgba(255,255,255,.14) 0 1.5deg,transparent 1.5deg 7deg)}
 .manga3d .m3-why>*{position:relative}
-#welcome .manga3d .m3-why h2{font-family:Georgia,"Times New Roman",serif;font-weight:700;letter-spacing:0;line-height:1.15;
-  font-size:clamp(1.6rem,4vw,2.3rem);color:#fff;margin-bottom:26px;text-align:center;text-transform:none;-webkit-text-stroke:0;text-shadow:none}
-.manga3d .m3-perks{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+#welcome .manga3d .m3-why h2{font-size:clamp(28px,5vw,46px);color:var(--y);margin-bottom:24px}
+.manga3d .m3-perks{display:grid;grid-template-columns:1fr 1fr;gap:22px}
 .manga3d .m3-perkwrap{perspective:700px}
-.manga3d .m3-perk{display:flex;gap:14px;align-items:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,61,216,.45);border-radius:16px;padding:16px 18px;
-  transform-style:preserve-3d;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .18s ease-out;box-shadow:0 0 14px rgba(255,61,216,.25),0 10px 22px rgba(0,0,0,.35)}
-.manga3d .m3-perk b{font-family:Georgia,"Times New Roman",serif;font-weight:700;letter-spacing:0;font-size:2.4rem;color:#22e4f0;line-height:1;min-width:34px;text-align:center;transform:translateZ(44px);text-shadow:0 0 12px rgba(34,228,240,.85)}
-.manga3d .m3-perk div{transform:translateZ(22px)}
-.manga3d .m3-perk h3{font-family:Georgia,"Times New Roman",serif;font-weight:700;letter-spacing:0;line-height:1.15;font-size:1.15rem;margin-bottom:2px;color:#fff;text-transform:none}
-.manga3d .m3-perk p{margin:0;opacity:.9;font-size:.94rem}
+.manga3d .m3-perk{display:flex;gap:12px;background:rgba(255,255,255,.08);border:4px solid var(--b);padding:14px;
+  transform-style:preserve-3d;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .18s ease-out}
+.manga3d .m3-perk b{font-size:52px;color:var(--b);line-height:.9;transform:translateZ(50px);text-shadow:3px 3px 0 var(--ink)}
+.manga3d .m3-perk div{transform:translateZ(25px)}
+.manga3d .m3-perk h3{font-size:25px;text-transform:uppercase;margin-bottom:2px}
+.manga3d .m3-perk p{margin:0;opacity:.92}
 .manga3d .m3-leave{transition:transform .5s cubic-bezier(.2,1.6,.4,1)}
 
-/* --- Appel à l'action final : professionnel --- */
-.manga3d.m3-bottom{padding-bottom:48px}
-.manga3d .m3-cta{display:flex;align-items:center;justify-content:center;gap:26px;flex-wrap:wrap}
-.manga3d .m3-burstwrap{flex:1 1 440px;filter:none}
-.manga3d .m3-burst{min-height:0;display:block;padding:26px 30px;text-align:left;background:#fff;clip-path:none;border-radius:20px;border-left:6px solid var(--saffron);box-shadow:0 14px 30px rgba(20,36,31,.2)}
-#welcome .manga3d .m3-burst h2{font-family:Georgia,"Times New Roman",serif;font-weight:700;letter-spacing:0;font-size:clamp(1.15rem,2.6vw,1.6rem);line-height:1.3;color:var(--ink)}
-.manga3d .m3-btn{font:800 1.05rem "Nunito","Segoe UI",sans-serif;letter-spacing:.02em;text-transform:none;color:var(--ink);background:var(--saffron);-webkit-text-stroke:0;
-  border:0;border-radius:999px;padding:16px 34px;cursor:pointer;box-shadow:0 5px 0 #b88a00,0 14px 22px rgba(10,30,24,.28);transition:transform .08s,box-shadow .08s}
-.manga3d .m3-btn:hover{transform:translateY(-2px);box-shadow:0 7px 0 #b88a00,0 18px 26px rgba(10,30,24,.3)}
-.manga3d .m3-btn:active{transform:translateY(5px);box-shadow:0 0 0 #b88a00,0 4px 8px rgba(10,30,24,.3)}
+.manga3d.m3-bottom{padding-bottom:40px}
+.manga3d .m3-cta{display:flex;align-items:center;justify-content:center;gap:28px;flex-wrap:wrap}
+.manga3d .m3-burstwrap{flex:1 1 440px;filter:drop-shadow(8px 10px 0 var(--ink))}
+.manga3d .m3-burst{min-height:210px;display:grid;place-items:center;padding:58px 72px;text-align:center;background:var(--y);
+  clip-path:polygon(0 50%,6% 36%,2% 22%,14% 24%,18% 8%,29% 18%,38% 2%,47% 16%,57% 0,64% 17%,75% 6%,80% 22%,93% 14%,92% 32%,100% 42%,94% 56%,99% 72%,87% 74%,84% 92%,72% 82%,63% 100%,53% 84%,43% 98%,35% 82%,23% 94%,20% 78%,7% 84%,9% 66%)}
+#welcome .manga3d .m3-burst h2{font-size:clamp(23px,3.2vw,32px);line-height:1.1;color:var(--ink)}
+.manga3d .m3-btn{font:400 32px "Bangers",sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--p);
+  -webkit-text-stroke:1.5px var(--ink);border:5px solid var(--ink);padding:14px 34px;cursor:pointer;
+  box-shadow:1px 1px 0 var(--ink),2px 2px 0 var(--ink),3px 3px 0 var(--ink),4px 4px 0 var(--ink),5px 5px 0 var(--ink),6px 6px 0 var(--ink),7px 7px 0 var(--ink),8px 8px 0 var(--ink);
+  transition:transform .08s,box-shadow .08s}
+.manga3d .m3-btn:hover{transform:translate(-3px,-3px) rotate(-2deg)}
+.manga3d .m3-btn:active{transform:translate(8px,8px);box-shadow:0 0 0 var(--ink)}
 
 @media(max-width:860px){
   .manga3d .m3-panels,.manga3d .m3-perks{grid-template-columns:1fr}
-  .manga3d .m3-why{padding:28px 16px}
-  .manga3d .m3-burst{padding:22px 20px}
+  .manga3d .m3-why{padding:28px 18px}
+  .manga3d .m3-burst{padding:56px 44px}
   .manga3d .m3-head{transform:rotateX(8deg)}
 }
 @media(prefers-reduced-motion:reduce){.manga3d .m3-sfx{animation:none}.manga3d .m3-card,.manga3d .m3-perk{transition:none}}
-  
+
 /* ===== Page des annonces ===== */
 .search{padding:34px 16px 38px;color:#fff;
-  background:linear-gradient(90deg,rgba(20,6,40,.92) 0%,rgba(20,6,40,.55) 55%,rgba(20,6,40,.1) 100%),url(hero-tana.jpg) center/cover,var(--forest2)}
+  background:linear-gradient(90deg,rgba(14,70,45,.92) 0%,rgba(14,70,45,.55) 55%,rgba(14,70,45,.1) 100%),url(hero-tana.jpg) center/cover,var(--forest)}
 .search .in{max-width:1100px;margin:auto;position:relative}
 .search h2{font-size:clamp(1.8rem,5vw,2.8rem);line-height:1.1;margin-bottom:8px}
 .search h2 em{display:block;color:var(--lime);font-style:normal}
@@ -255,7 +241,7 @@ footer button.flink:hover{text-decoration:underline}
   font:700 1.9rem/1.15 "Dancing Script","Brush Script MT",cursive;text-shadow:0 2px 8px rgba(0,0,0,.4)}
 .slogan::after{content:"";display:block;height:3px;margin-top:6px;background:#fff;border-radius:3px;transform:rotate(-3deg)}
 @media(max-width:800px){.slogan{display:none}}
-@media(max-width:700px)
+@media(max-width:700px){
   .search form{flex-wrap:wrap;border-radius:22px;padding:10px}
   .search form input#q{flex:1 1 100%}
   .search form select,.search form .ville{flex:1 1 45%;width:auto;border:1px solid var(--line);border-radius:999px}
@@ -284,20 +270,6 @@ body:not(.landing) .links{display:flex}
 main .head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
 main .head h1{margin:0}
 main .head a{font-weight:600;text-decoration:none}
-/* Panneau "Pourquoi choisir" : couleurs néon du PC */
-.manga3d .m3-why{
-  background:radial-gradient(circle at 10% 0,rgba(255,61,216,.28),transparent 45%),radial-gradient(circle at 90% 100%,rgba(34,228,240,.22),transparent 45%),linear-gradient(135deg,#0b0614,#1a0b2e 60%,#2a0f4a);
-  border:1px solid rgba(255,61,216,.55);
-  box-shadow:0 0 28px rgba(255,61,216,.35),0 20px 40px rgba(5,0,15,.5);
-}
-.manga3d .m3-perk{
-  border:1px solid rgba(255,61,216,.45);
-  box-shadow:0 0 14px rgba(255,61,216,.25),0 10px 22px rgba(0,0,0,.35);
-}
-.manga3d .m3-perk b{
-  color:#22e4f0;
-  text-shadow:0 0 12px rgba(34,228,240,.85);
-}  
 </style>
 </head>
 <body class="landing">
@@ -447,41 +419,10 @@ main .head a{font-weight:600;text-decoration:none}
 </main>
 
 <footer>
-  <div class="fhero">
-    <div class="fhero-in">
-      <div class="frow">
-        <div class="fbrand">
-          <div class="ftitle">Annonces des meilleurs produits</div>
-          <p>Achetez, vendez et trouvez près de chez vous, partout à Madagascar.</p>
-          <p style="margin-top:10px">Moyens de paiement courants entre acheteurs et vendeurs :</p>
-          <div class="pays">
-            <span class="pay"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>Mvola</span>
-            <span class="pay"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>Orange Money</span>
-            <span class="pay"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>Visa</span>
-          </div>
-        </div>
-        <div class="fcol">
-          <h4>Découvrir</h4>
-          <button class="flink" id="fHome">Accueil</button>
-          <button class="flink" id="fAds">Annonces</button>
-          <button class="flink" id="footHelp">Comment ça marche ?</button>
-          <button class="flink" id="fPost">Déposer une annonce</button>
-        </div>
-        <div class="fcol">
-          <h4>Catégories</h4>
-          <button class="flink" data-fcat="formation">Formation</button>
-          <button class="flink" data-fcat="emploi">Emplois</button>
-          <button class="flink" data-fcat="vente">Ventes</button>
-          <button class="flink" data-fcat="transport">Transport</button>
-        </div>
-      </div>
-      <div class="fbottom">
-        <span>© 2026 Tous droits réservés</span>
-        <span>hasintsorh@email.com</span>
-        <span>038 69 493 66</span>
-        <span>Madagascar</span>
-      </div>
-    </div>
+  <div class="in">
+    <div class="fbrand"><b>Hasintsoa</b><small>Tout en un seul endroit</small></div>
+    <button type="button" id="footHelp">Comment ça marche ?</button>
+    <div class="fend"><span>© 2026 Hasintsoa. Tous droits réservés.</span><span>Madagascar</span></div>
   </div>
 </footer>
 
@@ -576,15 +517,6 @@ document.querySelectorAll('.tile').forEach(t => t.onclick = () => {
 });
 
 function renderAuthBtn() {
-$('fHome').onclick = showWelcome;
-$('fAds').onclick = closeWelcome;
-$('fPost').onclick = () => $('btnPost').click();
-document.querySelectorAll('[data-fcat]').forEach(b => b.onclick = () => {
-  closeWelcome();
-  const c = cats.find(x => norm(x.nom).includes(b.dataset.fcat));
-  cat = c ? c.id : null; q = ''; $('q').value = ''; $('qCat').value = c ? c.id : '';
-  markCat(); loadAds();
-});  
   $('btnAuth').textContent = user ? 'Se déconnecter' : 'Se connecter';
 }
 $('btnAuth').onclick = async () => {
