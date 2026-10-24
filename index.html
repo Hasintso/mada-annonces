@@ -170,54 +170,60 @@ footer button.flink:hover{text-decoration:underline}
 @media(prefers-reduced-motion:no-preference){.ad{transition:border-color .15s}.tile{transition:transform .15s,border-color .15s}.tile:hover{transform:translateY(-3px)}}
 
 /* ===== Section 3D professionnelle ===== */
-.manga3d{--y:#1f5a46;--b:#2a6fd0;--p:#d99a00;
-  margin-top:48px;color:var(--ink);font:600 16px/1.55 "Nunito","Segoe UI",Roboto,Arial,sans-serif}
-.manga3d h3,.manga3d .m3-num,.manga3d .m3-perk b,#welcome .manga3d h2{font-family:Georgia,"Times New Roman",serif;font-weight:700;letter-spacing:0;line-height:1.15;margin:0}
-.manga3d .m3-ext{color:var(--ink);text-transform:none;-webkit-text-stroke:0;text-shadow:none}
-.manga3d .m3-thick{box-shadow:none}
-.manga3d .m3-sfx{display:none}
-
-.manga3d .m3-stage{margin-bottom:34px}
-.manga3d .m3-head{border:0;background:none;padding:0;text-align:center;transform:none}
-.manga3d .m3-head::before{display:none}
-.manga3d .m3-head::after{content:"";display:block;width:64px;height:4px;border-radius:4px;background:var(--saffron);margin:14px auto 0}
-#welcome .manga3d .m3-head h2{font-size:clamp(1.7rem,4.2vw,2.5rem);color:var(--ink);text-shadow:0 1px 0 rgba(255,255,255,.7)}
-
-.manga3d .m3-panels{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
+/* ===== Manga 3D (haut) + style professionnel (bas) ===== */
+.manga3d{--ink:#0d0d0d;--bubble:#fff;--navy:#1b1a4a;--y:#ffd23f;--b:#6fcfff;--p:#ff9ec7;--g:#2fa36b;
+  margin-top:40px;color:var(--ink);font:600 17px/1.5 "Nunito","Trebuchet MS",sans-serif}
+.manga3d h3,.manga3d .m3-num,.manga3d .m3-sfx,.manga3d .m3-perk b,#welcome .manga3d h2{
+  font-family:"Bangers","Impact",sans-serif;font-weight:400;letter-spacing:.04em;line-height:1;margin:0}
+.manga3d .m3-ext{color:#fff;text-transform:uppercase;-webkit-text-stroke:2px var(--ink);
+  text-shadow:1px 1px 0 var(--ink),2px 2px 0 var(--ink),3px 3px 0 var(--ink),4px 4px 0 var(--ink),5px 5px 0 var(--ink),6px 6px 0 var(--ink),7px 7px 0 var(--ink),8px 8px 0 var(--ink),12px 14px 18px rgba(0,0,0,.35)}
+.manga3d .m3-thick{box-shadow:1px 1px 0 var(--ink),2px 2px 0 var(--ink),3px 3px 0 var(--ink),4px 4px 0 var(--ink),5px 5px 0 var(--ink),6px 6px 0 var(--ink),7px 7px 0 var(--ink),8px 8px 0 var(--ink),9px 9px 0 var(--ink),10px 10px 0 var(--ink),22px 26px 30px rgba(0,0,0,.35)}
+.manga3d .m3-stage{perspective:1000px;margin-bottom:46px}
+.manga3d .m3-head{transform:rotateX(14deg) rotateY(-5deg);transform-origin:50% 100%;border:6px solid var(--ink);
+  background:linear-gradient(100deg,var(--y),var(--p));padding:36px 18px;text-align:center;position:relative}
+.manga3d .m3-head::before{content:"";position:absolute;inset:0;background:radial-gradient(circle,rgba(0,0,0,.28) 20%,transparent 22%) 0 0/9px 9px;opacity:.5}
+#welcome .manga3d .m3-head h2{position:relative;font-size:clamp(32px,6.2vw,62px)}
+.manga3d .m3-panels{display:grid;grid-template-columns:repeat(3,1fr);gap:34px}
 .manga3d .m3-panel{perspective:1100px}
 .manga3d .m3-card{position:relative;transform-style:preserve-3d;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));
-  transition:transform .18s ease-out;min-height:340px;display:flex;flex-direction:column;padding:28px 22px 22px}
-.manga3d .m3-face{position:absolute;inset:0;border:0;border-radius:20px;overflow:hidden;background:#fff;
-  box-shadow:0 2px 4px rgba(20,36,31,.08),0 16px 32px rgba(20,36,31,.2)}
-.manga3d .m3-face::before{content:"";position:absolute;left:0;right:0;top:0;height:6px;background:var(--c)}
+  transition:transform .18s ease-out;min-height:380px;display:flex;flex-direction:column;padding:22px 18px}
+.manga3d .m3-face{position:absolute;inset:0;border:6px solid var(--ink);overflow:hidden;background:var(--c)}
+.manga3d .m3-face::before{content:"";position:absolute;inset:0;background:repeating-conic-gradient(from 0deg at 50% 36%,rgba(0,0,0,.14) 0 3deg,transparent 3deg 9deg)}
 .manga3d .m3-card>*:not(.m3-face){position:relative}
-.manga3d .m3-num{font-size:3.2rem;color:var(--c);transform:translateZ(60px);align-self:flex-start;text-shadow:0 6px 12px rgba(20,36,31,.2)}
-.manga3d .m3-card h3{font-size:1.35rem;margin:6px 0 8px;transform:translateZ(40px);color:var(--ink);text-transform:none;text-shadow:none}
-.manga3d .m3-icon{width:96px;height:66px;transform:translateZ(50px);margin:6px 0 16px;stroke:var(--c);stroke-width:3.5;filter:drop-shadow(0 8px 8px rgba(20,36,31,.2))}
-.manga3d .m3-icon *{fill:var(--c);fill-opacity:.1}
-.manga3d .m3-speech{margin-top:auto;background:var(--paper);border:0;border-left:4px solid var(--c);border-radius:12px;padding:12px 14px;transform:translateZ(28px);box-shadow:none;font-size:.95rem}
+.manga3d .m3-num{font-size:84px;color:#fff;-webkit-text-stroke:3px var(--ink);
+  text-shadow:3px 3px 0 var(--ink),6px 6px 0 var(--ink),9px 9px 0 var(--g);transform:translateZ(80px);align-self:flex-start}
+.manga3d .m3-card h3{font-size:31px;text-transform:uppercase;margin:6px 0 8px;transform:translateZ(45px);text-shadow:2px 2px 0 rgba(255,255,255,.55)}
+.manga3d .m3-icon{width:110px;height:76px;transform:translateZ(60px);margin-bottom:14px;filter:drop-shadow(5px 6px 0 rgba(0,0,0,.35))}
+.manga3d .m3-speech{margin-top:auto;background:var(--bubble);border:4px solid var(--ink);border-radius:22px;padding:12px 14px;transform:translateZ(35px);box-shadow:4px 5px 0 var(--ink)}
 .manga3d .m3-speech p{margin:0}
+.manga3d .m3-sfx{position:absolute!important;top:10px;right:12px;font-size:32px;color:var(--g);-webkit-text-stroke:1.5px var(--ink);
+  text-shadow:2px 2px 0 var(--ink),3px 3px 0 var(--ink);transform:translateZ(110px) rotate(-10deg);animation:m3bob 2.4s ease-in-out infinite alternate}
+@keyframes m3bob{to{transform:translateZ(135px) rotate(-6deg) translateY(-5px)}}
 
+/* --- Panneau « Pourquoi choisir » : professionnel --- */
 .manga3d .m3-why{margin-top:56px;border:0;border-radius:24px;padding:40px 30px;position:relative;color:#fff;overflow:hidden;
   background:radial-gradient(circle at 10% 0,rgba(255,255,255,.1),transparent 45%),linear-gradient(135deg,#174536,#1f5a46 60%,#2a6a56);
   box-shadow:0 20px 40px rgba(10,30,24,.35)}
 .manga3d .m3-why::before{display:none}
-#welcome .manga3d .m3-why h2{font-size:clamp(1.6rem,4vw,2.3rem);color:#fff;margin-bottom:26px;text-align:center;text-shadow:none}
+.manga3d .m3-why>*{position:relative}
+#welcome .manga3d .m3-why h2{font-family:Georgia,"Times New Roman",serif;font-weight:700;letter-spacing:0;line-height:1.15;
+  font-size:clamp(1.6rem,4vw,2.3rem);color:#fff;margin-bottom:26px;text-align:center;text-transform:none;-webkit-text-stroke:0;text-shadow:none}
 .manga3d .m3-perks{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 .manga3d .m3-perkwrap{perspective:700px}
 .manga3d .m3-perk{display:flex;gap:14px;align-items:center;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.22);border-radius:16px;padding:16px 18px;
   transform-style:preserve-3d;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .18s ease-out;box-shadow:0 10px 22px rgba(0,0,0,.22)}
-.manga3d .m3-perk b{font-size:2.4rem;color:var(--saffron);line-height:1;min-width:34px;text-align:center;transform:translateZ(44px);text-shadow:0 4px 10px rgba(0,0,0,.35)}
+.manga3d .m3-perk b{font-family:Georgia,"Times New Roman",serif;font-weight:700;letter-spacing:0;font-size:2.4rem;color:var(--saffron);line-height:1;min-width:34px;text-align:center;transform:translateZ(44px);text-shadow:0 4px 10px rgba(0,0,0,.35)}
 .manga3d .m3-perk div{transform:translateZ(22px)}
-.manga3d .m3-perk h3{font-size:1.15rem;margin-bottom:2px;color:#fff;text-transform:none}
+.manga3d .m3-perk h3{font-family:Georgia,"Times New Roman",serif;font-weight:700;letter-spacing:0;line-height:1.15;font-size:1.15rem;margin-bottom:2px;color:#fff;text-transform:none}
 .manga3d .m3-perk p{margin:0;opacity:.9;font-size:.94rem}
 .manga3d .m3-leave{transition:transform .5s cubic-bezier(.2,1.6,.4,1)}
 
+/* --- Appel à l'action final : professionnel --- */
 .manga3d.m3-bottom{padding-bottom:48px}
 .manga3d .m3-cta{display:flex;align-items:center;justify-content:center;gap:26px;flex-wrap:wrap}
 .manga3d .m3-burstwrap{flex:1 1 440px;filter:none}
 .manga3d .m3-burst{min-height:0;display:block;padding:26px 30px;text-align:left;background:#fff;clip-path:none;border-radius:20px;border-left:6px solid var(--saffron);box-shadow:0 14px 30px rgba(20,36,31,.2)}
-#welcome .manga3d .m3-burst h2{font-size:clamp(1.15rem,2.6vw,1.6rem);line-height:1.3;color:var(--ink)}
+#welcome .manga3d .m3-burst h2{font-family:Georgia,"Times New Roman",serif;font-weight:700;letter-spacing:0;font-size:clamp(1.15rem,2.6vw,1.6rem);line-height:1.3;color:var(--ink)}
 .manga3d .m3-btn{font:800 1.05rem "Nunito","Segoe UI",sans-serif;letter-spacing:.02em;text-transform:none;color:var(--ink);background:var(--saffron);-webkit-text-stroke:0;
   border:0;border-radius:999px;padding:16px 34px;cursor:pointer;box-shadow:0 5px 0 #b88a00,0 14px 22px rgba(10,30,24,.28);transition:transform .08s,box-shadow .08s}
 .manga3d .m3-btn:hover{transform:translateY(-2px);box-shadow:0 7px 0 #b88a00,0 18px 26px rgba(10,30,24,.3)}
@@ -226,9 +232,10 @@ footer button.flink:hover{text-decoration:underline}
 @media(max-width:860px){
   .manga3d .m3-panels,.manga3d .m3-perks{grid-template-columns:1fr}
   .manga3d .m3-why{padding:28px 16px}
-  .manga3d .m3-card{min-height:0}
+  .manga3d .m3-burst{padding:22px 20px}
+  .manga3d .m3-head{transform:rotateX(8deg)}
 }
-@media(prefers-reduced-motion:reduce){.manga3d .m3-card,.manga3d .m3-perk{transition:none}}
+@media(prefers-reduced-motion:reduce){.manga3d .m3-sfx{animation:none}.manga3d .m3-card,.manga3d .m3-perk{transition:none}}
   
 /* ===== Page des annonces ===== */
 .search{padding:34px 16px 38px;color:#fff;
