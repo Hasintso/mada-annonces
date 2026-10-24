@@ -315,8 +315,19 @@ footer .fbottom{
 footer .fgrid p{color:#3f4d47}
 footer .fgrid h4{color:#2f3d37}
 footer .pay{background:rgba(255,255,255,.65)}
-
-#welcome{border-bottom:0}  
+  
+/* ===== Image continue sur l'accueil ===== */
+body.landing{
+  background:#1f5a46 url(hashtag-bg.png) center/cover no-repeat fixed;
+}
+body.landing #welcome{
+  background:linear-gradient(90deg,rgba(255,255,255,.85) 0%,rgba(255,255,255,.45) 50%,rgba(255,255,255,0) 100%);
+  border-bottom:0;
+}
+body.landing footer{
+  background:transparent;
+  border-top:0;
+}
 </style>
 </head>
 <body class="landing">
