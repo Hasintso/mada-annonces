@@ -82,7 +82,7 @@ main h1{font-size:1.5rem;margin-bottom:16px;border-left:6px solid var(--forest);
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
 .ad{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 4px 14px rgba(20,36,31,.08);overflow:hidden;cursor:pointer;text-align:left;padding:0;display:block;width:100%}
 .ad:hover{border-color:var(--forest)}
-.ph{position:relative;aspect-ratio:4/3;background:#e7ece4 center/cover no-repeat;display:grid;place-items:center;color:var(--muted);font-size:.9rem}
+.ph{position:relative;aspect-ratio:4/3;background:#e7ece4  center bottom/cover no-repeat;display:grid;place-items:center;color:var(--muted);font-size:.9rem}
 .ad .b{padding:12px}
 .ad h3{font-size:1.05rem;line-height:1.25;margin-bottom:6px}
 .price{font-weight:700;color:var(--forest)}
@@ -234,7 +234,7 @@ footer button.flink:hover{color:var(--forest);text-decoration:underline}
 
 /* ===== Page des annonces ===== */
 .search{padding:34px 16px 38px;color:#fff;
-  background:linear-gradient(90deg,rgba(14,70,45,.92) 0%,rgba(14,70,45,.55) 55%,rgba(14,70,45,.1) 100%),url(hero-tana.jpg) center/cover,var(--forest)}
+  background:linear-gradient(90deg,rgba(14,70,45,.92) 0%,rgba(14,70,45,.55) 55%,rgba(14,70,45,.1) 100%),url(hero-tana.jpg)  center bottom/cover,var(--forest)}
 .search .in{max-width:1100px;margin:auto;position:relative}
 .search h2{font-size:clamp(1.8rem,5vw,2.8rem);line-height:1.1;margin-bottom:8px}
 .search h2 em{display:block;color:var(--lime);font-style:normal}
@@ -283,7 +283,7 @@ main .head a{font-weight:600;text-decoration:none}
 /* ===== Footer : image de fond + effet vitre (style Windows) ===== */
 footer{
   position:relative;
-  background:#1f5a46 url(hashtag-bg.png) center/cover no-repeat; /* même image que l'accueil */
+  background:#1f5a46 url(hashtag-bg.png)  center bottom/cover no-repeat; /* même image que l'accueil */
   border-top:0;
   padding:40px 16px;
 }
@@ -314,7 +314,9 @@ footer .fbottom{
 /* Lisibilité du texte sur le verre */
 footer .fgrid p{color:#3f4d47}
 footer .fgrid h4{color:#2f3d37}
-footer .pay{background:rgba(255,255,255,.65)}  
+footer .pay{background:rgba(255,255,255,.65)}
+
+#welcome{border-bottom:0}  
 </style>
 </head>
 <body class="landing">
