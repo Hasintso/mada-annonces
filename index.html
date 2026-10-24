@@ -108,12 +108,19 @@ label{display:block;font-weight:600;margin:12px 0 4px;font-size:.92rem}
 
 /* Accueil et liste des annonces ne s'affichent jamais en même temps */
 body.landing .search,body.landing nav,body.landing main{display:none}
-footer{background:var(--forest2);color:rgba(255,255,255,.8);font-size:.9rem}
-footer .in{max-width:1100px;margin:auto;padding:22px 16px;display:flex;gap:10px 20px;justify-content:space-between;align-items:center;flex-wrap:wrap}
-footer button{background:none;border:0;color:#fff;text-decoration:underline;padding:0}
-.fbrand b{display:block;font:700 1.6rem/1 Georgia,"Times New Roman",serif;color:#fff}
-.fbrand small{font-size:.75rem;opacity:.85}
-.fend{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:.82rem}
+footer{background:#fff;border-top:1px solid var(--line);color:var(--ink);font-size:.92rem}
+.fgrid{max-width:1100px;margin:auto;padding:36px 16px 10px;display:grid;grid-template-columns:1.6fr 1fr 1fr 1.2fr;gap:28px}
+.fgrid h4{margin:0 0 12px;font:600 .78rem "Segoe UI",Roboto,Arial,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.fgrid p{margin:0 0 8px;color:var(--muted)}
+.ftitle{font:700 1.25rem/1.25 Georgia,"Times New Roman",serif;color:var(--forest);margin-bottom:10px}
+footer button.flink{display:block;background:none;border:0;padding:5px 0;color:var(--ink);text-align:left}
+footer button.flink:hover{color:var(--forest);text-decoration:underline}
+.pays{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.pay{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-weight:600;font-size:.85rem;background:#fff}
+.pay svg{width:16px;height:16px;fill:none;stroke:var(--forest);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.fbottom{max-width:1100px;margin:auto;padding:16px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;color:var(--muted);font-size:.82rem}
+@media(max-width:800px){.fgrid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.fgrid{grid-template-columns:1fr}}
 
 /* ===== Page d'accueil ===== */
 #welcome{position:relative;overflow:hidden;border-bottom:1px solid var(--line);
@@ -419,11 +426,39 @@ main .head a{font-weight:600;text-decoration:none}
 </main>
 
 <footer>
-  <div class="in">
-    <div class="fbrand"><b>Hasintsoa</b><small>Tout en un seul endroit</small></div>
-    <button type="button" id="footHelp">Comment ça marche ?</button>
-    <div class="fend"><span>© 2026 Hasintsoa. Tous droits réservés.</span><span>Madagascar</span></div>
+  <div class="fgrid">
+    <div>
+      <div class="ftitle">Annonces des meilleurs produits</div>
+      <p>Achetez, vendez et trouvez près de chez vous, partout à Madagascar.</p>
+      <p style="margin-top:14px;font-size:.85rem">Moyens de paiement courants entre acheteurs et vendeurs :</p>
+      <div class="pays">
+        <span class="pay"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>Mvola</span>
+        <span class="pay"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>Orange Money</span>
+        <span class="pay"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>Visa</span>
+      </div>
+    </div>
+    <div>
+      <h4>Découvrir</h4>
+      <button class="flink" id="fHome">Accueil</button>
+      <button class="flink" id="fAds">Annonces</button>
+      <button class="flink" id="footHelp">Comment ça marche ?</button>
+      <button class="flink" id="fPost">Déposer une annonce</button>
+    </div>
+    <div>
+      <h4>Catégories</h4>
+      <button class="flink" data-fcat="formation">Formation</button>
+      <button class="flink" data-fcat="emploi">Emplois</button>
+      <button class="flink" data-fcat="vente">Ventes</button>
+      <button class="flink" data-fcat="transport">Transport</button>
+    </div>
+    <div>
+      <h4>Contact</h4>
+      <p>hasintsorh@email.com</p>
+      <p>038 69 493 66</p>
+      <p>Madagascar</p>
+    </div>
   </div>
+  <div class="fbottom"><span>© 2026 Tous droits réservés</span><span>Madagascar</span></div>
 </footer>
 
 <!-- Connexion -->
@@ -517,6 +552,15 @@ document.querySelectorAll('.tile').forEach(t => t.onclick = () => {
 });
 
 function renderAuthBtn() {
+$('fHome').onclick = showWelcome;
+$('fAds').onclick = closeWelcome;
+$('fPost').onclick = () => $('btnPost').click();
+document.querySelectorAll('[data-fcat]').forEach(b => b.onclick = () => {
+  closeWelcome();
+  const c = cats.find(x => norm(x.nom).includes(b.dataset.fcat));
+  cat = c ? c.id : null; q = ''; $('q').value = ''; $('qCat').value = c ? c.id : '';
+  markCat(); loadAds();
+});  
   $('btnAuth').textContent = user ? 'Se déconnecter' : 'Se connecter';
 }
 $('btnAuth').onclick = async () => {
