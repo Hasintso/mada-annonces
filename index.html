@@ -328,6 +328,18 @@ body.landing footer{
   background:transparent;
   border-top:0;
 }
+/* Texte du hero lisible sur l'image */
+body.landing .hero > div:first-child{
+  background:linear-gradient(115deg,rgba(255,255,255,.78) 0%,rgba(255,255,255,.55) 100%);
+  -webkit-backdrop-filter:blur(14px) saturate(1.4);
+  backdrop-filter:blur(14px) saturate(1.4);
+  border:1px solid rgba(255,255,255,.75);
+  border-radius:22px;
+  padding:26px 28px;
+  box-shadow:0 14px 34px rgba(10,30,70,.25);
+  align-self:end;
+}
+body.landing .hero p{color:#2f3d37}  
 </style>
 </head>
 <body class="landing">
