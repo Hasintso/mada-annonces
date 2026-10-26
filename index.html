@@ -434,6 +434,9 @@ body.landing .shell{display:none}
 .sub:hover{background:#fbeedd}
 #typeBox{padding:2px 6px 8px 14px;color:var(--muted);font-size:.9rem}
 #needMenu #cats{padding-left:10px}
+#cats .subs{display:flex;flex-direction:column;gap:2px;margin:2px 0 6px 12px;padding-left:8px;border-left:2px solid var(--line)}
+#cats .subs[hidden]{display:none}
+#cats .subs button{font-size:.9rem;font-weight:500;padding:7px 10px}
 #cats button{display:flex;justify-content:space-between;align-items:center;gap:8px;background:none;border:0;border-radius:8px;padding:9px 12px;text-align:left;color:var(--ink);font-weight:600}
 #cats button:hover{background:#fbeedd}
 #cats button.on{background:var(--forest);color:#fff}
@@ -451,10 +454,6 @@ body.landing .shell{display:none}
 @media(max-width:860px){
   .shell{grid-template-columns:1fr;gap:14px;padding-top:14px}
   .side{position:static;padding:0}
-  #cats{flex-direction:row;flex-wrap:wrap;gap:6px}
-  #cats::-webkit-scrollbar{display:none}
-  #cats button{flex:none;border:1px solid var(--line);border-radius:999px;padding:7px 14px}
-  #cats button.on{border-color:var(--forest)}
 }
 
 /* ===== En-tête style Dribbble : 3 barres, S'inscrire / Se connecter ===== */
@@ -743,6 +742,7 @@ let SB = {
 };
 let sbReady = false;
 const $ = id => document.getElementById(id);
+let maxPrix = null, needKey = null;
 let user = null, cats = [], cat = null, q = '', signup = false, ads = [], reqId = 0, sort = 'recent';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -785,7 +785,12 @@ $('mnAds').onclick = closeWelcome;
 $('lkAds').onclick = closeWelcome;
 $('lkCats').onclick = () => { closeWelcome(); $('side').scrollIntoView({ behavior: 'smooth' }); };
 
-const markCat = () => $('cats').querySelectorAll('button').forEach(x => x.classList.toggle('on', x.dataset.c === String(cat ?? '')));
+const markCat = keep => {
+  if (!keep) { maxPrix = null; needKey = null; }
+  const box = $('cats');
+  box.querySelectorAll('button[data-key]').forEach(x => x.classList.toggle('on', x.dataset.key === needKey));
+  box.querySelectorAll('.subs').forEach(s => s.hidden = s.dataset.key !== needKey);
+};
 
 /* Un clic sur une case de catégorie ouvre directement cette catégorie (recherche tolérante aux accents et à « & ») */
 document.querySelectorAll('.tile').forEach(t => t.onclick = () => {
@@ -869,17 +874,39 @@ async function loadCats() {
   loadCounts();
 }
 
-/* Menu « Ici votre besoin » : 4 entrées, reliées aux catégories de la base par leur nom */
-const NEED = [['Ventes', 'vente'], ['Confie', 'confie'], ['Musics', 'music'], ['Création', 'creation']];
+/* Menu « Ici votre besoin » : 4 entrées, reliées aux catégories de la base par leur nom.
+   Chaque entrée a ses sous-options : tri/filtre de prix (Ventes) ou dépôt d'annonce pré-rempli (les autres). */
+const PETIT_PRIX = 100000; // « Petit prix » = annonces jusqu'à ce montant (en Ar) : modifiez ici si besoin
+const NEED = [
+  ['Ventes', 'vente', [['Meilleurs prix', 'sort', 'asc'], ['Grand prix', 'sort', 'desc'], ['Petit prix', 'petit', 'asc']]],
+  ['Confie', 'confie', [['Déposer une tâche Excel', 'post', 'Tâche Excel : '], ['Déposer une tâche de développeur web', 'post', 'Tâche développeur web : ']]],
+  ['Musics', 'music', [['Trouver des producteurs', 'post', 'Recherche producteur : '], ['Vendre ma production', 'post', 'Production à vendre : '], ['Organisation complète', 'post', 'Organisation complète : ']]],
+  ['Création', 'creation', [['Déposer en tant que vidéaste', 'post', 'Vidéaste : '], ['Déposer pour réaliser des graphismes', 'post', 'Graphisme : '], ['Déposer pour la création web', 'post', 'Création web : '], ['Déposer pour toute création', 'post', 'Création : ']]]
+];
 const needId = key => { const c = cats.find(x => norm(x.nom).includes(key)); return c ? c.id : -1; };
+const syncTabs = () => document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x.dataset.s === sort));
 function renderNeed() {
-  $('cats').innerHTML = NEED.map(([label, key]) => { const id = needId(key); return `<button data-c="${id}" data-key="${key}"><span>${label}</span><span class="n" data-n="${id}"></span></button>`; }).join('');
-  $('cats').querySelectorAll('button').forEach(b => b.onclick = () => {
-    cat = +b.dataset.c; q = ''; $('q').value = '';
+  $('cats').innerHTML = NEED.map(([label, key, subs]) => { const id = needId(key); return `<div class="grp">
+    <button data-c="${id}" data-key="${key}"><span>${label}</span><span class="n" data-n="${id}"></span></button>
+    <div class="subs" data-key="${key}" hidden>${subs.map((s, i) => `<button class="sb" data-i="${i}">${s[0]}</button>`).join('')}</div></div>`; }).join('');
+  $('cats').querySelectorAll('button[data-key]').forEach(b => b.onclick = () => {
+    cat = +b.dataset.c; q = ''; $('q').value = ''; sort = 'recent'; syncTabs();
     $('qCat').value = cat > 0 ? cat : '';
-    markCat(); loadAds();
+    markCat(); needKey = b.dataset.key; markCat(true); loadAds();
   });
-  markCat();
+  $('cats').querySelectorAll('.subs').forEach(box => box.querySelectorAll('.sb').forEach(sb => sb.onclick = () => {
+    const key = box.dataset.key, [, type, val] = NEED.find(n => n[1] === key)[2][+sb.dataset.i];
+    box.querySelectorAll('.sb').forEach(x => x.classList.toggle('on', x === sb));
+    if (type === 'post') {
+      $('btnPost').onclick();
+      if (user) { const id = needId(key); if (id > 0) $('pCat').value = id; $('pTitre').value = val; }
+      return;
+    }
+    cat = needId(key); q = ''; $('q').value = ''; $('qCat').value = cat > 0 ? cat : '';
+    sort = val; syncTabs(); maxPrix = type === 'petit' ? PETIT_PRIX : null;
+    needKey = key; markCat(true); loadAds();
+  }));
+  markCat(true);
 }
 const toggle = (btn, box) => { box.hidden = !box.hidden; btn.classList.toggle('open', !box.hidden); };
 $('needBtn').onclick = () => { toggle($('needBtn'), $('needMenu')); $('needBtn').setAttribute('aria-expanded', !$('needMenu').hidden); };
@@ -901,6 +928,7 @@ async function loadAds() {
     : r.order('prix', { ascending: sort === 'asc', nullsFirst: false }).order('cree_le', { ascending: false });
   r = r.limit(60);
   if (cat) r = r.eq('category_id', cat);
+  if (maxPrix) r = r.lte('prix', maxPrix);
   const v = clean($('qVille').value);
   if (v) r = r.ilike('ville', `%${v}%`);
   const t = clean(q);
