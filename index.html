@@ -869,8 +869,10 @@ async function loadCats() {
   cats = data || [];
   if (!cats.length && !sbReady) return;
   renderNeed();
-  $('pCat').innerHTML = cats.map(c => `<option value="${c.id}">${esc(c.nom)}</option>`).join('');
-  $('qCat').innerHTML = '<option value="">Toutes catégories</option>' + cats.map(c => `<option value="${c.id}">${esc(c.nom)}</option>`).join('');
+  /* Les listes de catégories (recherche + dépôt) reprennent les 4 entrées de « Ici votre besoin » */
+  $('pCat').innerHTML = NEED.map(([label, key]) => { const id = needId(key); return id > 0 ? `<option value="${id}">${label}</option>` : `<option value="" disabled>${label} (indisponible)</option>`; }).join('');
+  const firstOk = [...$('pCat').options].find(o => !o.disabled); if (firstOk) $('pCat').value = firstOk.value;
+  $('qCat').innerHTML = '<option value="">Toutes catégories</option>' + NEED.map(([label, key]) => `<option value="${qCatVal(key)}">${label}</option>`).join('');
   loadCounts();
 }
 
@@ -879,10 +881,11 @@ async function loadCats() {
 const PETIT_PRIX = 100000; // « Petit prix » = annonces jusqu'à ce montant (en Ar) : modifiez ici si besoin
 const NEED = [
   ['Ventes', 'vente', [['Meilleurs prix', 'sort', 'asc'], ['Grand prix', 'sort', 'desc'], ['Petit prix', 'petit', 'asc']]],
-  ['Tache & Devoir', 'Tache & Devoir', [['Déposer une tâche Excel', 'post', 'Tâche Excel : '], ['Déposer une tâche de développeur web', 'post', 'Tâche développeur web : ']]],
+  ['Confie', 'confie', [['Déposer une tâche Excel', 'post', 'Tâche Excel : '], ['Déposer une tâche de développeur web', 'post', 'Tâche développeur web : ']]],
   ['Musics', 'music', [['Trouver des producteurs', 'post', 'Recherche producteur : '], ['Vendre ma production', 'post', 'Production à vendre : '], ['Organisation complète', 'post', 'Organisation complète : ']]],
   ['Création', 'creation', [['Déposer en tant que vidéaste', 'post', 'Vidéaste : '], ['Déposer pour réaliser des graphismes', 'post', 'Graphisme : '], ['Déposer pour la création web', 'post', 'Création web : '], ['Déposer pour toute création', 'post', 'Création : ']]]
 ];
+const qCatVal = key => needId(key) > 0 ? needId(key) : 'k:' + key;
 const needId = key => { const c = cats.find(x => norm(x.nom).includes(key)); return c ? c.id : -1; };
 const syncTabs = () => document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x.dataset.s === sort));
 function renderNeed() {
@@ -891,7 +894,7 @@ function renderNeed() {
     <div class="subs" data-key="${key}" hidden>${subs.map((s, i) => `<button class="sb" data-i="${i}">${s[0]}</button>`).join('')}</div></div>`; }).join('');
   $('cats').querySelectorAll('button[data-key]').forEach(b => b.onclick = () => {
     cat = +b.dataset.c; q = ''; $('q').value = ''; sort = 'recent'; syncTabs();
-    $('qCat').value = cat > 0 ? cat : '';
+    $('qCat').value = qCatVal(b.dataset.key);
     markCat(); needKey = b.dataset.key; markCat(true); loadAds();
   });
   $('cats').querySelectorAll('.subs').forEach(box => box.querySelectorAll('.sb').forEach(sb => sb.onclick = () => {
@@ -902,7 +905,7 @@ function renderNeed() {
       if (user) { const id = needId(key); if (id > 0) $('pCat').value = id; $('pTitre').value = val; }
       return;
     }
-    cat = needId(key); q = ''; $('q').value = ''; $('qCat').value = cat > 0 ? cat : '';
+    cat = needId(key); q = ''; $('q').value = ''; $('qCat').value = qCatVal(key);
     sort = val; syncTabs(); maxPrix = type === 'petit' ? PETIT_PRIX : null;
     needKey = key; markCat(true); loadAds();
   }));
@@ -957,7 +960,7 @@ async function loadAds() {
 }
 $('searchForm').onsubmit = e => {
   e.preventDefault(); q = $('q').value;
-  cat = $('qCat').value ? +$('qCat').value : null;
+  { const v = $('qCat').value; cat = !v ? null : v.startsWith('k:') ? -1 : +v; }
   markCat(); loadAds();
 };
 document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => {
