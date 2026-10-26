@@ -386,6 +386,19 @@ body.landing .hero p{color:#2f3d37}
 .manga3d .m3-perk b,.manga3d .m3-perk h3,.manga3d .m3-perk p{text-shadow:0 1px 3px rgba(0,0,0,.8),0 0 12px rgba(0,0,0,.5)}
 .manga3d .m3-perk p{opacity:1;color:#fff}
 .manga3d .m3-perk b{font-size:2.8rem;min-width:44px}
+
+/* ===== Pied de page de la page des annonces : fond simple, SANS baobabs (le dessin reste sur l'accueil seulement) ===== */
+body:not(.landing) footer{background:#fff;background-image:none;border-top:1px solid var(--line);padding:0}
+body:not(.landing) footer,
+body:not(.landing) footer .fgrid p,
+body:not(.landing) footer .fbottom span{color:var(--muted);text-shadow:none}
+body:not(.landing) footer .fgrid h4{color:var(--muted);text-shadow:none}
+body:not(.landing) footer .ftitle{color:var(--forest);text-shadow:none}
+body:not(.landing) footer button.flink{color:var(--ink);text-shadow:none}
+body:not(.landing) footer button.flink:hover{color:var(--forest)}
+body:not(.landing) footer .pay{background:#fff;border:1px solid var(--line);color:var(--ink);text-shadow:none}
+body:not(.landing) footer .pay svg{stroke:var(--forest)}
+body:not(.landing) footer .fbottom{border-top:1px solid var(--line);padding-bottom:16px}
 </style>
 </head>
 <body class="landing">
