@@ -289,27 +289,34 @@ footer{
 
 /* Panneau en verre dépoli : partie haute (liens, contact...) */
 footer .fgrid{
-  background:#fff;
-  border:1px solid var(--line);
-  border-bottom:0;
-  border-radius:22px 22px 0 0;
-  box-shadow:0 -10px 30px rgba(10,30,70,.18);
-}
-
-/* Panneau du bas (© 2026...) : plein aussi, collé tout en bas de la page */
-footer .fbottom{
-  background:#fff;
-  border:1px solid var(--line);
-  border-top:1px solid var(--line);
-  border-bottom:0;
+  background:none;
+  border:0;
   border-radius:0;
-  color:#3f4d47;
+  box-shadow:none;
+  -webkit-backdrop-filter:none;backdrop-filter:none;
 }
 
-/* Lisibilité du texte sur le verre */
-footer .fgrid p{color:#3f4d47}
-footer .fgrid h4{color:#2f3d37}
-footer .pay{background:#fff}
+/* Bande du bas (© 2026...) : seulement l'écriture, tout en bas de la page */
+footer .fbottom{
+  background:none;
+  border:0;
+  border-top:1px solid rgba(255,255,255,.45);
+  border-radius:0;
+  box-shadow:none;
+  -webkit-backdrop-filter:none;backdrop-filter:none;
+  padding-bottom:22px;
+  color:#fff;
+}
+
+/* Écriture blanche avec ombre : lisible sur le dessin, sans aucun cadre */
+footer,footer .fgrid p,footer .fgrid h4,footer button.flink,footer .fbottom span{
+  color:#fff;
+  text-shadow:0 1px 3px rgba(0,0,0,.75),0 0 12px rgba(0,0,0,.45);
+}
+footer .ftitle{color:#fff;text-shadow:0 2px 4px rgba(0,0,0,.8),0 0 14px rgba(0,0,0,.5)}
+footer button.flink:hover{color:var(--saffron)}
+footer .pay{background:none;border:1px solid rgba(255,255,255,.8);color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.75)}
+footer .pay svg{stroke:#fff}
 
 /* ===== Image continue sur l'accueil ===== */
 body.landing{
