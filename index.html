@@ -412,6 +412,41 @@ body:not(.landing) footer{display:none}
 .manga3d .m3-panels{align-items:stretch}
 .manga3d .m3-panel{display:flex}
 .manga3d .m3-panel .m3-card{flex:1 1 auto;width:100%}
+
+/* ===== Page des annonces : style « site de petites annonces » (catégories à gauche + grille de cartes) ===== */
+body.landing .shell{display:none}
+.search{padding:14px 16px;background:#fff;color:var(--ink);border-bottom:1px solid var(--line)}
+.search h2,.search p,.search .slogan{display:none}
+.search form{box-shadow:none;border:1.5px solid var(--line);background:#fff}
+.search form:focus-within{border-color:var(--forest)}
+.shell{max-width:1240px;margin:auto;padding:22px 16px 60px;display:grid;grid-template-columns:240px 1fr;gap:26px;align-items:start}
+.shell main{max-width:none;margin:0;padding:0}
+.side{position:sticky;top:16px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 8px}
+.side h3{margin:0 0 8px;padding:0 12px;font:700 .78rem "Segoe UI",Roboto,Arial,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+#cats{display:flex;flex-direction:column;gap:2px}
+#cats button{display:flex;justify-content:space-between;align-items:center;gap:8px;background:none;border:0;border-radius:8px;padding:9px 12px;text-align:left;color:var(--ink);font-weight:600}
+#cats button:hover{background:#eef4f0}
+#cats button.on{background:var(--forest);color:#fff}
+#cats .n{font-size:.78rem;font-weight:700;opacity:.65}
+.tabs{display:flex;gap:6px;margin:0 0 16px;flex-wrap:wrap}
+.tabs button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 16px;font-weight:600;color:var(--ink)}
+.tabs button:hover{border-color:var(--forest)}
+.tabs button.on{background:var(--forest);border-color:var(--forest);color:#fff}
+.grid{grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
+.ad{border-radius:10px;box-shadow:none}
+.ad:hover{box-shadow:0 8px 20px rgba(20,36,31,.14)}
+.ad .b{padding:10px 12px 12px}
+.ad .price{font-size:1.15rem;margin-bottom:2px}
+.ad h3{font:600 .95rem/1.3 "Segoe UI",Roboto,Helvetica,Arial,sans-serif;margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+@media(max-width:860px){
+  .shell{grid-template-columns:1fr;gap:14px;padding-top:14px}
+  .side{position:static;padding:8px;border-radius:12px}
+  .side h3{display:none}
+  #cats{flex-direction:row;overflow-x:auto;gap:6px;scrollbar-width:none}
+  #cats::-webkit-scrollbar{display:none}
+  #cats button{flex:none;border:1px solid var(--line);border-radius:999px;padding:7px 14px}
+  #cats button.on{border-color:var(--forest)}
+}
 </style>
 </head>
 <body class="landing">
@@ -554,12 +589,15 @@ body:not(.landing) footer{display:none}
     </form>
   </div>
 </div>
-<nav><div id="cats"></div></nav>
+<div class="shell">
+<aside class="side" id="side"><h3>Catégories</h3><div id="cats"></div></aside>
 <main>
   <div class="head"><h1 id="title">Dernières annonces</h1><a href="#" id="seeAll">Voir toutes les annonces →</a></div>
+  <div class="tabs" id="tabs"><button data-s="recent" class="on">Récentes</button><button data-s="asc">Prix croissant</button><button data-s="desc">Prix décroissant</button></div>
   <div class="grid" id="list"></div>
   <p class="empty" id="empty" hidden>Aucune annonce pour cette recherche. Soyez le premier à en déposer une.</p>
 </main>
+</div>
 
 <footer>
   <div class="fgrid">
@@ -635,7 +673,7 @@ body:not(.landing) footer{display:none}
 <script>
 const SB = supabase.createClient('https://ujxctcwkppmhamgkpvmg.supabase.co','sb_publishable_5TMigzGHfUs0RY9Jf-DTWA_K3YoBMh_');
 const $ = id => document.getElementById(id);
-let user = null, cats = [], cat = null, q = '', signup = false, ads = [], reqId = 0;
+let user = null, cats = [], cat = null, q = '', signup = false, ads = [], reqId = 0, sort = 'recent';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money = n => n == null || n === '' ? 'Prix à débattre' : new Intl.NumberFormat('fr-FR').format(n) + ' Ar';
@@ -674,7 +712,7 @@ $('logo').onclick = showWelcome;
 $('logo').onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showWelcome(); } };
 $('lkHome').onclick = showWelcome;
 $('lkAds').onclick = closeWelcome;
-$('lkCats').onclick = () => { closeWelcome(); document.querySelector('nav').scrollIntoView({ behavior: 'smooth' }); };
+$('lkCats').onclick = () => { closeWelcome(); $('side').scrollIntoView({ behavior: 'smooth' }); };
 
 const markCat = () => $('cats').querySelectorAll('button').forEach(x => x.classList.toggle('on', x.dataset.c === String(cat ?? '')));
 
@@ -733,7 +771,7 @@ SB.auth.onAuthStateChange((_ev, session) => {
 async function loadCats() {
   const { data } = await SB.from('ann_categories').select('*').order('id');
   cats = data || [];
-  $('cats').innerHTML = '<button data-c="" class="on">Toutes</button>' + cats.map(c => `<button data-c="${c.id}">${esc(c.nom)}</button>`).join('');
+  $('cats').innerHTML = '<button data-c="" class="on"><span>Toutes</span><span class="n" data-n="all"></span></button>' + cats.map(c => `<button data-c="${c.id}"><span>${esc(c.nom)}</span><span class="n" data-n="${c.id}"></span></button>`).join('');
   $('pCat').innerHTML = cats.map(c => `<option value="${c.id}">${esc(c.nom)}</option>`).join('');
   $('qCat').innerHTML = '<option value="">Toutes catégories</option>' + cats.map(c => `<option value="${c.id}">${esc(c.nom)}</option>`).join('');
   $('cats').querySelectorAll('button').forEach(b => b.onclick = () => {
@@ -741,11 +779,23 @@ async function loadCats() {
     $('qCat').value = cat ?? '';
     markCat(); loadAds();
   });
+  loadCounts();
+}
+
+/* Nombre d'annonces par catégorie (affiché à droite de chaque catégorie) */
+async function loadCounts() {
+  const { data } = await SB.from('ann_annonces').select('category_id').eq('statut', 'valide').limit(5000);
+  const c = { all: 0 };
+  (data || []).forEach(a => { c.all++; c[a.category_id] = (c[a.category_id] || 0) + 1; });
+  document.querySelectorAll('#cats [data-n]').forEach(el => el.textContent = c[el.dataset.n] || 0);
 }
 
 async function loadAds() {
   const my = ++reqId;
-  let r = SB.from('ann_annonces').select('*, ann_categories(nom)').eq('statut', 'valide').order('cree_le', { ascending: false }).limit(60);
+  let r = SB.from('ann_annonces').select('*, ann_categories(nom)').eq('statut', 'valide');
+  r = sort === 'recent' ? r.order('cree_le', { ascending: false })
+    : r.order('prix', { ascending: sort === 'asc', nullsFirst: false }).order('cree_le', { ascending: false });
+  r = r.limit(60);
   if (cat) r = r.eq('category_id', cat);
   const v = clean($('qVille').value);
   if (v) r = r.ilike('ville', `%${v}%`);
@@ -762,7 +812,7 @@ async function loadAds() {
     return `
     <article class="ad" data-i="${i}" role="button" tabindex="0">
       <div class="ph" ${p0 ? `style="background-image:url('${p0}')"` : ''}>${p0 ? '' : 'Pas de photo'}<span class="tag">${esc(a.ann_categories ? a.ann_categories.nom : '')}</span></div>
-      <div class="b"><h3>${esc(a.titre)}</h3><div class="price">${money(a.prix)}</div>
+      <div class="b"><div class="price">${money(a.prix)}</div><h3>${esc(a.titre)}</h3>
       <div class="meta">${esc(a.ville || 'Madagascar')} · ${ago(a.cree_le)}</div></div>
     </article>`;
   }).join('');
@@ -777,6 +827,11 @@ $('searchForm').onsubmit = e => {
   cat = $('qCat').value ? +$('qCat').value : null;
   markCat(); loadAds();
 };
+document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => {
+  sort = b.dataset.s;
+  document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x === b));
+  loadAds();
+});
 $('seeAll').onclick = e => {
   e.preventDefault(); cat = null; q = '';
   $('q').value = ''; $('qVille').value = ''; $('qCat').value = '';
@@ -797,7 +852,7 @@ function showAd(a) {
     if (!confirm('Supprimer cette annonce définitivement ?')) return;
     const { error } = await SB.from('ann_annonces').delete().eq('id', a.id);
     if (error) { alert('Suppression impossible : ' + error.message); return; }
-    close('mDet'); loadAds();
+    close('mDet'); loadAds(); loadCounts();
   };
   open('mDet');
 }
@@ -834,7 +889,7 @@ $('postForm').onsubmit = async e => {
   }
   go.disabled = false;
   $('postForm').reset(); close('mPost'); cat = null; q = ''; $('q').value = ''; $('qCat').value = '';
-  markCat(); loadAds();
+  markCat(); loadAds(); loadCounts();
 };
 
 const menu = $('menuList'), mb = $('btnMenu');
