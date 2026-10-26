@@ -407,6 +407,11 @@ body:not(.landing) footer{display:none}
 #welcome .manga3d .m3-why h2{text-align:left}
 .manga3d .m3-why{padding-left:6px}
 .manga3d .m3-perks{margin:0;width:min(100%,560px)}
+
+/* Les 3 cartes « Comment déposer » ont toutes exactement la même hauteur (celle de la plus haute) */
+.manga3d .m3-panels{align-items:stretch}
+.manga3d .m3-panel{display:flex}
+.manga3d .m3-panel .m3-card{flex:1 1 auto;width:100%}
 </style>
 </head>
 <body class="landing">
