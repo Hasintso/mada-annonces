@@ -513,7 +513,7 @@ body.landing .authbar .dark{background:#fff;color:var(--ink)}
   display:flex;flex-direction:column;gap:2px;transform:translateX(-102%);transition:transform .28s ease}
 .dd.show{transform:translateX(0)}
 .dd[hidden]{display:none}
-.ddhead{display:flex;align-items:center;justify-content:space-between;padding:6px 6px 12px;margin-bottom:6px;border-bottom:2px solid #f3e3d3}
+.ddhead{margin:0 0 6px;max-width:none;width:100%;display:flex;align-items:center;justify-content:space-between;padding:6px 6px 12px;margin-bottom:6px;border-bottom:2px solid #f3e3d3}
 .ddlogo{font:700 1.9rem/1 "Dancing Script","Brush Script MT",cursive;color:var(--forest)}
 .dd .ddx{display:grid;place-items:center;width:36px;height:36px;padding:0;border-radius:50%;background:#f3e3d3;color:var(--forest)}
 .dd .ddx:hover{background:#ecd3ba}
@@ -767,14 +767,14 @@ body.landing .net{position:fixed;left:0;right:0;bottom:0;z-index:40;border-top:1
 </div></div>
 
 <div class="ovl" id="menuOv" hidden></div>
-<nav class="dd" id="menuList" aria-label="Menu principal" hidden>
+<div class="dd" id="menuList" role="navigation" aria-label="Menu principal" hidden>
   <div class="ddhead"><span class="ddlogo">Accueil</span><button type="button" id="menuClose" class="ddx" aria-label="Fermer le menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
       <button id="mnHome">Accueil</button>
       <button id="mnAds">Annonces</button>
       <button id="btnHelp">Comment ça marche ?</button>
       <button id="mnSignup">S'inscrire</button>
       <button id="btnAuth">Se connecter</button>
-</nav>
+</div>
 <script>
 const SB_URL = 'https://ujxctcwkppmhamgkpvmg.supabase.co', SB_KEY = 'sb_publishable_5TMigzGHfUs0RY9Jf-DTWA_K3YoBMh_';
 const SB_LIBS = [
