@@ -473,6 +473,8 @@ body.landing .shell{display:none}
 #cats button:not(.on)::before{color:var(--forest);opacity:1}
 #cats button:hover::before{transform:translateX(2px)}
 #cats .subs button::before{width:13px;height:13px}
+#cats button.open::before{rotate:90deg}
+#cats button::before{transition:transform .2s,rotate .2s}
 .tabs{display:flex;gap:6px;margin:0 0 16px;flex-wrap:wrap}
 .tabs button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 16px;font-weight:600;color:var(--ink)}
 .tabs button:hover{border-color:var(--forest)}
@@ -818,6 +820,7 @@ const markCat = keep => {
   const box = $('cats');
   box.querySelectorAll('button[data-key]').forEach(x => x.classList.toggle('on', x.dataset.key === needKey));
   box.querySelectorAll('.subs').forEach(s => s.hidden = s.dataset.key !== needKey);
+  box.querySelectorAll('button[data-key]').forEach(x => x.classList.toggle('open', x.dataset.key === needKey));
 };
 
 /* Un clic sur une case de catégorie ouvre directement cette catégorie (recherche tolérante aux accents et à « & ») */
@@ -921,6 +924,13 @@ function renderNeed() {
     <button data-c="${id}" data-key="${key}"><span>${label}</span><span class="n" data-n="${id}"></span></button>
     <div class="subs" data-key="${key}" hidden>${subs.map((s, i) => `<button class="sb" data-i="${i}">${s[0]}</button>`).join('')}</div></div>`; }).join('');
   $('cats').querySelectorAll('button[data-key]').forEach(b => b.onclick = () => {
+    /* 2e clic sur la catégorie déjà ouverte : on replie / on rouvre ses sous-entrées, sans recharger la liste */
+    if (needKey === b.dataset.key) {
+      const subs = $('cats').querySelector(`.subs[data-key="${b.dataset.key}"]`);
+      subs.hidden = !subs.hidden;
+      b.classList.toggle('open', !subs.hidden);
+      return;
+    }
     cat = +b.dataset.c; q = ''; $('q').value = ''; sort = 'recent'; syncTabs();
     $('qCat').value = qCatVal(b.dataset.key);
     markCat(); needKey = b.dataset.key; markCat(true); loadAds();
