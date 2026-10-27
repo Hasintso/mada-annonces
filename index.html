@@ -244,6 +244,17 @@ footer button.flink:hover{color:var(--forest);text-decoration:underline}
 .search form select,.search form .ville{flex:none;border:0;border-left:1px solid var(--line);border-radius:0;background:transparent;padding:12px 14px;color:var(--ink);min-width:0}
 .search form select{width:190px}
 .search form .ville{width:140px}
+
+/* Texte d'aide du champ de recherche : défile sur place si trop long */
+.search .qwrap{flex:1;min-width:0;position:relative;display:flex}
+.search .qwrap input{width:100%}
+.qhint{position:absolute;left:18px;right:12px;top:0;bottom:0;display:flex;align-items:center;overflow:hidden;pointer-events:none;color:var(--muted)}
+.qhint span{white-space:nowrap;display:inline-block;will-change:transform}
+.qhint span.scroll{animation:qscroll 12s ease-in-out infinite alternate}
+@keyframes qscroll{0%,15%{transform:translateX(0)}85%,100%{transform:translateX(var(--shift))}}
+.qwrap input:focus + .qhint,.qwrap input:not(:placeholder-shown) + .qhint{display:none}
+@media (prefers-reduced-motion:reduce){.qhint span.scroll{animation:none}}
+@media(max-width:700px){.search form .qwrap{flex:1 1 100%}}
 .slogan{position:absolute;right:0;top:4px;text-align:center;transform:rotate(-8deg);
   font:700 1.9rem/1.15 "Dancing Script","Brush Script MT",cursive;text-shadow:0 2px 8px rgba(0,0,0,.4)}
 .slogan::after{content:"";display:block;height:3px;margin-top:6px;background:#fff;border-radius:3px;transform:rotate(-3deg)}
@@ -506,7 +517,6 @@ body.landing .net{position:fixed;left:0;right:0;bottom:0;z-index:40;border-top:1
    <div class="logo" id="logo" role="button" tabindex="0" title="Retour à l'accueil" aria-label="Accueil"><span id="typed"></span><span class="brand"><b>Accueil</b><small>Tout en un seul endroit</small></span></div>
    <div class="links">
     <button id="lkAds" class="on">Annonces</button>
-    <button id="lkCats">Catégories</button>
    </div>
    <div class="authbar">
     <button class="lnk" id="btnSignup">S'inscrire</button>
@@ -628,7 +638,7 @@ body.landing .net{position:fixed;left:0;right:0;bottom:0;z-index:40;border-top:1
     <div class="slogan">Des bonnes affaires<br>près de chez vous !</div>
     <form id="searchForm">
       <svg class="mag" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
-      <input id="q" type="search" placeholder="Que cherchez-vous ? Ex. : Toyota, appartement…" aria-label="Rechercher">
+      <div class="qwrap"><input id="q" type="search" placeholder=" " aria-label="Ici vous pouvez trouver ce dont vous avez besoin. Ex. : des fournisseurs, des créateurs, des travailleurs."><span class="qhint" aria-hidden="true"><span id="qhintTxt">Ici vous pouvez trouver ce dont vous avez besoin. Ex. : des fournisseurs, des créateurs, des travailleurs.</span></span></div>
       <select id="qCat" aria-label="Catégorie"><option value="">Toutes catégories</option></select>
       <input id="qVille" class="ville" type="text" placeholder="Ville" aria-label="Ville">
       <button class="btn">Rechercher</button>
@@ -783,7 +793,6 @@ $('logo').onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.prevent
 $('mnHome').onclick = showWelcome;
 $('mnAds').onclick = closeWelcome;
 $('lkAds').onclick = closeWelcome;
-$('lkCats').onclick = () => { closeWelcome(); $('side').scrollIntoView({ behavior: 'smooth' }); };
 
 const markCat = keep => {
   if (!keep) { maxPrix = null; needKey = null; }
@@ -1093,6 +1102,16 @@ connectSB();
     });
   });
 })();
+
+/* Défilement sur place du texte d'aide de la recherche (seulement s'il dépasse le champ) */
+function fitQHint(){
+  const t=$('qhintTxt'); if(!t) return;
+  const box=t.parentElement; t.classList.remove('scroll');
+  const over=t.scrollWidth-box.clientWidth;
+  if(over>4){ t.style.setProperty('--shift',-(over+4)+'px'); t.classList.add('scroll'); }
+}
+window.addEventListener('load',fitQHint); window.addEventListener('resize',fitQHint);
+fitQHint();
 </script>
 </body>
 </html>
