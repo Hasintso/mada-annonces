@@ -503,6 +503,25 @@ body:not(.landing) .dots svg{stroke:var(--ink);fill:none;filter:none}
 body.landing .authbar .lnk{color:#fff;text-shadow:0 1px 4px rgba(40,15,0,.7)}
 body.landing .authbar .dark{background:#fff;color:var(--ink)}
 .dd [hidden]{display:none}
+
+/* ===== Menu 3 barres : tiroir à gauche (ne masque plus le contenu de la page) ===== */
+.ovl{position:fixed;inset:0;background:rgba(40,15,0,.5);z-index:998;opacity:0;transition:opacity .25s}
+.ovl.show{opacity:1}
+.ovl[hidden]{display:none}
+.dd{position:fixed;top:0;left:0;bottom:0;right:auto;width:min(290px,84vw);min-width:0;border-radius:0 18px 18px 0;
+  background:#fff;box-shadow:8px 0 30px rgba(40,15,0,.3);padding:10px 12px 20px;z-index:999;overflow-y:auto;
+  display:flex;flex-direction:column;gap:2px;transform:translateX(-102%);transition:transform .28s ease}
+.dd.show{transform:translateX(0)}
+.dd[hidden]{display:none}
+.ddhead{display:flex;align-items:center;justify-content:space-between;padding:6px 6px 12px;margin-bottom:6px;border-bottom:2px solid #f3e3d3}
+.ddlogo{font:700 1.9rem/1 "Dancing Script","Brush Script MT",cursive;color:var(--forest)}
+.dd .ddx{display:grid;place-items:center;width:36px;height:36px;padding:0;border-radius:50%;background:#f3e3d3;color:var(--forest)}
+.dd .ddx:hover{background:#ecd3ba}
+.ddx svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.8;stroke-linecap:round}
+.dd button{font-size:1rem}
+.dd button:hover{background:#fbeedd}
+body.menu-open{overflow:hidden}
+@media(prefers-reduced-motion:reduce){.dd,.ovl{transition:none}}
 @media(max-width:760px){.authbar{display:none}}
 
 /* ===== Décor baobab ===== */
@@ -529,13 +548,6 @@ body.landing .net{position:fixed;left:0;right:0;bottom:0;z-index:40;border-top:1
     <button class="dots" id="btnMenu" aria-label="Menu" aria-expanded="false">
      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 7h17M3.5 12h11M3.5 17h17"/></svg>
     </button>
-    <div class="dd" id="menuList" hidden>
-      <button id="mnHome">Accueil</button>
-      <button id="mnAds">Annonces</button>
-      <button id="btnHelp">Comment ça marche ?</button>
-      <button id="mnSignup">S'inscrire</button>
-      <button id="btnAuth">Se connecter</button>
-    </div>
    </div>
    <div class="logo" id="logo" role="button" tabindex="0" title="Retour à l'accueil" aria-label="Accueil"><span id="typed"></span><span class="brand"><b>Accueil</b><small>Tout en un seul endroit</small></span></div>
    <div class="links">
@@ -754,6 +766,15 @@ body.landing .net{position:fixed;left:0;right:0;bottom:0;z-index:40;border-top:1
   <div id="det"></div>
 </div></div>
 
+<div class="ovl" id="menuOv" hidden></div>
+<nav class="dd" id="menuList" aria-label="Menu principal" hidden>
+  <div class="ddhead"><span class="ddlogo">Accueil</span><button type="button" id="menuClose" class="ddx" aria-label="Fermer le menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+      <button id="mnHome">Accueil</button>
+      <button id="mnAds">Annonces</button>
+      <button id="btnHelp">Comment ça marche ?</button>
+      <button id="mnSignup">S'inscrire</button>
+      <button id="btnAuth">Se connecter</button>
+</nav>
 <script>
 const SB_URL = 'https://ujxctcwkppmhamgkpvmg.supabase.co', SB_KEY = 'sb_publishable_5TMigzGHfUs0RY9Jf-DTWA_K3YoBMh_';
 const SB_LIBS = [
@@ -1065,9 +1086,23 @@ $('postForm').onsubmit = async e => {
   markCat(); loadAds(); loadCounts();
 };
 
-const menu = $('menuList'), mb = $('btnMenu');
-mb.onclick = e => { e.stopPropagation(); const o = menu.hidden; menu.hidden = !o; mb.setAttribute('aria-expanded', String(o)); };
-document.addEventListener('click', () => { menu.hidden = true; mb.setAttribute('aria-expanded', 'false'); });
+const menu = $('menuList'), mb = $('btnMenu'), ov = $('menuOv');
+function setMenu(open) {
+  if (open) {
+    menu.hidden = false; ov.hidden = false;
+    requestAnimationFrame(() => { menu.classList.add('show'); ov.classList.add('show'); });
+  } else {
+    menu.classList.remove('show'); ov.classList.remove('show');
+    setTimeout(() => { if (!menu.classList.contains('show')) { menu.hidden = true; ov.hidden = true; } }, 280);
+  }
+  document.body.classList.toggle('menu-open', open);
+  mb.setAttribute('aria-expanded', String(open));
+}
+mb.onclick = e => { e.stopPropagation(); setMenu(menu.hidden || !menu.classList.contains('show')); };
+$('menuClose').onclick = e => { e.stopPropagation(); setMenu(false); };
+ov.onclick = () => setMenu(false);
+menu.addEventListener('click', e => { if (e.target.closest('button[id]') && e.target.closest('button').id !== 'menuClose') setMenu(false); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && menu.classList.contains('show')) setMenu(false); });
 
 const setNet = bad => { $('net').hidden = !bad; };
 const loadLib = u => new Promise((ok, ko) => { const t = document.createElement('script'); t.src = u;
