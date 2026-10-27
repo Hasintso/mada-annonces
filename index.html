@@ -831,13 +831,25 @@ const showWelcome = () => {
   document.body.classList.add('landing');
   window.scrollTo(0, 0);
 };
-const closeWelcome = () => {
+/* Entrée réservée aux membres : sans compte, on ouvre la fenêtre de connexion au lieu de laisser entrer */
+const enterApp = () => {
   $('welcome').hidden = true;
   document.body.classList.remove('landing');
   try { sessionStorage.setItem('welcomeSeen', '1'); } catch (e) {}
   window.scrollTo(0, 0);
 };
-try { if (sessionStorage.getItem('welcomeSeen')) { $('welcome').hidden = true; document.body.classList.remove('landing'); } } catch (e) {}
+const gate = () => {
+  setAuthMode(false);
+  $('authMsg').className = 'msg';
+  $('authMsg').textContent = 'Connectez-vous ou créez un compte gratuit pour accéder aux annonces.';
+  open('mAuth');
+};
+const closeWelcome = () => { if (!user) { gate(); return; } enterApp(); };
+/* Évite d'afficher l'accueil une seconde pour quelqu'un déjà connecté (session mémorisée par le navigateur) */
+try {
+  const hasSession = Object.keys(localStorage).some(k => /^sb-.*-auth-token$/.test(k));
+  if (hasSession && sessionStorage.getItem('welcomeSeen')) { $('welcome').hidden = true; document.body.classList.remove('landing'); }
+} catch (e) {}
 $('startBtn').onclick = closeWelcome;
 $('startBtn2').onclick = closeWelcome;
 $('btnHelp').onclick = showWelcome;
@@ -875,6 +887,12 @@ document.querySelectorAll('[data-fcat]').forEach(b => b.onclick = () => {
   markCat(); loadAds();
 });
 
+function leaveApp() {
+  user = null; renderAuthBtn(); close('mPost');
+  ads = []; try { sessionStorage.removeItem('welcomeSeen'); } catch (e) {}
+  if ($('menuList').classList.contains('show')) setMenu(false);
+  showWelcome();
+}
 function renderAuthBtn() {
   $('btnAuth').textContent = user ? 'Se déconnecter' : 'Se connecter';
   $('btnLogin').textContent = user ? 'Se déconnecter' : 'Se connecter';
@@ -882,7 +900,7 @@ function renderAuthBtn() {
   $('mnSignup').hidden = !!user;
 }
 $('btnAuth').onclick = async () => {
-  if (user) { await SB.auth.signOut(); return; }
+  if (user) { await SB.auth.signOut(); leaveApp(); return; }
   setAuthMode(false); open('mAuth');
 };
 $('btnLogin').onclick = () => $('btnAuth').onclick();
@@ -921,7 +939,7 @@ $('authForm').onsubmit = async e => {
     if (signup && data && data.user && data.user.identities && data.user.identities.length === 0) {
       msg.textContent = 'Cet e-mail a déjà un compte. Cliquez sur « J\'ai déjà un compte ».'; return; }
     if (signup && !(data && data.session)) { msg.className = 'msg ok'; msg.textContent = 'Compte créé. Vérifiez votre boîte e-mail pour confirmer, puis connectez-vous.'; return; }
-    close('mAuth'); closeWelcome();
+    close('mAuth'); enterApp();
   } catch (err) {
     msg.textContent = authError(err && err.message);
   } finally { go.disabled = false; }
@@ -994,6 +1012,7 @@ async function loadCounts() {
 }
 
 async function loadAds() {
+  if (!user) return;
   const my = ++reqId;
   let r = SB.from('ann_annonces').select('*, ann_categories(nom)').eq('statut', 'valide');
   r = sort === 'recent' ? r.order('cree_le', { ascending: false })
@@ -1128,11 +1147,14 @@ function connectSB() {
       if (!window.supabase) { setNet(true); return false; }
       SB = window.supabase.createClient(SB_URL, SB_KEY); sbReady = true;
       SB.auth.onAuthStateChange((_ev, session) => {
+        const was = user;
         user = session ? session.user : null; renderAuthBtn();
-        if (!user) close('mPost');
+        if (!user) { close('mPost'); if (was) leaveApp(); }
+        else if (!was) { loadAds(); }
       });
       const { data } = await SB.auth.getSession();
       user = data && data.session ? data.session.user : null; renderAuthBtn();
+      if (user) enterApp(); else showWelcome();
       await loadCats(); loadAds();
       return true;
     } finally { connecting = null; }
