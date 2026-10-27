@@ -549,9 +549,8 @@ body.landing .net{position:fixed;left:0;right:0;bottom:0;z-index:40;border-top:1
      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 7h17M3.5 12h11M3.5 17h17"/></svg>
     </button>
    </div>
-   <div class="logo" id="logo" role="button" tabindex="0" title="Retour à l'accueil" aria-label="Accueil"><span id="typed"></span></div>
+   <div class="logo" id="logo" role="button" tabindex="0" title="Retour à l'accueil" aria-label="Accueil"><span id="typed"></span><span class="brand"><b>Accueil</b></span></div>
    <div class="links">
-    <button id="lkAds" class="on">Annonces</button>
    </div>
    <div class="authbar">
     <button class="lnk" id="btnSignup">S'inscrire</button>
@@ -833,7 +832,6 @@ $('logo').onclick = showWelcome;
 $('logo').onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showWelcome(); } };
 $('mnHome').onclick = showWelcome;
 $('mnAds').onclick = closeWelcome;
-$('lkAds').onclick = closeWelcome;
 
 const markCat = keep => {
   if (!keep) { maxPrix = null; needKey = null; }
