@@ -459,6 +459,20 @@ body.landing .shell{display:none}
 #cats button:hover{background:#fbeedd}
 #cats button.on{background:var(--forest);color:#fff}
 #cats .n{font-size:.78rem;font-weight:700;opacity:.65}
+
+/* Flèches « > » devant chaque entrée : fermé = ›  ouvert = ⌄ */
+.need,.sub{justify-content:flex-start;gap:10px}
+.need .chev,.sub .chev{transform:rotate(-90deg)}
+.need.open .chev,.sub.open .chev{transform:rotate(0)}
+#cats button{justify-content:flex-start}
+#cats button .n{margin-left:auto}
+#cats button::before{content:"";flex:none;width:16px;height:16px;background:currentColor;color:inherit;
+ -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 6l6 6-6 6'/%3E%3C/svg%3E") center/contain no-repeat;
+ mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 6l6 6-6 6'/%3E%3C/svg%3E") center/contain no-repeat;
+ opacity:.7;transition:transform .2s}
+#cats button:not(.on)::before{color:var(--forest);opacity:1}
+#cats button:hover::before{transform:translateX(2px)}
+#cats .subs button::before{width:13px;height:13px}
 .tabs{display:flex;gap:6px;margin:0 0 16px;flex-wrap:wrap}
 .tabs button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 16px;font-weight:600;color:var(--ink)}
 .tabs button:hover{border-color:var(--forest)}
@@ -654,9 +668,9 @@ body.landing .net{position:fixed;left:0;right:0;bottom:0;z-index:40;border-top:1
 </div>
 <div class="shell">
 <aside class="side" id="side">
-  <button class="need" id="needBtn" aria-expanded="false"><span>Ici votre besoin</span><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></button>
+  <button class="need" id="needBtn" aria-expanded="false"><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span><span>Ici votre besoin</span></button>
   <div id="needMenu" hidden>
-    <button class="sub" id="mCat"><span>Toutes catégories</span><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></button>
+    <button class="sub" id="mCat"><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span><span>Toutes catégories</span></button>
     <div id="cats" hidden></div>
   </div>
 </aside>
