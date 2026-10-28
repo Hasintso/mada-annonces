@@ -12,7 +12,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23a2501a'/%3E%3Ctext x='32' y='45' font-size='36' font-family='Georgia,serif' font-weight='700' text-anchor='middle' fill='%23f2b705'%3EA%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Bangers&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Bangers&family=Nunito:wght@600;800&family=Poppins:wght@400;600;700&family=Lora:wght@400;600;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
 <style>
 :root{--ink:#2a170b;--forest:#a2501a;--forest2:#7a3a10;--paper:#faf5ee;--card:#fff;--saffron:#f2b705;--line:#eadfce;--muted:#5d6b64;--red:#b3261e;--lime:#ffd36b}
 *{box-sizing:border-box}
@@ -558,7 +558,49 @@ body.landing .net{position:fixed;left:0;right:0;bottom:0;z-index:40;border-top:1
 /* ===== En-tête aligné sur le contenu : les 3 barres sont au-dessus de la flèche « > Ici votre besoin » ===== */
 body:not(.landing) .top{max-width:1240px}
 body:not(.landing) .menu-wrap{margin-left:-9px}
+
+/* ===== Paramètres d'apparence : style d'écriture, taille du texte, couleur de fond ===== */
+:root[data-th="blanc"]{--paper:#ffffff;--surf:#ffffff;--card:#ffffff;--line:#e6e6e6}
+:root[data-th="ciel"]{--paper:#e8f3fb;--surf:#fbfdff;--card:#fbfdff;--line:#cfe2f1}
+:root[data-th="menthe"]{--paper:#e6f5ec;--surf:#fbfffc;--card:#fbfffc;--line:#cbe6d5}
+:root[data-th="rose"]{--paper:#fdeaf0;--surf:#fffafb;--card:#fffafb;--line:#f3cfdb}
+:root[data-th="sombre"]{--paper:#140f0b;--surf:#211913;--card:#261d16;--ink:#f3ece4;--muted:#b9ab9c;--line:#3a2d22;--forest:#e08a4a;--forest2:#c26f31}
+:root[data-ff="moderne"]{--ff:Poppins,"Segoe UI",Arial,sans-serif}
+:root[data-ff="elegant"]{--ff:Lora,Georgia,"Times New Roman",serif}
+:root[data-ff="rond"]{--ff:Quicksand,Nunito,"Segoe UI",sans-serif}
+:root[data-ff="classique"]{--ff:Georgia,"Times New Roman",serif}
+:root[data-fs="grand"]{font-size:112.5%}
+:root[data-fs="tres"]{font-size:125%}
+body{font-size:1rem}
+:root[data-ff] body,:root[data-ff] h1,:root[data-ff] h2,:root[data-ff] h3,:root[data-ff] .ad,:root[data-ff] button:not(.post):not(.ddx),:root[data-ff] input,:root[data-ff] select,:root[data-ff] textarea{font-family:var(--ff)}
+:root[data-th] .dd,:root[data-th] .box,:root[data-th] body:not(.landing) header,:root[data-th] body:not(.landing) footer,:root[data-th] nav,:root[data-th] .tabs button,:root[data-th] .pchoice,:root[data-th] .box input,:root[data-th] .box select,:root[data-th] .box textarea{background:var(--surf);color:var(--ink)}
+:root[data-th] .pchoice:hover{background:var(--paper)}
+:root[data-th] .dd button:hover{background:var(--paper)}
+:root[data-th] .ddhead{border-bottom-color:var(--line)}
+:root[data-th] .dd .ddx{background:var(--paper)}
+:root[data-th="sombre"] .box,:root[data-th="sombre"] .ad{color:var(--ink)}
+.pref{margin-top:8px;border-top:2px solid #f3e3d3;padding-top:6px}
+:root[data-th] .pref{border-top-color:var(--line)}
+.dd .pref-t{display:flex;align-items:center;justify-content:space-between;width:100%}
+.pref-b{display:none;padding:4px 8px 8px}
+.pref.open .pref-b{display:block}
+.pref.open .pref-t i{transform:rotate(180deg)}
+.pref-t i{font-style:normal;transition:transform .2s}
+.pref h4{margin:12px 0 6px;font-size:.85rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.dd .pf,.dd .pz{display:block;width:100%;text-align:left;border:2px solid var(--line);background:transparent;border-radius:10px;padding:8px 12px;margin-bottom:6px;font-size:1rem}
+.dd .pf.on,.dd .pz.on,.dd .sw.on{border-color:var(--forest);box-shadow:0 0 0 2px rgba(162,80,26,.25)}
+.pzr{display:flex;gap:6px}.dd .pz{text-align:center;margin:0;padding:8px 4px}
+.swr{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.dd .sw{width:38px;height:38px;border-radius:50%;padding:0;border:2px solid var(--line);flex:none}
+.dd .pcol{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:.92rem}
+.dd .pcol input{width:46px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;background:none}
+.dd .preset{margin-top:12px;width:100%;text-align:center;border:1px solid var(--line);background:transparent;border-radius:10px;padding:9px;font-size:.95rem}
 </style>
+<script>
+/* Applique tout de suite les réglages d'apparence enregistrés (avant l'affichage de la page) */
+try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = document.documentElement;
+  if (t.th) h.dataset.th = t.th; if (t.ff) h.dataset.ff = t.ff; if (t.fs) h.dataset.fs = t.fs; if (t.bg) h.style.setProperty('--paper', t.bg); } catch (e) {}
+</script>
 </head>
 <body class="landing">
 <header>
@@ -804,6 +846,34 @@ body:not(.landing) .menu-wrap{margin-left:-9px}
       <button id="btnHelp">Comment ça marche ?</button>
       <button id="mnSignup">S'inscrire</button>
       <button id="btnAuth">Se connecter</button>
+      <div class="pref" id="prefBox">
+        <button type="button" class="pref-t" id="prefToggle" aria-expanded="false"><span>⚙️ Apparence</span><i aria-hidden="true">▾</i></button>
+        <div class="pref-b">
+          <h4>Style d'écriture</h4>
+          <button type="button" class="pf" data-ff="" style="font-family:'Segoe UI',Arial,sans-serif">Par défaut</button>
+          <button type="button" class="pf" data-ff="moderne" style="font-family:Poppins,sans-serif">Moderne</button>
+          <button type="button" class="pf" data-ff="elegant" style="font-family:Lora,serif">Élégant</button>
+          <button type="button" class="pf" data-ff="rond" style="font-family:Quicksand,sans-serif">Arrondi</button>
+          <button type="button" class="pf" data-ff="classique" style="font-family:Georgia,serif">Classique</button>
+          <h4>Taille du texte</h4>
+          <div class="pzr">
+            <button type="button" class="pz" data-fs="" style="font-size:.9rem">A</button>
+            <button type="button" class="pz" data-fs="grand" style="font-size:1.1rem">A</button>
+            <button type="button" class="pz" data-fs="tres" style="font-size:1.35rem">A</button>
+          </div>
+          <h4>Couleur de fond</h4>
+          <div class="swr">
+            <button type="button" class="sw" data-th="" style="background:#faf5ee" aria-label="Crème"></button>
+            <button type="button" class="sw" data-th="blanc" style="background:#ffffff" aria-label="Blanc"></button>
+            <button type="button" class="sw" data-th="ciel" style="background:#e8f3fb" aria-label="Bleu ciel"></button>
+            <button type="button" class="sw" data-th="menthe" style="background:#e6f5ec" aria-label="Menthe"></button>
+            <button type="button" class="sw" data-th="rose" style="background:#fdeaf0" aria-label="Rose"></button>
+            <button type="button" class="sw" data-th="sombre" style="background:#140f0b" aria-label="Sombre"></button>
+          </div>
+          <label class="pcol">Couleur libre <input type="color" id="prefColor" value="#faf5ee"></label>
+          <button type="button" class="preset" id="prefReset">Tout remettre par défaut</button>
+        </div>
+      </div>
 </div>
 <script>
 const SB_URL = 'https://ujxctcwkppmhamgkpvmg.supabase.co', SB_KEY = 'sb_publishable_5TMigzGHfUs0RY9Jf-DTWA_K3YoBMh_';
@@ -1200,6 +1270,29 @@ $('menuClose').onclick = e => { e.stopPropagation(); setMenu(false); };
 ov.onclick = () => setMenu(false);
 menu.addEventListener('click', e => { if (e.target.closest('button[id]') && e.target.closest('button').id !== 'menuClose') setMenu(false); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && menu.classList.contains('show')) setMenu(false); });
+
+/* Paramètres d'apparence (enregistrés sur cet appareil) */
+const APP_KEY = 'va_apparence';
+let look = {};
+try { look = JSON.parse(localStorage.getItem(APP_KEY) || '{}') || {}; } catch (e) {}
+function applyLook() {
+  const h = document.documentElement;
+  ['th', 'ff', 'fs'].forEach(k => look[k] ? h.dataset[k] = look[k] : delete h.dataset[k]);
+  if (look.bg) h.style.setProperty('--paper', look.bg); else h.style.removeProperty('--paper');
+  document.querySelectorAll('.pf').forEach(b => b.classList.toggle('on', (b.dataset.ff || '') === (look.ff || '')));
+  document.querySelectorAll('.pz').forEach(b => b.classList.toggle('on', (b.dataset.fs || '') === (look.fs || '')));
+  document.querySelectorAll('.sw').forEach(b => b.classList.toggle('on', !look.bg && (b.dataset.th || '') === (look.th || '')));
+  const cs = getComputedStyle(h).getPropertyValue('--paper').trim();
+  if (/^#[0-9a-f]{6}$/i.test(cs)) $('prefColor').value = cs;
+  try { localStorage.setItem(APP_KEY, JSON.stringify(look)); } catch (e) {}
+}
+$('prefToggle').onclick = () => { const b = $('prefBox'); const o = b.classList.toggle('open'); $('prefToggle').setAttribute('aria-expanded', String(o)); };
+document.querySelectorAll('.pf').forEach(b => b.onclick = () => { look.ff = b.dataset.ff; applyLook(); });
+document.querySelectorAll('.pz').forEach(b => b.onclick = () => { look.fs = b.dataset.fs; applyLook(); });
+document.querySelectorAll('.sw').forEach(b => b.onclick = () => { look.th = b.dataset.th; delete look.bg; applyLook(); });
+$('prefColor').oninput = e => { look.bg = e.target.value; document.querySelectorAll('.sw').forEach(x => x.classList.remove('on')); document.documentElement.style.setProperty('--paper', look.bg); try { localStorage.setItem(APP_KEY, JSON.stringify(look)); } catch (e2) {} };
+$('prefReset').onclick = () => { look = {}; applyLook(); };
+applyLook();
 
 const setNet = bad => { $('net').hidden = !bad; };
 const loadLib = u => new Promise((ok, ko) => { const t = document.createElement('script'); t.src = u;
