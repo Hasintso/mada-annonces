@@ -1051,6 +1051,17 @@ $('searchForm').onsubmit = e => {
   { const v = $('qCat').value; cat = !v ? null : v.startsWith('k:') ? -1 : +v; }
   markCat(); loadAds();
 };
+/* Liste déroulante des catégories : le choix met à jour tout de suite le tableau d'annonces
+   et le menu de gauche (sans avoir à cliquer sur « Rechercher ») */
+$('qCat').onchange = () => {
+  const v = $('qCat').value;
+  cat = !v ? null : v.startsWith('k:') ? -1 : +v;
+  q = $('q').value; sort = 'recent'; syncTabs();
+  const n = NEED.find(x => String(qCatVal(x[1])) === v);
+  markCat();                       // remet à zéro (filtre de prix + menu de gauche)
+  if (n) { needKey = n[1]; markCat(true); }
+  loadAds();
+};
 document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => {
   sort = b.dataset.s;
   document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x === b));
