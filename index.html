@@ -599,9 +599,6 @@ body:not(.landing) .tag{top:10px;left:10px;font-size:.75rem;padding:3px 10px;box
 }
 @media(prefers-reduced-motion:reduce){body:not(.landing) .ad{transition:none}}
 
-/* Grand écran : 5 annonces sur la première ligne */
-@media(min-width:1100px){body:not(.landing) .grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
-
 /* ===== Paramètres d'apparence : style d'écriture, taille du texte, couleur de fond ===== */
 :root[data-th="blanc"]{--paper:#ffffff;--surf:#ffffff;--card:#ffffff;--line:#e6e6e6}
 :root[data-th="ciel"]{--paper:#e8f3fb;--surf:#fbfdff;--card:#fbfdff;--line:#cfe2f1}
@@ -937,7 +934,7 @@ let SB = {
 };
 let sbReady = false;
 const $ = id => document.getElementById(id);
-let maxPrix = null, needKey = null, showAll = false;   // showAll : « Voir toutes les annonces » affiche la liste complète
+let maxPrix = null, needKey = null;
 let user = null, cats = [], cat = null, q = '', signup = false, ads = [], reqId = 0, sort = 'recent';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1150,10 +1147,7 @@ async function loadAds() {
   let r = SB.from('ann_annonces').select('*, ann_categories(nom)').eq('statut', 'valide');
   r = sort === 'recent' ? r.order('cree_le', { ascending: false })
     : r.order('prix', { ascending: sort === 'asc', nullsFirst: false }).order('cree_le', { ascending: false });
-  /* Page d'accueil : un seul rang d'annonces (5 sur grand écran) ; « Voir toutes les annonces » affiche le reste */
-  const preview = !showAll && !cat && !maxPrix && sort === 'recent' && !clean($('qVille').value) && !clean(q);
-  const per = innerWidth >= 1100 ? 5 : innerWidth >= 560 ? 6 : 4;
-  r = r.limit(preview ? per : 60);
+  r = r.limit(60);
   if (cat) r = r.eq('category_id', cat);
   if (maxPrix) r = r.lte('prix', maxPrix);
   const v = clean($('qVille').value);
@@ -1164,8 +1158,7 @@ async function loadAds() {
   if (my !== reqId) return;                        // une recherche plus récente est en cours : on ignore celle-ci
   setNet(!!error);
   ads = data || [];
-  $('title').textContent = t ? `Résultats pour « ${t} »` : (cats.find(c => c.id === cat)?.nom || (showAll ? 'Toutes les annonces' : 'Dernières annonces'));
-  $('seeAll').hidden = showAll && !cat && !t && !v && !maxPrix;
+  $('title').textContent = t ? `Résultats pour « ${t} »` : (cats.find(c => c.id === cat)?.nom || 'Dernières annonces');
   $('empty').textContent = error ? 'Impossible de charger les annonces. Vérifiez votre connexion et réessayez.' : 'Aucune annonce pour cette recherche. Soyez le premier à en déposer une.';
   $('empty').hidden = ads.length > 0;
   $('list').innerHTML = ads.map((a, i) => {
@@ -1205,7 +1198,7 @@ document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => {
   loadAds();
 });
 $('seeAll').onclick = e => {
-  e.preventDefault(); cat = null; q = ''; showAll = true;
+  e.preventDefault(); cat = null; q = '';
   $('q').value = ''; $('qVille').value = ''; $('qCat').value = '';
   markCat(); loadAds();
 };
@@ -1296,7 +1289,7 @@ $('postForm').onsubmit = async e => {
     msg.textContent = err.message; go.disabled = false; return;
   }
   go.disabled = false;
-  $('postForm').reset(); close('mPost'); cat = null; q = ''; showAll = false; $('q').value = ''; $('qCat').value = '';
+  $('postForm').reset(); close('mPost'); cat = null; q = ''; $('q').value = ''; $('qCat').value = '';
   markCat(); loadAds(); loadCounts();
 };
 
