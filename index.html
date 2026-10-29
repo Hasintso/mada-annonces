@@ -618,6 +618,21 @@ body:not(.landing) .search h2{color:var(--ink);text-shadow:none;margin-bottom:cl
 body:not(.landing) .search h2 em{color:var(--forest)}
 body:not(.landing) .search form{border:1.5px solid var(--line);box-shadow:0 6px 18px rgba(42,23,11,.12)}
 
+/* ===== En-tête épuré : plus de ligne colorée, bouton « + » rond sans texte ===== */
+body:not(.landing) header{border-bottom:0;border-image:none}
+.post{display:inline-grid;place-items:center;width:48px;height:48px;padding:0;border-radius:50%;box-shadow:0 3px 10px rgba(42,23,11,.25);transition:transform .15s,filter .15s}
+.post:hover{transform:scale(1.07)}
+.post span{width:auto;height:auto;margin:0;border:0;font:400 2.1rem/1 Arial,sans-serif}
+@media(max-width:560px){.post{width:44px;height:44px;padding:0}}
+
+/* ===== Icônes message et panier à côté du « + » ===== */
+.hbtn{display:inline-grid;place-items:center;width:48px;height:48px;padding:0;border-radius:50%;background:#fff;border:1.5px solid var(--line,#e6e6e6);color:var(--forest,#a2501a);box-shadow:0 3px 10px rgba(42,23,11,.15);transition:transform .15s}
+.hbtn:hover{transform:scale(1.07)}
+.hbtn svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:#2a170b;color:#fff;padding:12px 20px;border-radius:999px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:999}
+.toast.show{opacity:1;transform:translateX(-50%)}
+@media(max-width:560px){.hbtn{width:44px;height:44px}.top{gap:8px}}
+
 /* Grand écran : les annonces se suivent par lignes de 5 cartes, la 6e place de chaque ligne reste vide */
 @media(min-width:1752px){body:not(.landing) .grid{grid-template-columns:repeat(5,calc((100% - 90px) / 6));justify-content:start}}
 
@@ -680,7 +695,9 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
     <button class="lnk" id="btnSignup">S'inscrire</button>
     <button class="dark" id="btnLogin">Se connecter</button>
    </div>
-   <button class="post" id="btnPost"><span aria-hidden="true">+</span>Déposer une annonce</button>
+   <button class="post" id="btnPost" type="button" aria-label="Déposer une annonce" title="Déposer une annonce"><span aria-hidden="true">+</span></button>
+   <button class="hbtn" id="btnMsg" type="button" aria-label="Messages" title="Messages"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H10l-5 4v-4H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/></svg></button>
+   <button class="hbtn" id="btnCart" type="button" aria-label="Panier" title="Panier"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.5l2.2 10.2a1 1 0 0 0 1 .8h8.6a1 1 0 0 0 1-.8L20 8H6.3"/><circle cx="9.5" cy="19" r="1.4"/><circle cx="16.5" cy="19" r="1.4"/></svg></button>
   </div>
 </header>
 
@@ -1046,6 +1063,7 @@ function leaveApp() {
 function renderAuthBtn() {
   $('btnAuth').textContent = user ? 'Se déconnecter' : 'Se connecter';
   $('btnLogin').textContent = user ? 'Se déconnecter' : 'Se connecter';
+  $('btnLogin').hidden = !!user;   // connecté : « Se déconnecter » se trouve dans le menu (3 barres)
   $('btnSignup').hidden = !!user;
   $('mnSignup').hidden = !!user;
 }
@@ -1430,6 +1448,15 @@ function fitQHint(){
 }
 window.addEventListener('load',fitQHint); window.addEventListener('resize',fitQHint);
 fitQHint();
+</script>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+(function(){
+  var t=document.getElementById('toast'),h;
+  function say(m){t.textContent=m;t.classList.add('show');clearTimeout(h);h=setTimeout(function(){t.classList.remove('show')},2200)}
+  document.getElementById('btnMsg').onclick=function(){say('Les messages arrivent bientôt.')};
+  document.getElementById('btnCart').onclick=function(){say('Le panier arrive bientôt.')};
+})();
 </script>
 </body>
 </html>
