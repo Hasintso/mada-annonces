@@ -646,6 +646,13 @@ body:not(.landing) header{border-bottom:0;border-image:none}
 #mDet .act .btn{padding:8px 13px;font-size:.88rem}
 #mDet .x{position:sticky;top:0;float:right;margin:-6px -4px 0 0;z-index:2}
 #mDet .act{flex-wrap:wrap}
+.prow{display:flex;justify-content:space-between;align-items:flex-start;gap:8px 12px;flex-wrap:wrap}
+.pinfo{min-width:0}
+.pact{display:flex;gap:6px;margin-left:auto}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:999px;border:1.5px solid var(--forest);background:#fff;color:var(--forest);font-family:inherit;font-weight:600;font-size:.82rem;line-height:1.2;cursor:pointer;text-decoration:none;transition:background .15s,color .15s}
+.chip svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.chip:hover{background:var(--paper)}
+.chip.on{background:var(--forest);color:#fff}
 .btn.alt{background:#fff;color:var(--forest);border:1.5px solid var(--forest);cursor:pointer}
 .hbtn{position:relative}
 .badge{position:absolute;top:-5px;right:-5px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:#f28c1b;color:#2a170b;font:700 .72rem/20px Arial,sans-serif;text-align:center}
@@ -1298,18 +1305,26 @@ function showAd(a) {
   $('det').innerHTML = `
     ${a.photos && a.photos.length ? `<div class="gal">${a.photos.filter(safeUrl).map(p => `<img src="${esc(p)}" alt="Photo de l'annonce" loading="lazy">`).join('')}</div>` : ''}
     <h2>${esc(a.titre)}</h2>
-    <div class="price" style="font-size:1.3rem">${money(a.prix)}</div>
-    <div class="meta">${esc(a.ann_categories ? a.ann_categories.nom : '')} · ${esc(a.ville || 'Madagascar')} · ${ago(a.cree_le)}</div>
+    <div class="prow"><div class="pinfo">
+      <div class="price" style="font-size:1.3rem">${money(a.prix)}</div>
+      <div class="meta">${esc(a.ann_categories ? a.ann_categories.nom : '')} · ${esc(a.ville || 'Madagascar')} · ${ago(a.cree_le)}</div>
+    </div><div class="pact">
+      ${tel ? `<a class="chip" id="msgAd" href="sms:${esc(tel)}?body=${encodeURIComponent('Bonjour, je suis intéressé(e) par votre annonce : ' + a.titre)}" title="Envoyer un message"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H10l-5 4v-4H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/></svg>Message</a>` : `<button type="button" class="chip" id="msgAd" title="Envoyer un message"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H10l-5 4v-4H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/></svg>Message</button>`}
+      <button type="button" class="chip${cartHas(a.id) ? ' on' : ''}" id="addCart" aria-pressed="${cartHas(a.id)}" title="Mettre dans le panier"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.5l2.2 10.2a1 1 0 0 0 1 .8h8.6a1 1 0 0 0 1-.8L20 8H6.3"/><circle cx="9.5" cy="19" r="1.4"/><circle cx="16.5" cy="19" r="1.4"/></svg>Panier</button>
+    </div></div>
     <div class="desc">${esc(a.description)}</div>
     <div class="act">${tel ? `<a class="btn cta" href="tel:${esc(tel)}" style="text-decoration:none">Appeler ${esc(a.telephone)}</a>` : ''}
-    ${!mine && tel ? `<a class="btn alt" href="sms:${esc(tel)}?body=${encodeURIComponent('Bonjour, je suis intéressé(e) par votre annonce : ' + a.titre)}" style="text-decoration:none">Message</a>` : ''}
-    ${!mine ? `<button type="button" class="btn alt" id="addCart">${cartHas(a.id) ? 'Retirer du panier' : 'Ajouter au panier'}</button>` : ''}
     ${mine ? '<button class="btn danger" id="delAd">Supprimer mon annonce</button>' : ''}</div>`;
   const ac = $('addCart');
   if (ac) ac.onclick = () => {
-    if (cartHas(a.id)) { cartSet(cartGet().filter(x => x.id !== a.id)); ac.textContent = 'Ajouter au panier'; window.bpSay && window.bpSay('Retiré du panier'); }
-    else { cartSet(cartGet().concat([{ id: a.id, titre: a.titre, prix: a.prix, photo: (a.photos || []).filter(safeUrl)[0] || '' }])); ac.textContent = 'Retirer du panier'; window.bpSay && window.bpSay('Ajouté au panier'); }
+    const was = cartHas(a.id);
+    if (was) cartSet(cartGet().filter(x => x.id !== a.id));
+    else cartSet(cartGet().concat([{ id: a.id, titre: a.titre, prix: a.prix, photo: (a.photos || []).filter(safeUrl)[0] || '' }]));
+    ac.classList.toggle('on', !was); ac.setAttribute('aria-pressed', String(!was));
+    window.bpSay && window.bpSay(was ? 'Retiré du panier' : 'Ajouté au panier');
   };
+  const mb2 = $('msgAd');
+  if (mb2 && mb2.tagName === 'BUTTON') mb2.onclick = () => window.bpSay && window.bpSay('Cette annonce n\'a pas de numéro');
   const d = $('delAd');
   if (d) d.onclick = async () => {
     if (!confirm('Supprimer cette annonce définitivement ?')) return;
