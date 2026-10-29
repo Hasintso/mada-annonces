@@ -625,6 +625,14 @@ body:not(.landing) header{border-bottom:0;border-image:none}
 .post span{width:auto;height:auto;margin:0;border:0;font:400 2.1rem/1 Arial,sans-serif}
 @media(max-width:560px){.post{width:44px;height:44px;padding:0}}
 
+/* ===== Choix de dépôt : liste verticale, texte seul ===== */
+.pchoices{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.pchoice{position:relative;flex-direction:row;align-items:center;justify-content:space-between;gap:12px;text-align:left;padding:16px 18px 16px 20px;border:1.5px solid var(--line);border-left:4px solid var(--forest);border-radius:14px;background:#fff;box-shadow:0 1px 3px rgba(42,23,11,.06);font-size:1.02rem;transition:transform .15s,box-shadow .15s,border-color .15s}
+.pchoice small{display:block;margin-top:2px;font-size:.82rem}
+.pchoice::after{content:"\203A";font-size:1.7rem;line-height:1;color:var(--forest);flex:none;transition:transform .15s}
+.pchoice:hover,.pchoice:focus-visible{transform:translateY(-1px);box-shadow:0 6px 16px rgba(122,58,16,.18)}
+.pchoice:hover::after{transform:translateX(4px)}
+
 /* ===== Icônes message et panier à côté du « + » ===== */
 .hbtn{display:inline-grid;place-items:center;width:48px;height:48px;padding:0;border-radius:50%;background:#fff;border:1.5px solid var(--line,#e6e6e6);color:var(--forest,#a2501a);box-shadow:0 3px 10px rgba(42,23,11,.15);transition:transform .15s}
 .hbtn:hover{transform:scale(1.07)}
@@ -890,10 +898,10 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
   <div id="postChoice">
     <p style="color:var(--muted);margin-bottom:8px">Que voulez-vous déposer ?</p>
     <div class="pchoices">
-      <button type="button" class="pchoice" data-pk="vente"><span aria-hidden="true">🛍️</span>Déposer une vente<small>Produit à vendre</small></button>
-      <button type="button" class="pchoice" data-pk="confie"><span aria-hidden="true">🤝</span>Déposer un Confie<small>Tâche à confier</small></button>
-      <button type="button" class="pchoice" data-pk="music"><span aria-hidden="true">🎵</span>Déposer une chanson / Musics<small>Chanson, production, producteur</small></button>
-      <button type="button" class="pchoice" data-pk="creation"><span aria-hidden="true">🎨</span>Déposer une création<small>Vidéo, graphisme, web…</small></button>
+      <button type="button" class="pchoice" data-pk="vente"><div>Déposer une vente<small>Produit à vendre</small></div></button>
+      <button type="button" class="pchoice" data-pk="confie"><div>Déposer un Confie<small>Tâche à confier</small></div></button>
+      <button type="button" class="pchoice" data-pk="music"><div>Déposer une chanson / Musics<small>Chanson, production, producteur</small></div></button>
+      <button type="button" class="pchoice" data-pk="creation"><div>Déposer une création<small>Vidéo, graphisme, web…</small></div></button>
     </div>
   </div>
   <form id="postForm" hidden>
