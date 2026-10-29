@@ -556,12 +556,17 @@ body.landing .net{position:fixed;left:0;right:0;bottom:0;z-index:40;border-top:1
 @media(min-width:701px){.search form{padding:4px 4px 4px 16px}}
 
 /* ===== Liste « Toutes catégories » : sans carré blanc, écriture en 3D ===== */
-.search form .csel{position:relative;flex:none;width:190px;border-left:1px solid var(--line)}
+.search form{position:relative}
+.search form .csel{flex:none;width:190px;border-left:1px solid var(--line)}
 .search form .csel select{display:none}
 .csel-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;border:0;background:transparent;color:var(--ink);padding:8px 12px;font-size:.95rem;text-align:left;border-radius:0}
 .csel-btn .arr{width:14px;height:14px;flex:none;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
 .csel.open .csel-btn .arr{transform:rotate(180deg)}
-.csel-list{display:none;position:absolute;top:calc(100% + 10px);left:0;width:max-content;min-width:100%;margin:0;padding:0;list-style:none;background:transparent;border:0;box-shadow:none;z-index:60;flex-direction:column;align-items:flex-start;gap:8px}
+.csel-list{display:none;position:absolute;top:calc(100% + 12px);left:0;right:0;margin:0;padding:0;list-style:none;background:transparent;border:0;box-shadow:none;z-index:60;flex-direction:row;flex-wrap:wrap;justify-content:center;align-items:center;gap:10px}
+/* la zone du bandeau s'agrandit à l'ouverture : les pastilles ne touchent jamais les annonces */
+.search{transition:padding-bottom .2s}
+.search:has(.csel.open){padding-bottom:68px}
+@media(max-width:700px){.search:has(.csel.open){padding-bottom:120px}}
 .csel.open .csel-list{display:flex}
 /* chaque texte est entouré d'une petite forme (pastille), toutes de même style */
 .csel-list li{padding:6px 16px;cursor:pointer;white-space:nowrap;font:800 1rem/1.3 Nunito,Poppins,sans-serif;color:#111;letter-spacing:.2px;
