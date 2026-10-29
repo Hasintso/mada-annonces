@@ -600,7 +600,13 @@ body:not(.landing) .tag{top:10px;left:10px;font-size:.75rem;padding:3px 10px;box
 @media(prefers-reduced-motion:reduce){body:not(.landing) .ad{transition:none}}
 
 /* ===== Accueil : titre centré au milieu de la bannière, « Dernières annonces » retiré ===== */
-body:not(.landing) .search h2{text-align:center;font-size:clamp(1.6rem,3.2vw,2.6rem);margin:0 0 18px}
+/* Bannière fluide : la hauteur et la taille du titre s'adaptent à l'écran, le titre ne passe jamais sous l'en-tête */
+html{scroll-padding-top:96px}
+body:not(.landing) .search{padding:clamp(30px,4.5vw,60px) 0 clamp(24px,3.2vw,44px)}
+body:not(.landing) .search h2{text-align:center;font-size:clamp(1.3rem,2.4vw + .6rem,2.7rem);line-height:1.2;margin:0 0 clamp(14px,2vw,26px);padding:0 8px;text-wrap:balance}
+body:not(.landing) .search h2 em{display:inline}
+/* Très grands écrans : le contenu reste centré avec la même largeur, rien ne s'étire */
+@media(min-width:1900px){body:not(.landing) .top,.search .in,.shell{max-width:1760px}}
 .shell main .head h1{display:none}
 .shell main .head{justify-content:flex-end}
 
