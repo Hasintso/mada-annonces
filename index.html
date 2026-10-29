@@ -839,10 +839,10 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
 </div>
 <div class="shell">
 <aside class="side" id="side">
-  <button class="need" id="needBtn" aria-expanded="false"><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span><span>Ici votre besoin</span></button>
-  <div id="needMenu" hidden>
-    <button class="sub" id="mCat"><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span><span>Toutes catégories</span></button>
-    <div id="cats" hidden></div>
+  <button class="need open" id="needBtn" aria-expanded="true"><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span><span>Ici votre besoin</span></button>
+  <div id="needMenu">
+    <button class="sub open" id="mCat"><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span><span>Toutes catégories</span></button>
+    <div id="cats"></div>
   </div>
 </aside>
 <main>
