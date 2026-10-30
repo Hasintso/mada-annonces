@@ -865,6 +865,14 @@ body.rolepick{overflow:hidden}
 .or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
 #socialRow[hidden]{display:none}
 #mAuth.lock .x{display:none}
+
+/* Google sur l'écran de choix du profil */
+.rg-or{max-width:420px;margin:18px auto 0}
+.rg-g{max-width:420px;margin:14px auto 0}
+.rg-hint{min-height:1.3em;margin:8px 0 0;font-size:.9rem;font-weight:700;color:var(--red)}
+.rg-cards.shake{animation:rgshake .45s}
+@keyframes rgshake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+@media(prefers-reduced-motion:reduce){.rg-cards.shake{animation:none}}
 </style>
 <script>
 /* Applique tout de suite les réglages d'apparence enregistrés (avant l'affichage de la page) */
@@ -898,6 +906,9 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
       </button>
     </div>
     <div class="rg-cta"><button type="button" class="rg-go" id="rgGo" disabled>Choisissez un profil</button></div>
+    <div class="or rg-or"><span>ou</span></div>
+    <button type="button" class="gbtn rg-g" id="rgGoogle"><svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg><span>Continuer avec Google</span></button>
+    <p class="rg-hint" id="rgHint" role="status"></p>
     <p class="rg-login">Vous avez déjà un compte ? <button type="button" id="rgLogin">Se connecter</button></p>
     <p class="rg-note">Pour entrer sur le site, un compte gratuit est nécessaire (e-mail, téléphone et région).</p>
   </div>
@@ -1415,14 +1426,15 @@ const setAuthMode = s => setAuthView(s ? 'signup1' : 'login');
 $('authSwitch').onclick = () => setAuthView(authView === 'login' ? 'signup1' : 'login');
 $('authBack').onclick = () => setAuthView(authView === 'signup2' ? 'signup1' : 'login');
 $('forgotBtn').onclick = () => setAuthView('forgot');
-$('gBtn').onclick = async () => {
-  const msg = $('authMsg'); msg.className = 'msg'; msg.textContent = 'Redirection vers Google…';
+async function googleSignIn(msg) {
+  msg.textContent = 'Redirection vers Google…';
   try {
     if (!sbReady) { await connectSB(); }
     const { error } = await SB.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + location.pathname } });
     if (error) msg.textContent = authError(error.message);
   } catch (err) { msg.textContent = authError(err && err.message); }
-};
+}
+$('gBtn').onclick = () => { $('authMsg').className = 'msg'; googleSignIn($('authMsg')); };
 $('pass').oninput = updMeter;
 $('passEye').onclick = () => { const h = $('pass').type === 'password'; $('pass').type = h ? 'text' : 'password'; $('passEye').textContent = h ? 'Masquer' : 'Afficher'; };
 const authError = m => {
@@ -1859,7 +1871,7 @@ function renderRole() {
 }
 let pickedRole = '';
 function showRoleGate() {
-  pickedRole = ''; $('rgCards').classList.remove('has-pick');
+  pickedRole = ''; $('rgHint').textContent = ''; $('rgCards').classList.remove('has-pick');
   document.querySelectorAll('#roleGate [data-role]').forEach(b => b.setAttribute('aria-checked', 'false'));
   $('rgGo').disabled = true; $('rgGo').textContent = 'Choisissez un profil';
   $('roleGate').hidden = false; document.body.classList.add('rolepick');
@@ -1889,7 +1901,7 @@ async function pickRole(r) {
   } else ensureProfile();
 }
 function selectRole(r) {
-  pickedRole = r; $('rgCards').classList.add('has-pick');
+  pickedRole = r; $('rgHint').textContent = ''; $('rgCards').classList.add('has-pick');
   document.querySelectorAll('#roleGate [data-role]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.role === r)));
   const cs = getComputedStyle(document.querySelector('#roleGate [data-role="' + r + '"]')), go = $('rgGo');
   go.disabled = false; go.textContent = r === 'vendeur' ? 'Devenir vendeur' : 'Continuer en tant que ' + ROLES[r];
@@ -1897,6 +1909,14 @@ function selectRole(r) {
 }
 document.querySelectorAll('#roleGate [data-role]').forEach(b => b.onclick = () => selectRole(b.dataset.role));
 $('rgGo').onclick = () => { if (pickedRole) pickRole(pickedRole); };
+$('rgGoogle').onclick = () => {                 /* Google : il faut d'abord un profil (un seul par compte) */
+  const h = $('rgHint'); h.textContent = '';
+  if (!pickedRole) {
+    h.textContent = 'Choisissez d\'abord votre profil ci-dessus.';
+    const c = $('rgCards'); c.classList.remove('shake'); void c.offsetWidth; c.classList.add('shake'); return;
+  }
+  roleSet(pickedRole); googleSignIn(h);
+};
 $('rgLogin').onclick = () => { setAuthMode(false); open('mAuth'); };   /* déjà un compte : connexion directe, sans choisir de profil */
 setAuthView('login');
 
