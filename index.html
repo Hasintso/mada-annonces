@@ -835,7 +835,7 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
         <span><b>Devenir vendeur</b><br><span class="d">Je vends mes produits, neufs ou d'occasion.</span></span>
       </button>
     </div>
-    <p class="rg-note">Vous pouvez parcourir les annonces sans compte. Le compte est demandé pour déposer ou commander.</p>
+    <p class="rg-note">Pour entrer sur le site, un compte gratuit est nécessaire (e-mail, téléphone et région).</p>
   </div>
 </div>
 
@@ -1076,9 +1076,14 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
 <div class="mask" id="mAuth"><div class="box" role="dialog" aria-modal="true" aria-labelledby="authTitle">
   <button class="x" data-close aria-label="Fermer">×</button>
   <h2 id="authTitle">Se connecter</h2>
+  <p id="authRole" hidden style="margin:-6px 0 4px;font-size:.9rem;color:var(--muted)"></p>
   <form id="authForm">
     <label for="email">Adresse e-mail</label><input id="email" type="email" required autocomplete="email">
     <label for="pass">Mot de passe (6 caractères minimum)</label><input id="pass" type="password" minlength="6" required autocomplete="current-password">
+    <div id="signupExtra" hidden>
+      <label for="phone">Numéro de téléphone</label><input id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="Ex. : 034 12 345 67">
+      <label for="region">Votre région</label><select id="region" autocomplete="off"><option value="">Choisissez votre région</option></select>
+    </div>
     <p class="msg" id="authMsg" role="status"></p>
     <div class="act" style="margin-top:14px"><button class="btn cta" id="authGo">Se connecter</button><button type="button" class="btn plain" id="authSwitch">Créer un compte</button></div>
   </form>
@@ -1219,7 +1224,7 @@ const gate = () => {
   $('authMsg').textContent = 'Connectez-vous ou créez un compte gratuit pour accéder aux annonces.';
   open('mAuth');
 };
-const closeWelcome = () => { enterApp(); };   /* les visiteurs parcourent librement : le compte sert à déposer ou commander */
+const closeWelcome = () => { if (!user) { gate(); return; } enterApp(); };   /* compte obligatoire pour entrer dans les annonces */
 /* Évite d'afficher l'accueil une seconde pour quelqu'un déjà connecté (session mémorisée par le navigateur) */
 try {
   const hasSession = Object.keys(localStorage).some(k => /^sb-.*-auth-token$/.test(k));
@@ -1293,6 +1298,9 @@ function setAuthMode(s) {
   $('authSwitch').textContent = s ? 'J\'ai déjà un compte' : 'Créer un compte';
   $('pass').autocomplete = s ? 'new-password' : 'current-password';
   $('authMsg').textContent = '';
+  $('signupExtra').hidden = !s; $('phone').required = s; $('region').required = s;
+  const r = roleGet(); $('authRole').hidden = !(s && r);
+  if (s && r) $('authRole').textContent = 'Profil choisi : ' + (r === 'vendeur' ? 'Vendeur' : ROLES[r]);
 }
 $('authSwitch').onclick = () => setAuthMode(!signup);
 const authError = m => {
@@ -1311,7 +1319,14 @@ $('authForm').onsubmit = async e => {
   try {
     if (!sbReady) { await connectSB(); }
     const creds = { email: $('email').value.trim(), password: $('pass').value };
-    const { data, error } = signup ? await SB.auth.signUp({ ...creds, options: { data: { role: roleGet() } } }) : await SB.auth.signInWithPassword(creds);
+    let meta = null;
+    if (signup) {
+      const phone = normPhone($('phone').value), region = $('region').value;
+      if (!/^0(3\d|20)\d{7}$/.test(phone)) { msg.textContent = 'Numéro de téléphone invalide. Exemple : 034 12 345 67.'; return; }
+      if (!MG_REGIONS.includes(region)) { msg.textContent = 'Choisissez votre région dans la liste.'; return; }
+      meta = { role: roleGet(), phone, region };
+    }
+    const { data, error } = signup ? await SB.auth.signUp({ ...creds, options: { data: meta } }) : await SB.auth.signInWithPassword(creds);
     if (error) { msg.textContent = authError(error.message); return; }
     if (signup && data && data.user && data.user.identities && data.user.identities.length === 0) {
       msg.textContent = 'Cet e-mail a déjà un compte. Cliquez sur « J\'ai déjà un compte ».'; return; }
@@ -1391,6 +1406,7 @@ async function loadCounts() {
 }
 
 async function loadAds() {
+  if (!user) return;
   const my = ++reqId;
   let r = SB.from('ann_annonces').select('*, ann_categories(nom)').eq('statut', 'valide');
   r = sort === 'recent' ? r.order('cree_le', { ascending: false })
@@ -1670,6 +1686,14 @@ const setNet = bad => { $('net').hidden = !bad; };
 const loadLib = u => new Promise((ok, ko) => { const t = document.createElement('script'); t.src = u;
   t.onload = ok; t.onerror = () => { t.remove(); ko(); }; document.head.appendChild(t); });
 
+/* ===== Les 24 régions de Madagascar (Ambatosoa est la 24e, créée en 2023) ===== */
+const MG_REGIONS = ['Alaotra-Mangoro','Ambatosoa','Amoron\'i Mania','Analamanga','Analanjirofo','Androy','Anosy','Atsimo-Andrefana','Atsimo-Atsinanana','Atsinanana','Betsiboka','Boeny','Bongolava','Diana','Fitovinany','Haute Matsiatra','Ihorombe','Itasy','Melaky','Menabe','Sava','Sofia','Vakinankaratra','Vatovavy'];
+$('region').insertAdjacentHTML('beforeend', MG_REGIONS.map(r => `<option value="${esc(r)}">${esc(r)}</option>`).join(''));
+/* « +261 34 12 345 67 », « 261341234567 » ou « 034 12 345 67 » deviennent « 0341234567 » */
+const normPhone = v => { let d = String(v || '').replace(/[^\d+]/g, '');
+  if (d.startsWith('+261')) d = '0' + d.slice(4); else if (d.startsWith('261') && d.length === 12) d = '0' + d.slice(3);
+  return d.replace(/\D/g, ''); };
+
 /* ===== Choix du profil : Client / Travailleur / Vendeur (un seul profil par compte) ===== */
 const ROLES = { client: 'Client', travailleur: 'Travailleur', vendeur: 'Vendeur' };
 const roleGet = () => { try { const r = localStorage.getItem('ah_role'); return ROLES[r] ? r : ''; } catch (e) { return ''; } };
@@ -1694,9 +1718,9 @@ function syncRole() {
 async function pickRole(r) {
   roleSet(r); hideRoleGate(); renderRole();
   if (user && !accountRole()) { try { await SB.auth.updateUser({ data: { role: r } }); user = (await SB.auth.getUser()).data.user || user; renderRole(); } catch (e) {} }
-  if (r === 'vendeur' && !user) {
+  if (!user) {                       /* compte obligatoire : on ouvre directement l'inscription */
     setAuthMode(true); $('authMsg').className = 'msg';
-    $('authMsg').textContent = 'Créez votre compte vendeur (gratuit) pour déposer vos ventes.';
+    $('authMsg').textContent = r === 'vendeur' ? 'Créez votre compte vendeur (gratuit) pour continuer.' : 'Créez votre compte gratuit pour accéder aux annonces.';
     open('mAuth');
   }
 }
