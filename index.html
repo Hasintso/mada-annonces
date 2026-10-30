@@ -854,6 +854,8 @@ body.rolepick{overflow:hidden}
 .auth .btn.big:active{transform:translateY(4px);box-shadow:0 1px 0 var(--forest2)}
 .auth .btn.big:disabled{opacity:.6}
 .aswitch{margin:18px 0 0;text-align:center;font-size:.92rem;color:var(--muted)}
+.aterms{margin:12px 0 0;font-size:.8rem;color:var(--muted);text-align:center;line-height:1.5}
+.aterms[hidden]{display:none}
 .aswitch[hidden],.forgot[hidden],.astep[hidden],.achip[hidden],#stepA[hidden],#fEmail[hidden],#fPass[hidden]{display:none}
 
 /* ===== Continuer avec Google ===== */
@@ -1174,6 +1176,7 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
     <p class="forgot" id="forgotRow"><button type="button" class="link" id="forgotBtn">Mot de passe oublié ?</button></p>
     <p class="msg" id="authMsg" role="status"></p>
     <button class="btn big" id="authGo">Se connecter</button>
+    <p class="aterms" id="authTerms" hidden>En continuant, vous acceptez nos <a href="conditions.html" target="_blank" rel="noopener">conditions d'utilisation</a> et notre <a href="confidentialite.html" target="_blank" rel="noopener">politique de confidentialité</a>.</p>
     <p class="aswitch" id="authSwitchRow"><span id="authSwitchTxt"></span> <button type="button" class="link" id="authSwitch"></button></p>
   </form>
 </div></div>
@@ -1413,6 +1416,7 @@ function setAuthView(v) {
   $('authSteps').hidden = !(v === 'signup1' || v === 'signup2');
   document.querySelectorAll('#authSteps i').forEach((el, i) => el.classList.toggle('on', v === 'signup2' || i === 0));
   $('authBack').hidden = !(v === 'signup2' || v === 'forgot');
+  $('authTerms').hidden = !(v === 'signup2' || v === 'complete');
   $('authSwitchRow').hidden = !c.sw;
   if (c.sw) { $('authSwitchTxt').textContent = c.sw[0]; $('authSwitch').textContent = c.sw[1]; }
   $('pass').autocomplete = v === 'login' ? 'current-password' : 'new-password';
