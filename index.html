@@ -559,9 +559,22 @@ body.landing .net{position:fixed;left:0;right:0;bottom:0;z-index:40;border-top:1
 .search form{position:relative}
 .search form .csel{flex:none;width:190px;border-left:1px solid var(--line)}
 .search form .csel select{display:none}
-.csel-btn{width:100%;display:flex;align-items:center;border:0;background:transparent;color:var(--ink);padding:8px 12px;font-size:.95rem;text-align:left;white-space:nowrap}
-.bestprice{display:flex;justify-content:center;margin-top:14px}
-.bestprice span{display:inline-block;padding:6px 18px;border:1.5px solid var(--forest);border-radius:999px;background:transparent;color:#111;font:800 1rem/1.3 Nunito,Poppins,sans-serif;letter-spacing:.3px}
+.csel-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;border:0;background:transparent;color:var(--ink);padding:8px 12px;font-size:.95rem;text-align:left;border-radius:0}
+.csel-btn .arr{width:14px;height:14px;flex:none;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
+.csel.open .csel-btn .arr{transform:rotate(180deg)}
+.csel-list{display:none;position:absolute;top:calc(100% + 12px);left:0;right:0;margin:0;padding:0;list-style:none;background:transparent;border:0;box-shadow:none;z-index:60;flex-direction:row;flex-wrap:wrap;justify-content:center;align-items:center;gap:10px}
+/* la zone du bandeau s'agrandit à l'ouverture : les pastilles ne touchent jamais les annonces */
+.search{transition:padding-bottom .2s}
+.search:has(.csel.open){padding-bottom:68px}
+@media(max-width:700px){.search:has(.csel.open){padding-bottom:120px}}
+.csel.open .csel-list{display:flex}
+/* chaque texte est entouré d'une petite forme (pastille), toutes de même style */
+.csel-list li{padding:6px 16px;cursor:pointer;white-space:nowrap;font:800 1rem/1.3 Nunito,Poppins,sans-serif;color:#111;letter-spacing:.2px;
+  background:transparent;border:1.5px solid var(--forest);border-radius:999px;box-shadow:none;
+  text-shadow:0 0 6px #fff,0 0 10px #fff;
+  transition:transform .15s,background .15s,border-color .15s}
+.csel-list li:hover,.csel-list li.act{background:rgba(242,183,5,.35);border-color:var(--forest2);transform:translateY(-2px)}
+.csel-list li[aria-selected="true"]{border-color:var(--saffron);border-width:2px}
 @media(max-width:700px){.search form .csel{flex:1 1 45%;width:auto;border:1px solid var(--line);border-radius:999px}}
 
 
@@ -885,24 +898,56 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
       <div class="qwrap"><input id="q" type="search" placeholder=" " aria-label="Ici vous pouvez trouver ce dont vous avez besoin. Ex. : des fournisseurs, des créateurs, des travailleurs."><span class="qhint" aria-hidden="true"><span id="qhintTxt">Ici vous pouvez trouver ce dont vous avez besoin. Ex. : des fournisseurs, des créateurs, des travailleurs.</span></span></div>
       <div class="csel" id="cselBox">
         <select id="qCat" aria-label="Catégorie"><option value="">Toutes catégories</option></select>
-        <span class="csel-btn" id="cselBtn"><span id="cselLbl">Toutes catégories</span></span>
+        <button type="button" class="csel-btn" id="cselBtn" aria-haspopup="listbox" aria-expanded="false"><span id="cselLbl">Toutes catégories</span><svg class="arr" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+        <ul class="csel-list" id="cselList" role="listbox" aria-label="Catégorie"></ul>
       </div>
       <input id="qVille" class="ville" type="text" placeholder="Ville" aria-label="Ville">
       <button class="btn">Rechercher</button>
     </form>
-    <div class="bestprice"><span>Les meilleurs prix</span></div>
   </div>
 </div>
 
 <script>
-/* Le champ « Toutes catégories » suit le <select id="qCat"> caché (menu de gauche, etc.) */
+/* Liste de catégories personnalisée (synchronisée avec le <select id="qCat" caché) */
 (function(){
-  var sel=document.getElementById('qCat'), lbl=document.getElementById('cselLbl');
-  function label(){var o=sel.options[sel.selectedIndex];lbl.textContent=o?o.textContent:'Toutes catégories';}
-  new MutationObserver(label).observe(sel,{childList:true});
+  var sel=document.getElementById('qCat'), box=document.getElementById('cselBox'),
+      btn=document.getElementById('cselBtn'), list=document.getElementById('cselList'),
+      lbl=document.getElementById('cselLbl'), act=-1;
+  function items(){return list.querySelectorAll('li');}
+  function build(){
+    list.innerHTML='';
+    Array.prototype.forEach.call(sel.options,function(o,i){
+      var li=document.createElement('li');
+      li.setAttribute('role','option'); li.dataset.v=o.value; li.textContent=o.textContent;
+      li.setAttribute('aria-selected', String(o.value===sel.value));
+      li.onmousedown=function(e){e.preventDefault();};
+      li.onclick=function(){pick(o.value);};
+      list.appendChild(li);
+    });
+    label();
+  }
+  function label(){
+    var o=sel.options[sel.selectedIndex]; lbl.textContent=o?o.textContent:'Toutes catégories';
+    items().forEach(function(li){li.setAttribute('aria-selected',String(li.dataset.v===sel.value));});
+  }
+  function setOpen(v){box.classList.toggle('open',v);btn.setAttribute('aria-expanded',v);act=-1;items().forEach(function(l){l.classList.remove('act');});}
+  function pick(v){sel.value=v;label();setOpen(false);sel.dispatchEvent(new Event('change'));btn.focus();}
+  function move(d){var it=items();if(!it.length)return;act=(act+d+it.length)%it.length;
+    it.forEach(function(l,i){l.classList.toggle('act',i===act);});}
+  btn.onclick=function(){setOpen(!box.classList.contains('open'));};
+  btn.onkeydown=function(e){
+    var open=box.classList.contains('open');
+    if(e.key==='ArrowDown'){e.preventDefault();if(!open)setOpen(true);move(1);}
+    else if(e.key==='ArrowUp'){e.preventDefault();if(!open)setOpen(true);move(-1);}
+    else if(e.key==='Enter'&&open&&act>=0){e.preventDefault();pick(items()[act].dataset.v);}
+    else if(e.key==='Escape'){setOpen(false);}
+  };
+  document.addEventListener('click',function(e){if(!box.contains(e.target))setOpen(false);});
+  /* quand le reste du code remplit ou change le <select>, la liste suit */
+  new MutationObserver(build).observe(sel,{childList:true});
   var d=Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,'value');
   Object.defineProperty(sel,'value',{configurable:true,get:function(){return d.get.call(sel);},set:function(v){d.set.call(sel,v);label();}});
-  label();
+  build();
 })();
 </script>
 <div class="shell">
