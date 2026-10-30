@@ -782,6 +782,30 @@ body.rolepick{overflow:hidden}
 .rolechip{border:1.5px solid rgba(255,255,255,.7);background:rgba(255,255,255,.18);color:#fff;border-radius:999px;padding:5px 12px;font-weight:700;font-size:.85rem}
 .rolechip[hidden]{display:none}
 .rolechip.fixed{cursor:default}
+
+/* --- Cartes de choix : une couleur par profil + relief 3D --- */
+.rg-cards{perspective:1200px;gap:22px;padding-bottom:12px}
+.rg-card{--c:#2f7fe0;--c2:#1b4f9c;--c3:#63a9ff;
+  border:0;color:#fff;
+  background:linear-gradient(155deg,var(--c3) 0%,var(--c) 55%,var(--c2) 130%);
+  box-shadow:0 9px 0 var(--c2),0 22px 30px rgba(40,20,5,.28),inset 0 2px 0 rgba(255,255,255,.45),inset 0 -14px 24px rgba(0,0,0,.12);
+  transform:perspective(900px) rotateX(var(--rx,5deg)) rotateY(var(--ry,0deg)) translateY(var(--ty,0px));
+  transition:transform .14s ease-out,box-shadow .2s;position:relative;overflow:hidden}
+.rg-card::after{content:"";position:absolute;left:-30%;top:-60%;width:90%;height:120%;transform:rotate(18deg);
+  background:linear-gradient(90deg,rgba(255,255,255,.28),rgba(255,255,255,0));pointer-events:none}
+.rg-card[data-role="client"]{--c:#2f7fe0;--c2:#1b4f9c;--c3:#69adff}
+.rg-card[data-role="travailleur"]{--c:#1fa371;--c2:#126645;--c3:#52d6a0}
+.rg-card[data-role="vendeur"]{--c:#f28a1a;--c2:#b35a05;--c3:#ffbe5c}
+.rg-card:hover,.rg-card:focus-visible{--ty:-8px;border:0;
+  box-shadow:0 13px 0 var(--c2),0 30px 38px rgba(40,20,5,.34),inset 0 2px 0 rgba(255,255,255,.55),inset 0 -14px 24px rgba(0,0,0,.12)}
+.rg-card:active{--ty:5px;box-shadow:0 3px 0 var(--c2),0 8px 14px rgba(40,20,5,.3),inset 0 2px 0 rgba(255,255,255,.4)}
+.rg-card .ic,.rg-card.v .ic{background:#fff;color:var(--c2);
+  box-shadow:0 5px 0 rgba(0,0,0,.22),0 10px 14px rgba(0,0,0,.2),inset 0 -4px 8px rgba(0,0,0,.08);
+  transform:translateZ(30px)}
+.rg-card b{color:#fff;text-shadow:0 2px 0 var(--c2),0 4px 8px rgba(0,0,0,.25)}
+.rg-card span.d,.rg-card.v span.d{color:#fff;opacity:.95;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+@media(max-width:700px){.rg-cards{gap:20px}}
+@media(prefers-reduced-motion:reduce){.rg-card{transition:none}}
 </style>
 <script>
 /* Applique tout de suite les réglages d'apparence enregistrés (avant l'affichage de la page) */
@@ -1677,6 +1701,16 @@ async function pickRole(r) {
   }
 }
 document.querySelectorAll('#roleGate [data-role]').forEach(b => b.onclick = () => pickRole(b.dataset.role));
+
+/* Petit effet 3D : la carte s'incline vers la souris */
+document.querySelectorAll('#roleGate .rg-card').forEach(c => {
+  c.addEventListener('pointermove', e => {
+    if (e.pointerType !== 'mouse' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const r = c.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
+    c.style.setProperty('--ry', (x * 14).toFixed(1) + 'deg'); c.style.setProperty('--rx', (-y * 14).toFixed(1) + 'deg');
+  });
+  c.addEventListener('pointerleave', () => { c.style.removeProperty('--ry'); c.style.removeProperty('--rx'); });
+});
 $('roleChip').onclick = () => { if (!user) showRoleGate(); };   /* un visiteur peut changer ; un compte garde son profil */
 /* Affichage immédiat pour un nouveau visiteur ; quelqu'un déjà connecté attend la lecture de sa session (pas de clignotement) */
 (() => {
