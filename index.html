@@ -1233,7 +1233,7 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
       <label for="fullname">Nom complet</label><input id="fullname" autocomplete="name" placeholder="Ex. : Hasina Rakoto">
       <label for="phone">Numéro de téléphone</label>
       <div class="phonebox"><span>🇲🇬 +261</span><input id="phone" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="34 12 345 67" aria-describedby="phoneHint"></div>
-      <p class="phint" id="phoneHint">9 chiffres, votre numero valide ...</p>
+      <p class="phint" id="phoneHint">9 chiffres, commençant par 32, 33, 34, 36, 37 ou 38</p>
       <label for="region">Votre région</label><select id="region" autocomplete="off"><option value="">Choisissez votre région</option></select>
     </div>
     <div id="fEmail"><label for="email">Adresse e-mail</label><input id="email" type="email" autocomplete="email" placeholder="vous@exemple.com"></div>
@@ -1476,7 +1476,7 @@ const AV = {
   signup2: { t: 'Sécurisez votre compte', s: 'Étape 2 sur 2 · E-mail et mot de passe', go: 'Créer mon compte', sw: ['Vous avez déjà un compte ?', 'Se connecter'] },
   forgot:  { t: 'Mot de passe oublié', s: 'Entrez votre e-mail : nous vous envoyons un lien pour en choisir un nouveau.', go: 'Envoyer le lien', sw: null },
   reset:   { t: 'Nouveau mot de passe', s: 'Choisissez un mot de passe d\'au moins 6 caractères.', go: 'Enregistrer', sw: null },
-  complete:{ t: 'Dernière étape', s: 'Terminer votre compte avec votre numéro et votre région pour avoir l'accès à toutes  les offres .', go: 'Terminer', sw: null }
+  complete:{ t: 'Dernière étape', s: 'Ajoutez votre numéro et votre région pour terminer votre compte.', go: 'Terminer', sw: null }
 };
 function updMeter() {
   const p = $('pass').value, bar = $('passBar'); let sc = 0;
