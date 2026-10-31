@@ -144,6 +144,9 @@ footer button.flink:hover{color:var(--forest);text-decoration:underline}
 .badge{position:absolute;left:-70px;bottom:36px;max-width:190px;background:var(--forest);color:#fff;
   font:italic 1rem/1.25 Georgia,"Times New Roman",serif;padding:12px 16px;border-radius:30px 8px 30px 8px;
   transform:rotate(-4deg);box-shadow:0 6px 16px rgba(20,36,31,.25)}
+/* étiquette de la photo d'accueil : placée en bas de l'image, texte entièrement dans le cadre */
+.hero-pic .badge{position:absolute;top:auto;right:auto;left:50%;bottom:14px;width:calc(100% - 20px);height:auto;min-width:0;max-width:none;
+  padding:9px 12px;border-radius:14px;font:700 .82rem/1.3 Arial,sans-serif;text-align:center;transform:translateX(-50%) rotate(-3deg)}
 
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-top:30px}
 .tile{display:flex;flex-direction:column;width:100%;padding:0;text-align:left;border:2px solid #fff;border-radius:14px;overflow:hidden;
@@ -1395,6 +1398,21 @@ $('startBtn').onclick = closeWelcome;
 $('startBtn2').onclick = closeWelcome;
 /* Recherche depuis l'accueil : reprend le mot saisi, puis ouvre les annonces (compte requis) */
 $('heroSearch').onsubmit = e => { e.preventDefault(); q = $('heroQ').value; $('q').value = q; closeWelcome(); };
+/* Barre de recherche de l'accueil : le texte d'aide s'écrit tout seul, exemple après exemple (sans curseur clignotant) */
+(function () {
+  const inp = $('heroQ'), base = 'Que cherchez-vous ? Ex. : ';
+  const words = ['une moto', 'un logement', 'un emploi', 'une formation', 'un ordinateur', 'du sakafo'];
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) { inp.placeholder = base + 'moto, logement, emploi…'; return; }
+  let w = 0, i = 0, del = false;
+  (function tick() {
+    const word = words[w]; let wait;
+    inp.placeholder = base + word.slice(0, i);
+    if (!del) { if (i < word.length) { i++; wait = 80; } else { del = true; wait = 1500; } }
+    else if (i > 0) { i--; wait = 35; }
+    else { del = false; w = (w + 1) % words.length; wait = 350; }
+    setTimeout(tick, wait);
+  })();
+})();
 $('hlAll').onclick = closeWelcome;
 /* Dernières annonces sur l'accueil : la section reste masquée si rien n'est lisible */
 (async () => {
