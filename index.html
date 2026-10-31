@@ -931,6 +931,22 @@ footer a.flink2{color:inherit;text-decoration:none;text-shadow:inherit}footer a.
 /* Triangle « Livraison partout » : un peu d'air sous l'en-tête */
 .verre{margin-top:18px}
 @media(max-width:560px){.hsearch{flex-direction:column}.hlatest h2,.safety h2{font-size:1.25rem}}
+
+/* ===== Accueil : alignements et espaces réguliers (corrections) ===== */
+/* le pied de page suit la même colonne que le reste de l'accueil */
+body.landing .fgrid, body.landing .fbottom{max-width:1100px}
+body.landing footer{padding-top:48px}
+/* bandeau « Comment déposer » et ses 3 cartes : ne dépassent plus à droite de la colonne */
+.manga3d .m3-stage{margin-left:-12px;padding:0 34px 0 0}
+.manga3d .m3-panels{padding-right:12px}
+/* bloc « sécurité » : même marge en haut qu'en bas */
+.safety{padding:26px 24px}
+#welcome .safety h2{margin:0 0 14px}
+/* bande finale : carte blanche et bouton à la même hauteur, liseré jaune droit */
+.manga3d .m3-cta{align-items:stretch;gap:18px}
+.manga3d .m3-burst{border-left:0;box-shadow:inset 6px 0 0 var(--saffron),0 14px 30px rgba(20,36,31,.2)}
+.manga3d .m3-btn{display:inline-flex;align-items:center;justify-content:center;padding-left:34px;padding-right:34px;border-radius:20px}
+@media(max-width:700px){.manga3d .m3-stage{padding:0 10px 0 4px}.manga3d .m3-panels{padding-right:8px}.manga3d .m3-btn{width:100%;padding-top:16px;padding-bottom:16px}}
 </style>
 <script>
 /* Applique tout de suite les réglages d'apparence enregistrés (avant l'affichage de la page) */
@@ -1077,7 +1093,7 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
           <div class="m3-face m3-thick"></div><span class="m3-sfx" aria-hidden="true">Clic !</span>
           <div class="m3-num">1</div><h3>Créez un compte</h3>
           <svg class="m3-icon" viewBox="0 0 120 80" fill="none" stroke="#0d0d0d" stroke-width="4" stroke-linejoin="round" aria-hidden="true"><circle cx="60" cy="26" r="16" fill="#fff"/><path d="M44 22q8-14 32 0" fill="#0d0d0d"/><path d="M52 28l5 1M68 28l-5 1M54 36q6 5 12 0"/><path d="M24 80c4-20 20-26 36-26s32 6 36 26" fill="#fff"/></svg>
-          <div class="m3-speech"><p>Entrez votre e-mail et un mot de passe, puis confirmez avec le lien reçu par e-mail.</p></div>
+          <div class="m3-speech"><p>Choisissez Client ou Vendeur, ajoutez votre numéro et votre région, puis votre e-mail (ou Google).</p></div>
         </div></div>
         <div class="m3-panel"><div class="m3-card" data-tilt style="--c:var(--b)">
           <div class="m3-face m3-thick"></div><span class="m3-sfx" aria-hidden="true">Zip !</span>
