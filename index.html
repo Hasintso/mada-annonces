@@ -838,7 +838,11 @@ body.rolepick{overflow:hidden}
 .auth input:focus,.auth select:focus{outline:0;border-color:var(--forest);box-shadow:0 0 0 4px rgba(162,80,26,.16)}
 .phonebox{display:flex;align-items:stretch;gap:8px}
 .phonebox span{display:flex;align-items:center;padding:0 12px;border:1.5px solid var(--line);border-radius:12px;background:#fbf4ea;font-weight:700;white-space:nowrap}
-.phonebox input{flex:1;width:auto;min-width:0}
+.phonebox input{flex:1;width:auto;min-width:0;letter-spacing:.04em}
+.phonebox input.bad{border-color:var(--red)}
+.phint{margin:6px 2px 0;font-size:.85rem;opacity:.8}
+.phint.err{color:var(--red);opacity:1}
+.phint.ok{color:var(--forest);opacity:1}
 .passbox{position:relative}
 .passbox input{padding-right:84px}
 .passbox button{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:none;padding:6px 8px;color:var(--forest);font-weight:700;font-size:.82rem}
@@ -1229,7 +1233,8 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
     <div id="stepA" hidden>
       <label for="fullname">Nom complet</label><input id="fullname" autocomplete="name" placeholder="Ex. : Hasina Rakoto">
       <label for="phone">Numéro de téléphone</label>
-      <div class="phonebox"><span>🇲🇬 +261</span><input id="phone" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="34 12 345 67"></div>
+      <div class="phonebox"><span>🇲🇬 +261</span><input id="phone" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="34 12 345 67" aria-describedby="phoneHint"></div>
+      <p class="phint" id="phoneHint">9 chiffres, commençant par 32, 33, 34, 36, 37 ou 38</p>
       <label for="region">Votre région</label><select id="region" autocomplete="off"><option value="">Choisissez votre région</option></select>
     </div>
     <div id="fEmail"><label for="email">Adresse e-mail</label><input id="email" type="email" autocomplete="email" placeholder="vous@exemple.com"></div>
@@ -1537,9 +1542,9 @@ $('authForm').onsubmit = async e => {
   const msg = $('authMsg'), go = $('authGo'), v = authView; msg.className = 'msg'; msg.textContent = '';
   if (v === 'signup1' || v === 'complete') {               /* étape 1 : nom, téléphone, région */
     const name = $('fullname').value.trim().replace(/\s+/g, ' '), region = $('region').value;
-    let phone = normPhone($('phone').value); if (/^(3\d|20)\d{7}$/.test(phone)) phone = '0' + phone;
+    const nat = mgNational($('phone').value), phone = '+261' + nat;
     if (name.length < 2) { msg.textContent = 'Entrez votre nom complet.'; return; }
-    if (!/^0(3\d|20)\d{7}$/.test(phone)) { msg.textContent = 'Numéro de téléphone invalide. Exemple : 34 12 345 67.'; return; }
+    if (!MG_PHONE_RE.test(nat)) { msg.textContent = 'Numéro de téléphone invalide : après +261, il doit commencer par 32, 33, 34, 36, 37 ou 38 et compter 9 chiffres. Exemple : 34 12 345 67.'; return; }
     if (!MG_REGIONS.includes(region)) { msg.textContent = 'Choisissez votre région dans la liste.'; return; }
     signupInfo = { full_name: name, phone, region };
     if (v === 'complete') {                                  /* compte créé avec Google : on enregistre téléphone + région */
@@ -1936,10 +1941,42 @@ const loadLib = u => new Promise((ok, ko) => { const t = document.createElement(
 /* ===== Les 24 régions de Madagascar (Ambatosoa est la 24e, créée en 2023) ===== */
 const MG_REGIONS = ['Alaotra-Mangoro','Ambatosoa','Amoron\'i Mania','Analamanga','Analanjirofo','Androy','Anosy','Atsimo-Andrefana','Atsimo-Atsinanana','Atsinanana','Betsiboka','Boeny','Bongolava','Diana','Fitovinany','Haute Matsiatra','Ihorombe','Itasy','Melaky','Menabe','Sava','Sofia','Vakinankaratra','Vatovavy'];
 $('region').insertAdjacentHTML('beforeend', MG_REGIONS.map(r => `<option value="${esc(r)}">${esc(r)}</option>`).join(''));
-/* « +261 34 12 345 67 », « 261341234567 » ou « 034 12 345 67 » deviennent « 0341234567 » */
-const normPhone = v => { let d = String(v || '').replace(/[^\d+]/g, '');
-  if (d.startsWith('+261')) d = '0' + d.slice(4); else if (d.startsWith('261') && d.length === 12) d = '0' + d.slice(3);
-  return d.replace(/\D/g, ''); };
+/* ===== Numéro malgache : +261 puis 9 chiffres commençant par 32, 33, 34, 36, 37 ou 38 (affiché « 34 12 345 67 ») ===== */
+const MG_PHONE_RE = /^3[234678]\d{7}$/;
+/* « +261 34 12 345 67 », « 261341234567 », « 034 12 345 67 » ou « 34 12 345 67 » donnent « 341234567 » (9 chiffres au plus) */
+function mgNational(v) {
+  let d = String(v || '').replace(/\D/g, '').replace(/^0+/, '');
+  if (d.startsWith('261')) d = d.slice(3);
+  return d.replace(/^0+/, '').slice(0, 9);
+}
+const mgFormat = d => [d.slice(0, 2), d.slice(2, 4), d.slice(4, 7), d.slice(7, 9)].filter(Boolean).join(' ');
+/* coupe tout ce qui ne peut pas être un numéro malgache valide */
+function mgClean(d) {
+  if (d && d[0] !== '3') return { d: '', bad: true };
+  if (d.length > 1 && !'234678'.includes(d[1])) return { d: d[0], bad: true };
+  return { d, bad: false };
+}
+(function mgPhoneUI() {
+  const inp = $('phone'), hint = $('phoneHint'), HINT = '9 chiffres, commençant par 32, 33, 34, 36, 37 ou 38';
+  const show = (txt, cls) => { hint.textContent = txt; hint.className = 'phint' + (cls ? ' ' + cls : ''); inp.classList.toggle('bad', cls === 'err'); };
+  inp.addEventListener('input', () => {
+    const raw = inp.value, t = raw.trim().replace(/^00/, '+');
+    const foreign = t.startsWith('+') && !/^\+\s*261/.test(t);          /* numéro d'un autre pays */
+    const c = mgClean(foreign ? '' : mgNational(raw)), d = c.d, f = mgFormat(d);
+    const keep = raw.replace(/\D/g, '') === d;                           /* aucune correction : on garde la place du curseur */
+    let n = raw.slice(0, inp.selectionStart == null ? raw.length : inp.selectionStart).replace(/\D/g, '').length, pos = 0;
+    inp.value = f;
+    if (keep && document.activeElement === inp) {
+      while (pos < f.length && n > 0) { if (/\d/.test(f[pos])) n--; pos++; }
+      inp.setSelectionRange(pos, pos);
+    }
+    if (foreign) show('Seuls les numéros malgaches (+261) sont acceptés.', 'err');
+    else if (c.bad) show('Le numéro doit commencer par 32, 33, 34, 36, 37 ou 38.', 'err');
+    else if (d.length === 9) show('Numéro valide ✓', 'ok');
+    else if (d.length) show('Encore ' + (9 - d.length) + ' chiffre' + (9 - d.length > 1 ? 's' : '') + '…', '');
+    else show(HINT, '');
+  });
+})();
 
 /* ===== Choix du profil : Client / Travailleur / Vendeur (un seul profil par compte) ===== */
 const ROLES = { client: 'Client', travailleur: 'Travailleur', vendeur: 'Vendeur' };
