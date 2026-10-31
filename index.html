@@ -1965,7 +1965,7 @@ function mgClean(d) {
   return { d, bad: false };
 }
 (function mgPhoneUI() {
-  const inp = $('phone'), hint = $('phoneHint'), HINT = '9 chiffres, commençant par 32, 33, 34, 36, 37 ou 38';
+  const inp = $('phone'), hint = $('phoneHint'), HINT = '9 chiffres, composer votre numero valide';
   const show = (txt, cls) => { hint.textContent = txt; hint.className = 'phint' + (cls ? ' ' + cls : ''); inp.classList.toggle('bad', cls === 'err'); };
   inp.addEventListener('input', () => {
     const raw = inp.value, t = raw.trim().replace(/^00/, '+');
