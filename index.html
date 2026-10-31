@@ -801,6 +801,8 @@ body.rolepick{overflow:hidden}
 .rg-card[data-role="vendeur"]{--c:#f28a1a;--c2:#b35a05;--c3:#ffbe5c}
 .rg-card:hover,.rg-card:focus-visible{--ty:-8px;border:0;
   box-shadow:0 13px 0 var(--c2),0 30px 38px rgba(40,20,5,.34),inset 0 2px 0 rgba(255,255,255,.55),inset 0 -14px 24px rgba(0,0,0,.12)}
+.rg-card[hidden]{display:none}
+@media(min-width:701px){.rg-cards{grid-template-columns:repeat(2,1fr);max-width:700px;margin-left:auto;margin-right:auto}}
 .rg-card:active{--ty:5px;box-shadow:0 3px 0 var(--c2),0 8px 14px rgba(40,20,5,.3),inset 0 2px 0 rgba(255,255,255,.4)}
 .rg-card .ic,.rg-card.v .ic{background:#fff;color:var(--c2);
   box-shadow:0 5px 0 rgba(0,0,0,.22),0 10px 14px rgba(0,0,0,.2),inset 0 -4px 8px rgba(0,0,0,.08);
@@ -940,9 +942,10 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
       <button type="button" class="rg-card" role="radio" aria-checked="false" data-role="client">
         <i class="chk">✓</i>
         <span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></span>
-        <span><b>Client</b><br><span class="d">Je cherche, j'achète ou je confie une tâche à faire.</span></span>
+        <span><b>Je suis un client</b><br><span class="d">Je cherche, j'achète ou je confie une tâche à faire.</span></span>
       </button>
-      <button type="button" class="rg-card" role="radio" aria-checked="false" data-role="travailleur">
+      <!-- Carte « Travailleur » masquée pour le moment : retirer l'attribut hidden pour la remettre -->
+      <button type="button" class="rg-card" role="radio" aria-checked="false" data-role="travailleur" hidden>
         <i class="chk">✓</i>
         <span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></span>
         <span><b>Travailleur</b><br><span class="d">Je propose mes talents, mes services et mon expérience.</span></span>
@@ -950,7 +953,7 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
       <button type="button" class="rg-card v" role="radio" aria-checked="false" data-role="vendeur">
         <i class="chk">✓</i>
         <span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9l2-5h14l2 5"/><path d="M4 9v11h16V9"/><path d="M9 20v-6h6v6"/></svg></span>
-        <span><b>Devenir vendeur</b><br><span class="d">Je vends mes produits, neufs ou d'occasion.</span></span>
+        <span><b>Je suis un vendeur</b><br><span class="d">Je vends mes produits, neufs ou d'occasion.</span></span>
       </button>
     </div>
     <div class="rg-cta"><button type="button" class="rg-go" id="rgGo" disabled>Choisissez un profil</button></div>
