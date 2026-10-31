@@ -870,7 +870,6 @@ body.rolepick{overflow:hidden}
 .or{display:flex;align-items:center;gap:12px;margin:16px 0 0;color:var(--muted);font-size:.85rem}
 .or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
 #socialRow[hidden]{display:none}
-#mAuth.lock .x{display:none}
 
 /* Google sur l'écran de choix du profil */
 .rg-or{max-width:420px;margin:18px auto 0}
@@ -1246,6 +1245,7 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
     <p class="msg" id="authMsg" role="status"></p>
     <button class="btn big" id="authGo">Se connecter</button>
     <p class="aterms" id="authTerms" hidden>En continuant, vous acceptez nos <a href="conditions.html" target="_blank" rel="noopener">conditions d'utilisation</a> et notre <a href="confidentialite.html" target="_blank" rel="noopener">politique de confidentialité</a>.</p>
+    <p class="aswitch" id="cancelRow" hidden><button type="button" class="link" id="cancelProfile">Annuler et changer de compte</button></p>
     <p class="aswitch" id="authSwitchRow"><span id="authSwitchTxt"></span> <button type="button" class="link" id="authSwitch"></button></p>
   </form>
 </div></div>
@@ -1361,7 +1361,7 @@ const safeUrl = u => /^https:\/\//.test(u || '') ? u : '';
 const cssUrl = u => safeUrl(u).replace(/['"()\s]/g, c => '%' + c.charCodeAt(0).toString(16));
 const open = id => $(id).classList.add('open');
 const close = id => $(id).classList.remove('open');
-document.querySelectorAll('[data-close]').forEach(b => b.onclick = () => b.closest('.mask').classList.remove('open'));
+document.querySelectorAll('[data-close]').forEach(b => b.onclick = () => { const m = b.closest('.mask'); if (m.id === 'mAuth' && authView === 'complete') { cancelProfile(); return; } m.classList.remove('open'); });
 document.querySelectorAll('.mask').forEach(m => m.addEventListener('mousedown', e => { if (e.target === m && !(m.id === 'mAuth' && authView === 'complete')) m.classList.remove('open'); }));
 document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.mask.open').forEach(m => { if (!(m.id === 'mAuth' && authView === 'complete')) m.classList.remove('open'); }); });
 
@@ -1493,7 +1493,7 @@ function setAuthView(v) {
   $('authTitle').textContent = c.t; $('authSub').textContent = c.s; $('authGo').textContent = c.go;
   $('stepA').hidden = !(v === 'signup1' || v === 'complete');
   $('socialRow').hidden = !(v === 'login' || v === 'signup1');
-  $('mAuth').classList.toggle('lock', v === 'complete');
+  $('mAuth').classList.toggle('lock', v === 'complete'); $('cancelRow').hidden = v !== 'complete';
   $('fEmail').hidden = !(v === 'login' || v === 'signup2' || v === 'forgot');
   $('fPass').hidden = !(v === 'login' || v === 'signup2' || v === 'reset');
   $('passMeter').hidden = !(v === 'signup2' || v === 'reset');
@@ -1519,11 +1519,19 @@ async function googleSignIn(msg) {
   msg.textContent = 'Redirection vers Google…';
   try {
     if (!sbReady) { await connectSB(); }
-    const { error } = await SB.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + location.pathname } });
+    const { error } = await SB.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + location.pathname, queryParams: { prompt: 'select_account' } } });
     if (error) msg.textContent = authError(error.message);
   } catch (err) { msg.textContent = authError(err && err.message); }
 }
 $('gBtn').onclick = () => { $('authMsg').className = 'msg'; googleSignIn($('authMsg')); };
+/* « Dernière étape » : on peut annuler. Le compte non terminé est déconnecté et on revient à la connexion (avec le bouton Google) */
+async function cancelProfile() {
+  setAuthMode(false); close('mAuth');
+  $('phone').value = ''; $('phone').dispatchEvent(new Event('input'));
+  try { if (sbReady) await SB.auth.signOut(); } catch (e) {}
+  user = null; renderAuthBtn(); leaveApp();
+}
+$('cancelProfile').onclick = cancelProfile;
 $('pass').oninput = updMeter;
 $('passEye').onclick = () => { const h = $('pass').type === 'password'; $('pass').type = h ? 'text' : 'password'; $('passEye').textContent = h ? 'Masquer' : 'Afficher'; };
 const authError = m => {
