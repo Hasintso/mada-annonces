@@ -712,6 +712,42 @@ body:not(.landing) header{border-bottom:0;border-image:none}
 .hbtn{position:relative}
 .badge{position:absolute;top:-5px;right:-5px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:#f28c1b;color:#2a170b;font:700 .72rem/20px Arial,sans-serif;text-align:center}
 .badge[hidden]{display:none}
+.hbtn .badge{left:auto;bottom:auto;top:-5px;right:-5px;width:auto;max-width:none;box-shadow:none}
+/* Bouton « Toutes catégories » : cadre transparent pour qu'on le reconnaisse comme un bouton */
+@media(min-width:701px){
+  .search form .csel{border-left:0;margin:0 8px}
+  .search form .csel .csel-btn{border:1.5px solid rgba(162,80,26,.45);border-radius:999px;background:rgba(162,80,26,.05);padding:10px 18px;
+    transition:border-color .15s,background .15s,box-shadow .15s}
+  .search form .csel .csel-btn:hover,.search form .csel.open .csel-btn{border-color:var(--forest);background:rgba(242,183,5,.16)}
+  .search form .csel .csel-btn:focus-visible{outline:3px solid var(--saffron);outline-offset:2px}
+}
+/* ===== Messagerie (client <-> vendeur) ===== */
+#mMsg .box{margin:auto;max-width:min(520px,100%);height:min(640px,calc(100dvh - 32px));display:flex;flex-direction:column;padding:16px;overflow:hidden}
+#mMsg h2{margin:0 30px 10px 0;font-size:1.25rem}
+#chatList{overflow-y:auto;flex:1}
+#chatThread{display:none;flex-direction:column;flex:1;min-height:0}
+.cv{display:flex;gap:12px;align-items:center;width:100%;text-align:left;background:transparent;border:0;border-bottom:1px solid var(--line);padding:12px 4px;cursor:pointer;font:inherit;color:inherit}
+.cv:hover{background:var(--paper)}
+.cv .av{width:42px;height:42px;border-radius:50%;background:var(--forest);color:#fff;display:grid;place-items:center;font-weight:800;flex:none}
+.cv .tx{flex:1;min-width:0}
+.cv .tx b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cv .tx small{display:block;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cv .un{min-width:22px;height:22px;border-radius:999px;background:#f28c1b;color:#2a170b;font:700 .75rem/22px Arial,sans-serif;text-align:center;padding:0 6px;flex:none}
+.rl{display:inline-block;font-size:.68rem;font-weight:800;color:#fff;border-radius:999px;padding:2px 8px;margin-left:6px;background:var(--forest);vertical-align:middle}
+.rl.client{background:#2f7fe0}
+.chat-top{display:flex;align-items:center;gap:10px;padding:0 0 10px;border-bottom:1px solid var(--line)}
+.chat-top .who{min-width:0}
+.chat-top .who b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chat-top .who small{display:block;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#chatMsgs{flex:1;overflow-y:auto;padding:12px 2px;display:flex;flex-direction:column;gap:8px}
+.bub{max-width:82%;padding:9px 12px;border-radius:16px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:.95rem;line-height:1.4}
+.bub small{display:block;opacity:.7;font-size:.72rem;margin-top:3px}
+.bub.me{align-self:flex-end;background:var(--forest);color:#fff;border-bottom-right-radius:4px}
+.bub.you{align-self:flex-start;background:#f1e8dc;color:var(--ink);border-bottom-left-radius:4px}
+.chat-empty{margin:auto;text-align:center;color:var(--muted);padding:20px;font-size:.95rem}
+.chat-form{display:flex;gap:8px;align-items:flex-end;padding-top:10px;border-top:1px solid var(--line)}
+.chat-form textarea{flex:1;resize:none;border:1.5px solid var(--line);border-radius:14px;padding:10px 12px;font:inherit;min-height:44px;max-height:110px}
+.chat-form .btn{cursor:pointer;padding:11px 16px}
 #mCart .box{margin:auto;max-width:min(460px,100%);max-height:calc(100dvh - 32px);overflow-y:auto}
 .citem{display:flex;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
 .citem img{width:54px;height:54px;border-radius:8px;object-fit:cover;flex:none}
@@ -1033,7 +1069,7 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
     <button class="dark" id="btnLogin">Se connecter</button>
    </div>
    <button class="post" id="btnPost" type="button" aria-label="Déposer une annonce" title="Déposer une annonce"><span aria-hidden="true">+</span></button>
-   <button class="hbtn" id="btnMsg" type="button" aria-label="Messages" title="Messages"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H10l-5 4v-4H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/></svg></button>
+   <button class="hbtn" id="btnMsg" type="button" aria-label="Messages" title="Messages"><span class="badge" id="msgBadge" hidden>0</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H10l-5 4v-4H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/></svg></button>
    <button class="hbtn" id="btnCart" type="button" aria-label="Panier" title="Panier"><span class="badge" id="cartBadge" hidden>0</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.5l2.2 10.2a1 1 0 0 0 1 .8h8.6a1 1 0 0 0 1-.8L20 8H6.3"/><circle cx="9.5" cy="19" r="1.4"/><circle cx="16.5" cy="19" r="1.4"/></svg></button>
   </div>
 </header>
@@ -1360,6 +1396,17 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
 </div></div>
 
 <!-- Panier -->
+<div class="mask" id="mMsg"><div class="box" role="dialog" aria-modal="true" aria-label="Messages">
+  <button class="x" data-close aria-label="Fermer">×</button>
+  <h2 id="chatTitle">Messages</h2>
+  <div id="chatList"></div>
+  <div id="chatThread">
+    <div class="chat-top"><button type="button" class="btn alt" id="chatBack" style="padding:6px 12px">← Retour</button><div class="who" id="chatWho"></div></div>
+    <div id="chatMsgs" aria-live="polite"></div>
+    <form class="chat-form" id="chatForm"><textarea id="chatText" rows="1" maxlength="1000" placeholder="Écrivez votre message…" aria-label="Votre message"></textarea><button class="btn cta" id="chatSend" type="submit">Envoyer</button></form>
+    <p class="msg" id="chatErr" role="status"></p>
+  </div>
+</div></div>
 <div class="mask" id="mCart"><div class="box" role="dialog" aria-modal="true" aria-label="Mon panier">
   <button class="x" data-close aria-label="Fermer">×</button>
   <h2>Mon panier</h2>
@@ -1792,6 +1839,7 @@ async function loadAds() {
     b.onkeydown = e => { if (e.target !== b) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } };
   });
   $('list').querySelectorAll('.cb').forEach(el => el.addEventListener('click', e => e.stopPropagation()));
+  $('list').querySelectorAll('.cb.msgb').forEach(el => el.addEventListener('click', () => openChat(ads[+el.dataset.i])));
   $('list').querySelectorAll('.cb.cartb').forEach(el => el.addEventListener('click', () => cartToggle(ads[+el.dataset.i])));
   $('list').querySelectorAll('.cb.nonum').forEach(el => el.addEventListener('click', () => window.bpSay && window.bpSay("Cette annonce n'a pas de numéro")));
   cartSync();
@@ -1832,7 +1880,7 @@ function showAd(a) {
       <div class="price" style="font-size:1.3rem">${money(a.prix)}</div>
       <div class="meta">${esc(a.ann_categories ? a.ann_categories.nom : '')} · ${esc(a.ville || 'Madagascar')} · ${ago(a.cree_le)}</div>
     </div><div class="pact">
-      ${tel ? `<a class="chip" id="msgAd" href="sms:${esc(tel)}?body=${encodeURIComponent('Bonjour, je suis intéressé(e) par votre annonce : ' + a.titre)}" title="Envoyer un message"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H10l-5 4v-4H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/></svg>Message</a>` : `<button type="button" class="chip" id="msgAd" title="Envoyer un message"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H10l-5 4v-4H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/></svg>Message</button>`}
+      <button type="button" class="chip" id="msgAd" title="Envoyer un message"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H10l-5 4v-4H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/></svg>Message</button>
       <button type="button" class="chip${cartHas(a.id) ? ' on' : ''}" id="addCart" aria-pressed="${cartHas(a.id)}" title="Mettre dans le panier"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.5l2.2 10.2a1 1 0 0 0 1 .8h8.6a1 1 0 0 0 1-.8L20 8H6.3"/><circle cx="9.5" cy="19" r="1.4"/><circle cx="16.5" cy="19" r="1.4"/></svg>Panier</button>
     </div></div>
     <div class="meta" id="sellerLine"></div>
@@ -1847,7 +1895,7 @@ function showAd(a) {
   const ac = $('addCart');
   if (ac) ac.onclick = () => { const on = cartToggle(a); ac.classList.toggle('on', on); ac.setAttribute('aria-pressed', String(on)); };
   const mb2 = $('msgAd');
-  if (mb2 && mb2.tagName === 'BUTTON') mb2.onclick = () => window.bpSay && window.bpSay('Cette annonce n\'a pas de numéro');
+  if (mb2) mb2.onclick = () => openChat(a);
   const d = $('delAd');
   if (d) d.onclick = async () => {
     if (!confirm('Supprimer cette annonce définitivement ?')) return;
@@ -1890,8 +1938,7 @@ const IC_CART = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.5l2
 function cardActions(a, i) {
   const t = telOf(a);
   return (t ? `<a class="cb call" href="tel:${esc(t)}" title="Appeler ${esc(a.telephone)}">${IC_PHONE}<span>${esc(a.telephone)}</span></a>` : '')
-    + (t ? `<a class="cb ic" href="${smsHref(a, false)}" aria-label="Envoyer un message" title="Envoyer un message">${IC_MSG}</a>`
-         : `<button type="button" class="cb ic nonum" aria-label="Envoyer un message" title="Envoyer un message">${IC_MSG}</button>`)
+    + `<button type="button" class="cb ic msgb" data-i="${i}" aria-label="Envoyer un message" title="Envoyer un message">${IC_MSG}</button>`
     + `<button type="button" class="cb ic cartb" data-i="${i}" aria-label="Mettre dans le panier" title="Mettre dans le panier" aria-pressed="false">${IC_CART}</button>`
     + (t ? `<a class="cb order" href="${smsHref(a, true)}">Commander</a>` : `<button type="button" class="cb order nonum">Commander</button>`);
 }
@@ -2298,9 +2345,126 @@ fitQHint();
 (function(){
   var t=document.getElementById('toast'),h;
   function say(m){t.textContent=m;t.classList.add('show');clearTimeout(h);h=setTimeout(function(){t.classList.remove('show')},2200)}
-  document.getElementById('btnMsg').onclick=function(){say('Les messages arrivent bientôt.')};
   window.bpSay=say;
 })();
 </script>
+<script>
+/* ===== Messagerie : client <-> vendeur (table ann_messages) ===== */
+(function () {
+  const TB = 'ann_messages';
+  const S = { convs: [], cur: null, tick: 0, busy: false };
+  const say = m => window.bpSay && window.bpSay(m);
+  const me = () => user && user.id;
+  const myName = () => { const m = (user && user.user_metadata) || {}; return m.full_name || m.name || 'Utilisateur'; };
+  const errTxt = e => /ann_messages|42P01|relation|schema cache/i.test(((e && e.code) || '') + ' ' + ((e && e.message) || ''))
+    ? "La messagerie n'est pas encore activée sur le site." : ((e && e.message) || 'Erreur');
+  const roleTag = r => r && ROLES[r] ? `<span class="rl ${esc(r)}">${esc(ROLES[r])}</span>` : '';
+  const isOpen = () => $('mMsg').classList.contains('open');
+
+  async function fetchAll() {
+    if (!me() || !sbReady) return;
+    const { data, error } = await SB.from(TB).select('*').or('de_id.eq.' + me() + ',a_id.eq.' + me()).order('cree_le', { ascending: true }).limit(1000);
+    if (error) throw error;
+    const map = new Map();
+    (data || []).forEach(m => {
+      const other = m.de_id === me() ? m.a_id : m.de_id, key = other + '|' + (m.annonce_id || '');
+      let c = map.get(key);
+      if (!c) { c = { key, other, annonce_id: m.annonce_id || '', titre: m.annonce_titre || '', nom: '', fb: '', role: '', msgs: [], unread: 0 }; map.set(key, c); }
+      c.msgs.push(m);
+      if (m.de_id === other) { c.nom = m.de_nom || c.nom; c.role = m.de_role || c.role; if (!m.lu) c.unread++; }
+      else if (!c.fb) c.fb = m.a_nom || '';
+    });
+    S.convs = [...map.values()].map(c => { c.nom = c.nom || c.fb || 'Utilisateur'; return c; })
+      .sort((a, b) => new Date(b.msgs[b.msgs.length - 1].cree_le) - new Date(a.msgs[a.msgs.length - 1].cree_le));
+    if (S.cur) { const f = S.convs.find(c => c.key === S.cur.key); if (f) S.cur = f; }
+  }
+  function badge() {
+    const n = S.convs.reduce((t, c) => t + c.unread, 0), b = $('msgBadge');
+    b.textContent = n > 99 ? '99+' : n; b.hidden = !n || !me();
+  }
+  function showView(v) {
+    $('chatList').style.display = v === 'list' ? '' : 'none';
+    $('chatThread').style.display = v === 'thread' ? 'flex' : 'none';
+    $('chatTitle').hidden = v === 'thread';
+  }
+  function renderList() {
+    showView('list');
+    const box = $('chatList');
+    if (!S.convs.length) { box.innerHTML = '<div class="chat-empty">Aucun message pour le moment.<br>Ouvrez une annonce et touchez « Message » pour écrire à son auteur.</div>'; return; }
+    box.innerHTML = S.convs.map((c, i) => {
+      const l = c.msgs[c.msgs.length - 1], mine = l.de_id === me();
+      return `<button type="button" class="cv" data-i="${i}"><span class="av">${esc((c.nom || '?').trim().charAt(0).toUpperCase())}</span>
+        <span class="tx"><b>${esc(c.nom)}${roleTag(c.role)}</b><small>${esc(c.titre || 'Annonce')}</small><small>${mine ? 'Vous : ' : ''}${esc(l.texte)}</small></span>
+        ${c.unread ? `<span class="un">${c.unread}</span>` : `<small style="color:var(--muted);flex:none">${esc(ago(l.cree_le))}</small>`}</button>`;
+    }).join('');
+    box.querySelectorAll('.cv').forEach(b => b.onclick = () => { S.cur = S.convs[+b.dataset.i]; renderThread(true); });
+  }
+  function renderThread(scroll) {
+    const c = S.cur; if (!c) return;
+    showView('thread'); $('chatErr').textContent = '';
+    $('chatWho').innerHTML = `<b>${esc(c.nom || 'Annonceur')}${roleTag(c.role)}</b><small>${esc(c.titre || 'Annonce')}</small>`;
+    const box = $('chatMsgs'), atEnd = scroll || box.scrollHeight - box.scrollTop - box.clientHeight < 60;
+    box.innerHTML = c.msgs.length ? c.msgs.map(m => `<div class="bub ${m.de_id === me() ? 'me' : 'you'}">${esc(m.texte)}<small>${esc(ago(m.cree_le))}</small></div>`).join('')
+      : '<div class="chat-empty">Écrivez votre premier message ci-dessous.</div>';
+    if (atEnd) box.scrollTop = box.scrollHeight;
+    const ids = c.msgs.filter(m => m.a_id === me() && !m.lu).map(m => m.id);
+    if (ids.length) {
+      c.msgs.forEach(m => { if (ids.includes(m.id)) m.lu = true; }); c.unread = 0; badge();
+      Promise.resolve(SB.from(TB).update({ lu: true }).in('id', ids)).catch(() => {});
+    }
+  }
+  async function refresh() {
+    try { await fetchAll(); badge(); return true; }
+    catch (e) { if (isOpen()) { $('chatList').innerHTML = `<div class="chat-empty">${esc(errTxt(e))}</div>`; } return false; }
+  }
+  /* Ouvrir la boîte de messages (bouton de l'en-tête) */
+  $('btnMsg').onclick = async () => {
+    if (!user) { say('Connectez-vous pour voir vos messages.'); return; }
+    S.cur = null; $('chatList').innerHTML = '<div class="chat-empty">Chargement…</div>'; showView('list'); open('mMsg');
+    if (await refresh()) renderList();
+  };
+  $('chatBack').onclick = () => { S.cur = null; renderList(); };
+  /* Écrire à l'auteur d'une annonce (client -> vendeur, ou vendeur -> client) */
+  window.openChat = async function (a) {
+    if (!a) return;
+    if (!user) { say('Connectez-vous pour envoyer un message.'); return; }
+    if (!a.user_id) { say('Cet annonceur ne peut pas être contacté.'); return; }
+    if (a.user_id === user.id) { say("C'est votre annonce."); return; }
+    close('mDet'); S.cur = null; showView('thread'); $('chatMsgs').innerHTML = '<div class="chat-empty">Chargement…</div>'; $('chatWho').textContent = ''; open('mMsg');
+    const ok = await refresh();
+    if (!ok) { showView('list'); return; }
+    const key = a.user_id + '|' + String(a.id);
+    let c = S.convs.find(x => x.key === key);
+    if (!c) {
+      c = { key, other: a.user_id, annonce_id: String(a.id), titre: a.titre || '', nom: '', role: '', msgs: [], unread: 0 };
+      try { const { data } = await SB.from('ann_boutiques').select('nom').eq('user_id', a.user_id).maybeSingle(); c.nom = (data && data.nom) || ''; } catch (e) {}
+      c.nom = c.nom || 'Annonceur';
+    }
+    S.cur = c; renderThread(true); $('chatText').focus();
+  };
+  $('chatForm').onsubmit = async e => {
+    e.preventDefault();
+    const c = S.cur, t = $('chatText').value.trim(), err = $('chatErr');
+    if (!c || !t || S.busy) return;
+    S.busy = true; $('chatSend').disabled = true; err.textContent = '';
+    const { error } = await SB.from(TB).insert({ de_id: me(), a_id: c.other, annonce_id: c.annonce_id || null, annonce_titre: c.titre || null,
+      de_nom: myName(), de_role: (accountRole() || null), a_nom: c.nom || null, texte: t.slice(0, 1000) });
+    S.busy = false; $('chatSend').disabled = false;
+    if (error) { err.textContent = errTxt(error); return; }
+    $('chatText').value = '';
+    if (await refresh()) { const f = S.convs.find(x => x.key === c.key); if (f) S.cur = f; renderThread(true); }
+  };
+  $('chatText').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); $('chatForm').requestSubmit(); } });
+  /* Nouveaux messages : vérification régulière (toutes les 5 s si la fenêtre est ouverte, sinon toutes les 15 s) */
+  setInterval(async () => {
+    if (!user || !sbReady) { $('msgBadge').hidden = true; return; }
+    S.tick++; if (!isOpen() && S.tick % 3) return;
+    if (!(await refresh()) || !isOpen()) return;
+    if (S.cur) renderThread(false); else if ($('chatList').style.display !== 'none') renderList();
+  }, 5000);
+  setTimeout(() => { if (user && sbReady) refresh(); }, 2500);
+})();
+</script>
+
 </body>
 </html>
