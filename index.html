@@ -1019,6 +1019,31 @@ body.landing .hero p{max-width:62ch;margin-bottom:16px}
 /* « Comment déposer » : titres sur la même hauteur (1 ou 2 lignes) => icônes et bulles alignées d'une carte à l'autre */
 .manga3d .m3-card h3{line-height:1.1;min-height:2.2em}
 .manga3d .m3-speech{min-height:118px;display:flex;align-items:center}
+
+/* ===== Dépôt : fenêtre compacte + choix « une pièce / plusieurs pièces » ===== */
+#mPost:not(.pop) .box{margin:auto;max-width:min(420px,100%);max-height:calc(100dvh - 32px);overflow-y:auto;padding:16px 16px 14px;font-size:.9rem}
+#mPost:not(.pop) .box h2{font-size:1.15rem;margin:0 26px 8px 0}
+#mPost:not(.pop) .box label{margin:8px 0 3px;font-size:.84rem}
+#mPost:not(.pop) .box input,#mPost:not(.pop) .box select,#mPost:not(.pop) .box textarea{padding:7px 9px;font-size:.9rem}
+#mPost:not(.pop) .box input[type=file]{padding:5px 7px;font-size:.8rem}
+#mPost:not(.pop) .box textarea{resize:vertical}
+#mPost:not(.pop) .pback{padding:0 0 2px;font-size:.84rem}
+#mPost:not(.pop) .row{flex-direction:row;gap:8px}#mPost .row>*{min-width:0}
+#mPost:not(.pop) .pchoices{gap:8px;margin-top:6px}
+#mPost:not(.pop) .pchoice{padding:12px 14px 12px 16px;font-size:.95rem}
+#mPost:not(.pop) .pchoice small{font-size:.78rem}
+#mPost:not(.pop) .act{margin-top:10px!important}
+#postMode>p{color:var(--muted);margin:4px 0 0}
+.mitem{border:1px solid var(--line);border-radius:10px;margin-top:8px;background:var(--paper)}
+.mitem>summary{cursor:pointer;font-weight:700;padding:9px 12px;list-style:none;display:flex;gap:8px;align-items:center}
+.mitem>summary::-webkit-details-marker{display:none}
+.mitem>summary::before{content:"\203A";color:var(--forest);font-size:1.2rem;line-height:1;transition:transform .15s}
+.mitem[open]>summary::before{transform:rotate(90deg)}
+.mitem .mi-sum{font-weight:400;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.mitem .mi-body{padding:0 12px 12px}
+.mitem .mi-rm{margin-top:10px;font-size:.84rem;padding:6px 10px}
+#mAdd{width:100%;margin-top:10px;border-style:dashed;color:var(--forest2);font-weight:700}
+#mAdd:disabled{opacity:.5;cursor:not-allowed}
 </style>
 <script>
 /* Applique tout de suite les réglages d'apparence enregistrés (avant l'affichage de la page) */
@@ -1365,6 +1390,15 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
       <button type="button" class="pchoice" data-pk="creation"><div>Déposer une création<small>Vidéo, graphisme, web…</small></div></button>
     </div>
   </div>
+  <!-- Vente : 1) une seule pièce ou plusieurs ? -->
+  <div id="postMode" hidden>
+    <button type="button" class="pback" id="pModeBack">← Changer de choix</button>
+    <p>Combien de pièces voulez-vous vendre ?</p>
+    <div class="pchoices">
+      <button type="button" class="pchoice" data-sm="one"><div>Déposer une seule pièce<small>Une annonce pour un produit</small></div></button>
+      <button type="button" class="pchoice" data-sm="many"><div>Déposer plusieurs pièces<small>Ajoutez vos pièces, tout est publié d'un coup</small></div></button>
+    </div>
+  </div>
   <form id="postForm" hidden>
     <button type="button" class="pback" id="pBack">← Changer de choix</button>
     <label for="pType" id="pTypeLbl">Type</label><select id="pType"></select>
@@ -1373,11 +1407,20 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
     <label for="pExtra" id="pExtraLbl">Détail</label><input id="pExtra" maxlength="120">
     <div class="row"><div><label for="pPrix" id="pPrixLbl">Prix (Ar)</label><input id="pPrix" type="number" min="0" step="1"></div><div><label for="pVille">Ville</label><input id="pVille" placeholder="Antananarivo"></div></div>
     <label for="pTel">Téléphone</label><input id="pTel" type="tel" placeholder="034 00 000 00" required>
-    <label for="pDesc">Description</label><textarea id="pDesc" rows="5"></textarea>
+    <label for="pDesc">Description</label><textarea id="pDesc" rows="3"></textarea>
     <label for="pPhotos">Photos (4 maximum)</label><input id="pPhotos" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
     <label for="pVideos">Vidéos (4 maximum, 8 secondes chacune)</label><input id="pVideos" type="file" accept="video/mp4,video/webm,video/quicktime" multiple>
     <p class="msg" id="postMsg" role="status"></p>
     <div class="act" style="margin-top:14px"><button class="btn cta" id="postGo">Publier l'annonce</button></div>
+  </form>
+  <!-- Vente : plusieurs pièces -->
+  <form id="postMulti" hidden>
+    <button type="button" class="pback" id="mBack">← Changer de choix</button>
+    <div class="row"><div><label for="mVille">Ville</label><input id="mVille" placeholder="Antananarivo"></div><div><label for="mTel">Téléphone</label><input id="mTel" type="tel" placeholder="034 00 000 00" required></div></div>
+    <div id="mItems"></div>
+    <button type="button" class="btn plain" id="mAdd">+ Ajouter une pièce</button>
+    <p class="msg" id="multiMsg" role="status"></p>
+    <div class="act"><button class="btn cta" id="multiGo">Publier</button></div>
   </form>
 </div></div>
 
@@ -2013,13 +2056,16 @@ function placePostMenu() {
 }
 function showPostChoice() {
   postKey = null; $('postTitle').textContent = 'Déposer une annonce';
-  $('postChoice').hidden = false; $('postForm').hidden = true;
+  $('postChoice').hidden = false; $('postForm').hidden = true; $('postMode').hidden = true; $('postMulti').hidden = true;
   placePostMenu(); $('mPost').classList.add('pop');
 }
-function openPostForm(key, titre, typeIdx) {
+function openPostForm(key, titre, typeIdx, mode) {
   const T = POST_TYPES[key], id = needId(key);
   if (!T) return;
   if (!(id > 0)) { $('postMsg').textContent = ''; showPostChoice(); alert('Cette catégorie n\'est pas encore disponible.'); return; }
+  if (key === 'vente' && !mode) { showSaleMode(titre, typeIdx); return; }      /* vente : d'abord une pièce ou plusieurs ? */
+  if (key === 'vente' && mode === 'many') { openMultiForm(); return; }
+  $('postMode').hidden = true; $('postMulti').hidden = true;
   postKey = key; $('postForm').reset();
   $('pCat').innerHTML = `<option value="${id}">${T.titre}</option>`; $('pCat').value = id;
   $('postTitle').textContent = T.titre;
@@ -2033,8 +2079,8 @@ function openPostForm(key, titre, typeIdx) {
   $('postChoice').hidden = true; $('postForm').hidden = false;
   $('pTitre').focus();
 }
-document.querySelectorAll('.pchoice').forEach(b => b.onclick = () => openPostForm(b.dataset.pk, ''));
-$('pBack').onclick = showPostChoice;
+document.querySelectorAll('.pchoice[data-pk]').forEach(b => b.onclick = () => openPostForm(b.dataset.pk, ''));
+$('pBack').onclick = () => postKey === 'vente' ? showSaleMode(pendingPost.titre, pendingPost.typeIdx) : showPostChoice();
 function buildDesc() {
   const T = POST_TYPES[postKey], lines = [];
   if (T) { lines.push(`${T.typeLbl} : ${$('pType').value}`); const ex = $('pExtra').value.trim(); if (ex) lines.push(`${T.extraLbl.replace(/ \(.*\)$/, '')} : ${ex}`); }
@@ -2083,6 +2129,106 @@ $('postForm').onsubmit = async e => {
   go.disabled = false;
   $('postForm').reset(); close('mPost'); cat = null; q = ''; $('q').value = ''; $('qCat').value = '';
   markCat(); loadAds(); loadCounts();
+};
+
+
+/* ===== Vente : « une seule pièce » ou « plusieurs pièces » ===== */
+let pendingPost = { titre: '', typeIdx: -1 };
+const MAX_ITEMS = 10;
+function showSaleMode(titre, typeIdx) {
+  pendingPost = { titre: titre || '', typeIdx: typeIdx == null ? -1 : typeIdx };
+  postKey = null; $('postTitle').textContent = 'Déposer une vente';
+  $('mPost').classList.remove('pop');
+  $('postChoice').hidden = true; $('postForm').hidden = true; $('postMulti').hidden = true; $('postMode').hidden = false;
+}
+$('pModeBack').onclick = showPostChoice;
+$('mBack').onclick = () => showSaleMode(pendingPost.titre, pendingPost.typeIdx);
+document.querySelectorAll('[data-sm]').forEach(b => b.onclick = () => openPostForm('vente', pendingPost.titre, pendingPost.typeIdx, b.dataset.sm));
+
+function openMultiForm() {
+  postKey = 'vente';
+  $('postMulti').reset(); $('mItems').innerHTML = ''; $('multiMsg').textContent = '';
+  addItem();
+  $('mPost').classList.remove('pop'); $('postTitle').textContent = 'Déposer plusieurs pièces';
+  $('postChoice').hidden = true; $('postForm').hidden = true; $('postMode').hidden = true; $('postMulti').hidden = false;
+  $('mVille').focus();
+}
+function refreshItems() {
+  const items = [...$('mItems').children], n = items.length;
+  items.forEach((d, i) => {
+    d.querySelector('.mi-n').textContent = 'Pièce ' + (i + 1);
+    const t = d.querySelector('.mi-titre').value.trim(), p = d.querySelector('.mi-prix').value;
+    d.querySelector('.mi-sum').textContent = [t, p !== '' ? Number(p).toLocaleString('fr-FR') + ' Ar' : ''].filter(Boolean).join(' · ');
+    d.querySelector('.mi-rm').hidden = n < 2;
+  });
+  $('mAdd').disabled = n >= MAX_ITEMS;
+  $('mAdd').textContent = n >= MAX_ITEMS ? 'Maximum ' + MAX_ITEMS + ' pièces' : '+ Ajouter une pièce';
+  $('multiGo').textContent = n > 1 ? 'Publier les ' + n + ' pièces' : 'Publier la pièce';
+}
+function addItem() {
+  const box = $('mItems'); if (box.children.length >= MAX_ITEMS) return;
+  box.querySelectorAll('details').forEach(x => x.open = false);
+  const d = document.createElement('details'); d.className = 'mitem'; d.open = true;
+  d.innerHTML = `<summary><span class="mi-n"></span><span class="mi-sum"></span></summary><div class="mi-body">
+    <div class="row"><div><label>État du produit<select class="mi-etat">${POST_TYPES.vente.types.map(t => `<option>${esc(t)}</option>`).join('')}</select></label></div>
+    <div><label>Prix (Ar)<input class="mi-prix" type="number" min="0" step="1"></label></div></div>
+    <label>Titre<input class="mi-titre" maxlength="90" placeholder="${esc(POST_TYPES.vente.titrePh)}"></label>
+    <label>Marque / modèle (facultatif)<input class="mi-extra" maxlength="120"></label>
+    <label>Description (facultatif)<textarea class="mi-desc" rows="2"></textarea></label>
+    <label>Photos (4 maximum)<input class="mi-photos" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple></label>
+    <button type="button" class="btn plain mi-rm">Retirer cette pièce</button></div>`;
+  d.querySelector('.mi-rm').onclick = () => { d.remove(); refreshItems(); };
+  box.appendChild(d); refreshItems();
+  if (box.children.length > 1) { d.scrollIntoView({ block: 'nearest' }); d.querySelector('.mi-titre').focus(); }
+}
+$('mAdd').onclick = addItem;
+$('mItems').addEventListener('input', refreshItems);
+
+$('postMulti').onsubmit = async e => {
+  e.preventDefault();
+  const msg = $('multiMsg'), go = $('multiGo'); msg.className = 'msg';
+  if (!user) { close('mPost'); setAuthMode(false); open('mAuth'); return; }
+  const id = needId('vente');
+  if (!(id > 0)) { msg.textContent = 'Cette catégorie n\'est pas encore disponible.'; return; }
+  const digits = $('mTel').value.replace(/\D/g, '');
+  if (digits.length < 9 || digits.length > 13) { msg.textContent = 'Numéro de téléphone invalide.'; return; }
+  const items = [...$('mItems').children].map(el => ({
+    el, etat: el.querySelector('.mi-etat').value, titre: el.querySelector('.mi-titre').value.trim(),
+    extra: el.querySelector('.mi-extra').value.trim(), desc: el.querySelector('.mi-desc').value.trim(),
+    prix: el.querySelector('.mi-prix').value, files: [...el.querySelector('.mi-photos').files].slice(0, 4)
+  }));
+  for (const [i, it] of items.entries()) {
+    const err = !it.titre ? 'le titre est obligatoire.'
+      : it.files.some(f => !/^image\/(jpeg|png|webp|gif)$/.test(f.type)) ? 'formats acceptés : JPG, PNG, WebP, GIF.'
+      : it.files.some(f => f.size > 5 * 1024 * 1024) ? 'chaque photo doit faire moins de 5 Mo.' : '';
+    if (err) { $('mItems').querySelectorAll('details').forEach(x => x.open = x === it.el); it.el.scrollIntoView({ block: 'nearest' }); msg.textContent = 'Pièce ' + (i + 1) + ' : ' + err; return; }
+  }
+  go.disabled = true; msg.textContent = 'Envoi en cours…';
+  const bucket = SB.storage.from('annonces'), paths = [], rows = [], stamp = Date.now();
+  try {
+    for (const [k, it] of items.entries()) {
+      const urls = [];
+      for (const [i, f] of it.files.entries()) {
+        const ext = f.type.split('/')[1].replace('jpeg', 'jpg');
+        const path = `${user.id}/${stamp}_${k}_${i}.${ext}`;
+        const { error } = await bucket.upload(path, f);
+        if (error) throw new Error('Pièce ' + (k + 1) + ' : photo non envoyée (' + error.message + ')');
+        paths.push(path); urls.push(bucket.getPublicUrl(path).data.publicUrl);
+      }
+      const lines = ['État du produit : ' + it.etat]; if (it.extra) lines.push('Marque / modèle : ' + it.extra);
+      rows.push({ category_id: +id, titre: it.titre, description: lines.join('\n') + (it.desc ? '\n\n' + it.desc : ''),
+        prix: it.prix === '' ? null : +it.prix, ville: $('mVille').value.trim(), telephone: $('mTel').value.trim(), photos: urls });
+    }
+    const { error } = await SB.from('ann_annonces').insert(rows);          /* un seul envoi : tout est publié, ou rien */
+    if (error) throw new Error('Publication impossible : ' + error.message);
+  } catch (err) {
+    if (paths.length) bucket.remove(paths);
+    msg.textContent = err.message; go.disabled = false; return;
+  }
+  go.disabled = false;
+  $('postMulti').reset(); close('mPost'); cat = null; q = ''; $('q').value = ''; $('qCat').value = '';
+  markCat(); loadAds(); loadCounts();
+  window.bpSay && window.bpSay(items.length + (items.length > 1 ? ' pièces publiées' : ' pièce publiée'));
 };
 
 const menu = $('menuList'), mb = $('btnMenu'), ov = $('menuOv');
