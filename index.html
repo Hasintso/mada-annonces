@@ -712,6 +712,15 @@ body:not(.landing) header{border-bottom:0;border-image:none}
 .hbtn{position:relative}
 .badge{position:absolute;top:-5px;right:-5px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:#f28c1b;color:#2a170b;font:700 .72rem/20px Arial,sans-serif;text-align:center}
 .badge[hidden]{display:none}
+#det .vids{display:flex;gap:8px;overflow-x:auto;margin:0 0 10px}
+#det .vids video{height:200px;max-width:100%;border-radius:10px;background:#000}
+#mEdit .box{margin:auto;max-width:min(560px,100%);max-height:calc(100dvh - 32px);overflow-y:auto}
+.mgrid{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0}
+.mth{position:relative;width:84px;height:84px;border-radius:10px;overflow:hidden;background:#eadfce}
+.mth img,.mth video{width:100%;height:100%;object-fit:cover;display:block}
+.mth button{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;border:0;background:rgba(0,0,0,.7);color:#fff;cursor:pointer;line-height:1;font-size:15px;padding:0}
+.mth.new::after{content:"Nouveau";position:absolute;left:0;right:0;bottom:0;background:rgba(162,80,26,.85);color:#fff;font-size:.62rem;font-weight:700;text-align:center;padding:2px 0}
+.mhint{font-size:.82rem;color:var(--muted);margin:2px 0 0}
 .hbtn .badge{left:auto;bottom:auto;top:-5px;right:-5px;width:auto;max-width:none;box-shadow:none}
 /* Bouton « Toutes catégories » : cadre transparent pour qu'on le reconnaisse comme un bouton */
 @media(min-width:701px){
@@ -1162,7 +1171,7 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
           <div class="m3-face m3-thick"></div><span class="m3-sfx" aria-hidden="true">Zip !</span>
           <div class="m3-num">2</div><h3>Remplissez l’annonce</h3>
           <svg class="m3-icon" viewBox="0 0 120 80" fill="none" stroke="#0d0d0d" stroke-width="4" stroke-linejoin="round" aria-hidden="true"><rect x="22" y="6" width="54" height="68" fill="#fff"/><path d="M32 22h34M32 34h34M32 46h20"/><path d="M104 18L58 62l-3 12 12-3 46-44z" fill="#2fa36b"/></svg>
-          <div class="m3-speech"><p>Ajoutez un titre, le prix, votre ville, votre numéro de téléphone et jusqu’à 4 photos.</p></div>
+          <div class="m3-speech"><p>Ajoutez un titre, le prix, votre ville, votre numéro de téléphone et jusqu’à 4 photos et 4 vidéos de 8 secondes.</p></div>
         </div></div>
         <div class="m3-panel"><div class="m3-card" data-tilt style="--c:var(--p)">
           <div class="m3-face m3-thick"></div><span class="m3-sfx" aria-hidden="true">Dring !</span>
@@ -1366,6 +1375,7 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
     <label for="pTel">Téléphone</label><input id="pTel" type="tel" placeholder="034 00 000 00" required>
     <label for="pDesc">Description</label><textarea id="pDesc" rows="5"></textarea>
     <label for="pPhotos">Photos (4 maximum)</label><input id="pPhotos" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
+    <label for="pVideos">Vidéos (4 maximum, 8 secondes chacune)</label><input id="pVideos" type="file" accept="video/mp4,video/webm,video/quicktime" multiple>
     <p class="msg" id="postMsg" role="status"></p>
     <div class="act" style="margin-top:14px"><button class="btn cta" id="postGo">Publier l'annonce</button></div>
   </form>
@@ -1375,6 +1385,25 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
 <div class="mask" id="mDet"><div class="box wide" role="dialog" aria-modal="true" aria-label="Détail de l'annonce">
   <button class="x" data-close aria-label="Fermer">×</button>
   <div id="det"></div>
+</div></div>
+
+<!-- Modifier mon annonce -->
+<div class="mask" id="mEdit"><div class="box" role="dialog" aria-modal="true" aria-label="Modifier mon annonce">
+  <button class="x" data-close aria-label="Fermer">×</button>
+  <h2>Modifier mon annonce</h2>
+  <form id="editForm">
+    <label for="eTitre">Titre</label><input id="eTitre" maxlength="90" required>
+    <div class="row"><div><label for="ePrix">Prix (Ar)</label><input id="ePrix" type="number" min="0" step="1"></div><div><label for="eVille">Ville</label><input id="eVille"></div></div>
+    <label for="eTel">Téléphone</label><input id="eTel" type="tel" required>
+    <label for="eDesc">Description</label><textarea id="eDesc" rows="6"></textarea>
+    <label id="ePLbl">Photos</label><div class="mgrid" id="ePGrid"></div>
+    <input id="ePAdd" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
+    <label id="eVLbl">Vidéos</label><div class="mgrid" id="eVGrid"></div>
+    <input id="eVAdd" type="file" accept="video/mp4,video/webm,video/quicktime" multiple>
+    <p class="mhint">4 photos et 4 vidéos au maximum. Chaque vidéo dure 8 secondes au plus.</p>
+    <p class="msg" id="eMsg" role="status"></p>
+    <div class="act" style="margin-top:14px"><button class="btn cta" id="eGo" type="submit">Enregistrer</button><button class="btn alt" id="eCancel" type="button">Annuler</button></div>
+  </form>
 </div></div>
 
 <!-- Boutique du vendeur : modifier (mShop) et page publique (mShopView) -->
@@ -1875,6 +1904,7 @@ function showAd(a) {
   const tel = String(a.telephone || '').replace(/[^\d+]/g, '');
   $('det').innerHTML = `
     ${a.photos && a.photos.length ? `<div class="gal">${a.photos.filter(safeUrl).map(p => `<img src="${esc(p)}" alt="Photo de l'annonce" loading="lazy">`).join('')}</div>` : ''}
+    ${a.videos && a.videos.length ? `<div class="vids">${a.videos.filter(safeUrl).map(v => `<video src="${esc(v)}" controls preload="metadata" playsinline></video>`).join('')}</div>` : ''}
     <h2>${esc(a.titre)}</h2>
     <div class="prow"><div class="pinfo">
       <div class="price" style="font-size:1.3rem">${money(a.prix)}</div>
@@ -1886,7 +1916,7 @@ function showAd(a) {
     <div class="meta" id="sellerLine"></div>
     <div class="desc">${esc(a.description)}</div>
     <div class="act">${tel ? `<a class="btn cta" href="tel:${esc(tel)}" style="text-decoration:none">Appeler ${esc(a.telephone)}</a>` : ''}
-    ${mine ? '<button class="btn danger" id="delAd">Supprimer mon annonce</button>' : ''}</div>`;
+    ${mine ? '<button class="btn alt" id="editAd">Modifier mon annonce</button><button class="btn danger" id="delAd">Supprimer mon annonce</button>' : ''}</div>`;
   Promise.resolve(SB.from('ann_boutiques').select('nom').eq('user_id', a.user_id).maybeSingle()).then(({ data }) => {
     const l = $('sellerLine'); if (!data || !l) return;
     l.innerHTML = 'Vendu par <a href="#" id="seeShop" style="font-weight:700">' + esc(data.nom) + '</a>';
@@ -1896,6 +1926,7 @@ function showAd(a) {
   if (ac) ac.onclick = () => { const on = cartToggle(a); ac.classList.toggle('on', on); ac.setAttribute('aria-pressed', String(on)); };
   const mb2 = $('msgAd');
   if (mb2) mb2.onclick = () => openChat(a);
+  const ed = $('editAd'); if (ed) ed.onclick = () => openEdit(a);
   const d = $('delAd');
   if (d) d.onclick = async () => {
     if (!confirm('Supprimer cette annonce définitivement ?')) return;
@@ -2017,11 +2048,13 @@ $('postForm').onsubmit = async e => {
   const files = [...$('pPhotos').files].slice(0, 4);
   if (files.some(f => !/^image\/(jpeg|png|webp|gif)$/.test(f.type))) { msg.textContent = 'Formats acceptés : JPG, PNG, WebP, GIF.'; return; }
   if (files.some(f => f.size > 5 * 1024 * 1024)) { msg.textContent = 'Chaque photo doit faire moins de 5 Mo.'; return; }
+  const vfiles = [...$('pVideos').files].slice(0, 4);
+  { msg.textContent = vfiles.length ? 'Vérification des vidéos…' : ''; const verr = await checkVideos(vfiles); if (verr) { msg.textContent = verr; return; } }
   const digits = $('pTel').value.replace(/\D/g, '');
   if (digits.length < 9 || digits.length > 13) { msg.textContent = 'Numéro de téléphone invalide.'; return; }
 
   go.disabled = true; msg.textContent = 'Envoi en cours…';
-  const bucket = SB.storage.from('annonces'), paths = [], urls = [];
+  const bucket = SB.storage.from('annonces'), paths = [], urls = [], vurls = [];
   try {
     for (const [i, f] of files.entries()) {
       const ext = f.type.split('/')[1].replace('jpeg', 'jpg');
@@ -2030,7 +2063,14 @@ $('postForm').onsubmit = async e => {
       if (error) throw new Error('Photo non envoyée : ' + error.message);
       paths.push(path); urls.push(bucket.getPublicUrl(path).data.publicUrl);
     }
+    for (const [i, f] of vfiles.entries()) {
+      const path = `${user.id}/${Date.now()}_v${i}.${vidExt(f)}`;
+      const { error } = await bucket.upload(path, f, { contentType: f.type });
+      if (error) throw new Error('Vidéo non envoyée : ' + error.message);
+      paths.push(path); vurls.push(bucket.getPublicUrl(path).data.publicUrl);
+    }
     const { error } = await SB.from('ann_annonces').insert({
+      ...(vurls.length ? { videos: vurls } : {}),
       category_id: +$('pCat').value, titre: $('pTitre').value.trim(), description: buildDesc(),
       prix: $('pPrix').value === '' ? null : +$('pPrix').value, ville: $('pVille').value.trim(),
       telephone: $('pTel').value.trim(), photos: urls
@@ -2463,6 +2503,116 @@ fitQHint();
     if (S.cur) renderThread(false); else if ($('chatList').style.display !== 'none') renderList();
   }, 5000);
   setTimeout(() => { if (user && sbReady) refresh(); }, 2500);
+})();
+</script>
+
+<script>
+/* ===== Vidéos (8 s max) et modification d'une annonce ===== */
+const MAX_VID_S = 8.5, MAX_VID_MB = 25;
+const vidExt = f => ({ 'video/mp4': 'mp4', 'video/webm': 'webm', 'video/quicktime': 'mov' }[f.type] || 'mp4');
+const vidDuration = f => new Promise(res => {
+  const v = document.createElement('video'), u = URL.createObjectURL(f); v.preload = 'metadata';
+  v.onloadedmetadata = () => { URL.revokeObjectURL(u); res(v.duration); };
+  v.onerror = () => { URL.revokeObjectURL(u); res(NaN); };
+  v.src = u;
+});
+async function checkVideos(files) {
+  for (const f of files) {
+    if (!/^video\/(mp4|webm|quicktime)$/.test(f.type)) return 'Formats de vidéo acceptés : MP4, WebM, MOV.';
+    if (f.size > MAX_VID_MB * 1024 * 1024) return 'Chaque vidéo doit faire moins de ' + MAX_VID_MB + ' Mo.';
+    const d = await vidDuration(f);
+    if (!isFinite(d)) return 'Impossible de lire la vidéo « ' + f.name + ' ». Utilisez une vidéo MP4.';
+    if (d > MAX_VID_S) return 'Chaque vidéo doit durer 8 secondes au maximum (« ' + f.name + ' » : ' + Math.round(d) + ' s).';
+  }
+  return '';
+}
+(function () {
+  const E = { a: null, photos: [], videos: [], np: [], nv: [], removed: [] };
+  const pathOf = u => { const m = String(u).match(/\/object\/public\/annonces\/(.+?)(?:\?.*)?$/); return m ? decodeURIComponent(m[1]) : null; };
+  const freeUrls = () => [...E.np, ...E.nv].forEach(o => URL.revokeObjectURL(o.url));
+  function render() {
+    const nP = E.photos.length + E.np.length, nV = E.videos.length + E.nv.length;
+    $('ePLbl').textContent = 'Photos (' + nP + '/4)'; $('eVLbl').textContent = 'Vidéos (' + nV + '/4, 8 secondes chacune)';
+    const btn = (k, w, i) => `<button type="button" data-k="${k}" data-w="${w}" data-i="${i}" aria-label="Retirer">×</button>`;
+    $('ePGrid').innerHTML = E.photos.map((u, i) => `<div class="mth"><img src="${esc(u)}" alt="">${btn('p', 'o', i)}</div>`).join('')
+      + E.np.map((o, i) => `<div class="mth new"><img src="${esc(o.url)}" alt="">${btn('p', 'n', i)}</div>`).join('');
+    $('eVGrid').innerHTML = E.videos.map((u, i) => `<div class="mth"><video src="${esc(u)}#t=0.1" preload="metadata" muted playsinline></video>${btn('v', 'o', i)}</div>`).join('')
+      + E.nv.map((o, i) => `<div class="mth new"><video src="${esc(o.url)}#t=0.1" preload="metadata" muted playsinline></video>${btn('v', 'n', i)}</div>`).join('');
+    $('ePAdd').disabled = nP >= 4; $('eVAdd').disabled = nV >= 4;
+  }
+  [$('ePGrid'), $('eVGrid')].forEach(g => g.addEventListener('click', e => {
+    const b = e.target.closest('button[data-k]'); if (!b) return;
+    const i = +b.dataset.i, photo = b.dataset.k === 'p', old = b.dataset.w === 'o';
+    if (old) { const arr = photo ? E.photos : E.videos; E.removed.push(arr.splice(i, 1)[0]); }
+    else { const arr = photo ? E.np : E.nv, o = arr.splice(i, 1)[0]; URL.revokeObjectURL(o.url); }
+    render();
+  }));
+  $('ePAdd').onchange = e => {
+    const msg = $('eMsg'); msg.className = 'msg'; msg.textContent = '';
+    for (const f of [...e.target.files]) {
+      if (E.photos.length + E.np.length >= 4) { msg.textContent = '4 photos au maximum.'; break; }
+      if (!/^image\/(jpeg|png|webp|gif)$/.test(f.type)) { msg.textContent = 'Formats de photo acceptés : JPG, PNG, WebP, GIF.'; continue; }
+      if (f.size > 5 * 1024 * 1024) { msg.textContent = 'Chaque photo doit faire moins de 5 Mo.'; continue; }
+      E.np.push({ file: f, url: URL.createObjectURL(f) });
+    }
+    e.target.value = ''; render();
+  };
+  $('eVAdd').onchange = async e => {
+    const msg = $('eMsg'); msg.className = 'msg'; msg.textContent = '';
+    const files = [...e.target.files]; e.target.value = '';
+    for (const f of files) {
+      if (E.videos.length + E.nv.length >= 4) { msg.textContent = '4 vidéos au maximum.'; break; }
+      msg.textContent = 'Vérification de la vidéo…';
+      const err = await checkVideos([f]); if (err) { msg.textContent = err; continue; }
+      E.nv.push({ file: f, url: URL.createObjectURL(f) }); msg.textContent = '';
+    }
+    render();
+  };
+  window.openEdit = function (a) {
+    if (!a || !user || user.id !== a.user_id) return;
+    close('mDet'); freeUrls();
+    Object.assign(E, { a, photos: (a.photos || []).filter(safeUrl), videos: (a.videos || []).filter(safeUrl), np: [], nv: [], removed: [] });
+    $('eTitre').value = a.titre || ''; $('ePrix').value = a.prix == null ? '' : a.prix; $('eVille').value = a.ville || '';
+    $('eTel').value = a.telephone || ''; $('eDesc').value = a.description || '';
+    $('eMsg').className = 'msg'; $('eMsg').textContent = ''; $('eGo').disabled = false;
+    render(); open('mEdit');
+  };
+  $('eCancel').onclick = () => { freeUrls(); close('mEdit'); };
+  $('editForm').onsubmit = async e => {
+    e.preventDefault();
+    const msg = $('eMsg'), go = $('eGo'), a = E.a; msg.className = 'msg';
+    if (!a || !user) return;
+    const titre = $('eTitre').value.trim(), digits = $('eTel').value.replace(/\D/g, '');
+    if (!titre) { msg.textContent = 'Le titre est obligatoire.'; return; }
+    if (digits.length < 9 || digits.length > 13) { msg.textContent = 'Numéro de téléphone invalide.'; return; }
+    go.disabled = true; msg.textContent = 'Enregistrement…';
+    const bucket = SB.storage.from('annonces'), sent = [], newP = [], newV = [];
+    try {
+      for (const [i, o] of E.np.entries()) {
+        const ext = o.file.type.split('/')[1].replace('jpeg', 'jpg'), path = `${user.id}/${Date.now()}_e${i}.${ext}`;
+        const { error } = await bucket.upload(path, o.file); if (error) throw new Error('Photo non envoyée : ' + error.message);
+        sent.push(path); newP.push(bucket.getPublicUrl(path).data.publicUrl);
+      }
+      for (const [i, o] of E.nv.entries()) {
+        const path = `${user.id}/${Date.now()}_ev${i}.${vidExt(o.file)}`;
+        const { error } = await bucket.upload(path, o.file, { contentType: o.file.type }); if (error) throw new Error('Vidéo non envoyée : ' + error.message);
+        sent.push(path); newV.push(bucket.getPublicUrl(path).data.publicUrl);
+      }
+      const payload = { titre, description: $('eDesc').value.trim(), prix: $('ePrix').value === '' ? null : +$('ePrix').value,
+        ville: $('eVille').value.trim(), telephone: $('eTel').value.trim(), photos: E.photos.concat(newP) };
+      if (Array.isArray(a.videos) || E.videos.length || newV.length) payload.videos = E.videos.concat(newV);
+      const { data, error } = await SB.from('ann_annonces').update(payload).eq('id', a.id).eq('user_id', user.id).select('id');
+      if (error) throw new Error('Modification impossible : ' + error.message);
+      if (!data || !data.length) throw new Error("Modification refusée par la base de données. Exécutez d'abord le fichier annonces-modifier.sql dans Supabase.");
+    } catch (err) {
+      if (sent.length) Promise.resolve(bucket.remove(sent)).catch(() => {});
+      msg.textContent = err.message; go.disabled = false; return;
+    }
+    const gone = E.removed.map(pathOf).filter(Boolean);
+    if (gone.length) Promise.resolve(bucket.remove(gone)).catch(() => {});
+    freeUrls(); go.disabled = false; close('mEdit'); loadAds(); loadCounts();
+    window.bpSay && window.bpSay('Annonce modifiée');
+  };
 })();
 </script>
 
