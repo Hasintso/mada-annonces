@@ -1629,7 +1629,7 @@ const authError = m => {
   if (/failed to fetch|network|load failed/i.test(m)) return 'Connexion internet impossible ou trop lente. Réessayez dans un instant.';
   if (/invalid login/i.test(m)) return 'E-mail ou mot de passe incorrect.';
   if (/not confirmed/i.test(m)) return 'Confirmez d\'abord votre e-mail avec le lien reçu, puis connectez-vous.';
-  if (/already registered/i.test(m)) return 'Cet e-mail a déjà un compte. Cliquez sur « Se connecter » en dessous.';
+  if (/already registered/i.test(m)) return 'Cet e-mail est déjà utilisé par un compte. Un même e-mail ne peut pas servir à la fois pour un profil Client et un profil Vendeur : utilisez une autre adresse e-mail, ou cliquez sur « Se connecter » si c\'est votre compte.';
   if (/provider is not enabled|unsupported provider/i.test(m)) return 'La connexion avec Google n\'est pas encore activée sur ce site. Utilisez votre e-mail pour le moment.';
   if (/rate limit|too many/i.test(m)) return 'Trop de tentatives. Patientez quelques minutes puis réessayez.';
   if (/password/i.test(m) && /6|short|weak/i.test(m)) return 'Le mot de passe doit contenir au moins 6 caractères.';
@@ -1678,8 +1678,9 @@ $('authForm').onsubmit = async e => {
     const creds = { email, password };
     const { data, error } = isSign ? await SB.auth.signUp({ ...creds, options: { data: { role: roleGet(), ...signupInfo } } }) : await SB.auth.signInWithPassword(creds);
     if (error) { msg.textContent = authError(error.message); return; }
+    if (!isSign && data && data.user) { const c = roleClash(data.user); if (c) { await rejectRoleClash(c); return; } }
     if (isSign && data && data.user && data.user.identities && data.user.identities.length === 0) {
-      msg.textContent = 'Cet e-mail a déjà un compte. Cliquez sur « Se connecter » en dessous.'; return; }
+      msg.textContent = 'Cet e-mail est déjà utilisé par un compte. Un même e-mail ne peut pas servir à la fois pour un profil Client et un profil Vendeur : utilisez une autre adresse e-mail, ou cliquez sur « Se connecter » si c\'est votre compte.'; return; }
     if (isSign && !(data && data.session)) { msg.className = 'msg ok'; msg.textContent = 'Compte créé. Vérifiez votre boîte e-mail pour confirmer, puis connectez-vous.'; return; }
     close('mAuth'); enterApp();
   } catch (err) {
@@ -2096,6 +2097,22 @@ function renderRole() {
   chip.classList.toggle('fixed', !!user && !shopChip);
   chip.title = shopChip ? 'Modifier ma boutique' : user ? 'Profil de votre compte' : 'Changer de profil';
 }
+/* Règle de sécurité : un e-mail = un seul profil. Un compte Vendeur ne peut pas servir de compte Client (et inversement).
+   Si le profil choisi avant la connexion n'est pas celui du compte, on déconnecte et on demande un autre compte avec un autre e-mail. */
+function roleClash(u) {
+  const ar = u && u.user_metadata && u.user_metadata.role, ch = roleGet();
+  return ROLES[ar] && ROLES[ch] && ar !== ch ? { ar, ch } : null;
+}
+async function rejectRoleClash(c) {
+  user = null;                                   /* tout de suite : personne n'entre dans le site */
+  close('mAuth'); close('mPost'); ads = [];
+  try { if (sbReady) await SB.auth.signOut(); } catch (e) {}
+  try { localStorage.removeItem('ah_role'); sessionStorage.removeItem('welcomeSeen'); } catch (e) {}
+  user = null; renderAuthBtn(); renderRole(); showRoleGate();
+  $('rgHint').textContent = 'Cet e-mail est déjà utilisé pour un compte ' + ROLES[c.ar] + '. Il ne peut pas servir aussi pour un profil ' + ROLES[c.ch] +
+    '. Pour accéder au profil ' + ROLES[c.ch] + ', créez un autre compte avec une autre adresse e-mail. Pour utiliser votre compte ' + ROLES[c.ar] +
+    ', choisissez « Je suis un ' + (c.ar === 'vendeur' ? 'vendeur' : 'client') + ' ».';
+}
 let pickedRole = '';
 function showRoleGate() {
   pickedRole = ''; $('rgHint').textContent = ''; $('rgCards').classList.remove('has-pick');
@@ -2106,6 +2123,7 @@ function showRoleGate() {
 function hideRoleGate() { $('roleGate').hidden = true; document.body.classList.remove('rolepick'); }
 /* Un compte garde son profil : s'il en a un, c'est lui qui compte. Sinon on le demande (une seule fois). */
 function syncRole() {
+  const clash = roleClash(user); if (clash) { rejectRoleClash(clash); return; }
   const ar = accountRole();
   if (ar) { roleSet(ar); hideRoleGate(); }
   else if (!roleGet()) showRoleGate();
