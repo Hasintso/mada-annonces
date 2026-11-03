@@ -498,6 +498,7 @@ body.landing .shell{display:none}
  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 6l6 6-6 6'/%3E%3C/svg%3E") center/contain no-repeat;
  opacity:.7;transition:transform .2s}
 #cats button:not(.on)::before{color:var(--forest);opacity:1}
+#cats button.leaf::before{display:none}
 #cats button:hover::before{transform:translateX(2px)}
 #cats .subs button::before{width:13px;height:13px}
 #cats button.open::before{rotate:90deg}
@@ -1159,7 +1160,7 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
         <div class="pic p-immo"></div>
         <div class="lab"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg></span>Immobilier</div>
       </button>
-      <button class="tile" data-cat="New Tech">
+      <button class="tile" data-cat="Technologie">
         <div class="pic p-tech"></div>
         <div class="lab"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></span>New Tech</div>
       </button>
@@ -1403,7 +1404,7 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
     <button type="button" class="pback" id="pBack">← Changer de choix</button>
     <label for="pType" id="pTypeLbl">Type</label><select id="pType"></select>
     <label for="pTitre">Titre</label><input id="pTitre" maxlength="90" required>
-    <div hidden><select id="pCat" required></select></div>
+    <div id="pCatBox" hidden><label for="pCat">Catégorie</label><select id="pCat" required></select></div>
     <label for="pExtra" id="pExtraLbl">Détail</label><input id="pExtra" maxlength="120">
     <div class="row"><div><label for="pPrix" id="pPrixLbl">Prix (Ar)</label><input id="pPrix" type="number" min="0" step="1"></div><div><label for="pVille">Ville</label><input id="pVille" placeholder="Antananarivo"></div></div>
     <label for="pTel">Téléphone</label><input id="pTel" type="tel" placeholder="034 00 000 00" required>
@@ -1812,36 +1813,39 @@ async function loadCats() {
   cats = data || [];
   if (!cats.length && !sbReady) return;
   renderNeed();
-  /* Les listes de catégories (recherche + dépôt) reprennent les 4 entrées de « Ici votre besoin » */
+  /* Les listes de catégories (recherche + dépôt) reprennent les entrées de « Ici votre besoin » */
   $('pCat').innerHTML = NEED.map(([label, key]) => { const id = needId(key); return id > 0 ? `<option value="${id}">${label}</option>` : `<option value="" disabled>${label} (indisponible)</option>`; }).join('');
   const firstOk = [...$('pCat').options].find(o => !o.disabled); if (firstOk) $('pCat').value = firstOk.value;
   $('qCat').innerHTML = '<option value="">Toutes catégories</option>' + NEED.map(([label, key]) => `<option value="${qCatVal(key)}">${label}</option>`).join('');
   loadCounts();
 }
 
-/* Menu « Ici votre besoin » : 4 entrées, reliées aux catégories de la base par leur nom.
-   Chaque entrée a ses sous-options : tri/filtre de prix (Ventes) ou dépôt d'annonce pré-rempli (les autres). */
+/* Menu « Ici votre besoin » : sous « Toutes catégories », 9 catégories reliées à la base par leur nom (table ann_categories).
+   Pour ajouter une catégorie : l'ajouter ici ET dans ann_categories (SQL). */
 const PETIT_PRIX = 100000; // « Petit prix » = annonces jusqu'à ce montant (en Ar) : modifiez ici si besoin
 const NEED = [
-  ['Ventes', 'vente', [['Meilleurs prix', 'sort', 'asc'], ['Grand prix', 'sort', 'desc'], ['Petit prix', 'petit', 'asc'], ['Déposer une vente', 'post', 'Vente : ']]],
-  ['Confie', 'confie', [['Déposer une tâche Excel', 'post', 'Tâche Excel : '], ['Déposer une tâche de développeur web', 'post', 'Tâche développeur web : ']]],
-  ['Musics', 'music', [['Trouver des producteurs', 'post', 'Recherche producteur : '], ['Vendre ma production', 'post', 'Production à vendre : '], ['Organisation complète', 'post', 'Organisation complète : ']]],
-  ['Création', 'creation', [['Déposer en tant que vidéaste', 'post', 'Vidéaste : '], ['Déposer pour réaliser des graphismes', 'post', 'Graphisme : '], ['Déposer pour la création web', 'post', 'Création web : '], ['Déposer pour toute création', 'post', 'Création : ']]]
+  ['Sakafo', 'sakafo', []],
+  ['Cuisine', 'cuisine', []],
+  ['Maison', 'maison', []],
+  ['Vêtement', 'vetement', []],
+  ['Chaussure', 'chaussure', []],
+  ['Auto-moto', 'auto', []],
+  ['Technologie', 'technologie', []],
+  ['Book', 'book', []],
+  ['Création', 'creation', []]
 ];
 const qCatVal = key => needId(key) > 0 ? needId(key) : 'k:' + key;
 const needId = key => { const c = cats.find(x => norm(x.nom).includes(key)); return c ? c.id : -1; };
 const syncTabs = () => document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x.dataset.s === sort));
 function renderNeed() {
   $('cats').innerHTML = NEED.map(([label, key, subs]) => { const id = needId(key); return `<div class="grp">
-    <button data-c="${id}" data-key="${key}"><span>${label}</span><span class="n" data-n="${id}"></span></button>
-    <div class="subs" data-key="${key}" hidden>${subs.map((s, i) => `<button class="sb" data-i="${i}">${s[0]}</button>`).join('')}</div></div>`; }).join('');
+    <button data-c="${id}" data-key="${key}"${subs.length ? '' : ' class="leaf"'}><span>${label}</span><span class="n" data-n="${id}"></span></button>
+    ${subs.length ? `<div class="subs" data-key="${key}" hidden>${subs.map((s, i) => `<button class="sb" data-i="${i}">${s[0]}</button>`).join('')}</div>` : ''}</div>`; }).join('');
   $('cats').querySelectorAll('button[data-key]').forEach(b => b.onclick = () => {
     /* 2e clic sur la catégorie déjà ouverte : on replie / on rouvre ses sous-entrées, sans recharger la liste */
     if (needKey === b.dataset.key) {
       const subs = $('cats').querySelector(`.subs[data-key="${b.dataset.key}"]`);
-      subs.hidden = !subs.hidden;
-      b.classList.toggle('open', !subs.hidden);
-      return;
+      if (subs) { subs.hidden = !subs.hidden; b.classList.toggle('open', !subs.hidden); return; }
     }
     cat = +b.dataset.c; q = ''; $('q').value = ''; sort = 'recent'; syncTabs();
     $('qCat').value = qCatVal(b.dataset.key);
@@ -2044,6 +2048,9 @@ const POST_TYPES = {
   music:    { titre: 'Déposer une chanson / Musics', typeLbl: 'Ce que vous voulez faire', types: ['Trouver des producteurs', 'Vendre ma production / chanson', 'Organisation complète'], extraLbl: 'Genre musical (hip-hop, afrobeat…)', prixLbl: 'Prix / budget (Ar)', titrePh: 'Ex. : Instrumental afrobeat à vendre' },
   creation: { titre: 'Déposer une création', typeLbl: 'Domaine', types: ['Vidéaste', 'Graphisme', 'Création web', 'Autre création'], extraLbl: 'Lien vers votre travail (facultatif)', prixLbl: 'Tarif (Ar)', titrePh: 'Ex. : Montage vidéo clip' }
 };
+/* Catégories disponibles en base, dans l'ordre du menu (pour les listes de choix du dépôt) */
+const saleCats = () => NEED.map(([label, key]) => [label, needId(key)]).filter(x => x[1] > 0);
+const catOptions = sel => saleCats().map(([label, id]) => `<option value="${id}"${id === sel ? ' selected' : ''}>${esc(label)}</option>`).join('');
 let postKey = null;
 function placePostMenu() {
   const m = $('mPost'), b = $('btnPost'), h = document.querySelector('header');
@@ -2060,14 +2067,16 @@ function showPostChoice() {
   placePostMenu(); $('mPost').classList.add('pop');
 }
 function openPostForm(key, titre, typeIdx, mode) {
-  const T = POST_TYPES[key], id = needId(key);
+  const T = POST_TYPES[key], id = key === 'vente' ? (saleCats()[0] || [0, -1])[1] : needId(key);
   if (!T) return;
   if (!(id > 0)) { $('postMsg').textContent = ''; showPostChoice(); alert('Cette catégorie n\'est pas encore disponible.'); return; }
   if (key === 'vente' && !mode) { showSaleMode(titre, typeIdx); return; }      /* vente : d'abord une pièce ou plusieurs ? */
   if (key === 'vente' && mode === 'many') { openMultiForm(); return; }
   $('postMode').hidden = true; $('postMulti').hidden = true;
   postKey = key; $('postForm').reset();
-  $('pCat').innerHTML = `<option value="${id}">${T.titre}</option>`; $('pCat').value = id;
+  if (key === 'vente') {            /* vente : on choisit la catégorie (Sakafo, Maison, Technologie…) */
+    $('pCat').innerHTML = catOptions(needKey ? needId(needKey) : 0); $('pCatBox').hidden = false;
+  } else { $('pCat').innerHTML = `<option value="${id}">${T.titre}</option>`; $('pCat').value = id; $('pCatBox').hidden = true; }
   $('postTitle').textContent = T.titre;
   $('pTypeLbl').textContent = T.typeLbl;
   $('pType').innerHTML = T.types.map(t => `<option>${t}</option>`).join('');
@@ -2172,6 +2181,7 @@ function addItem() {
   d.innerHTML = `<summary><span class="mi-n"></span><span class="mi-sum"></span></summary><div class="mi-body">
     <div class="row"><div><label>État du produit<select class="mi-etat">${POST_TYPES.vente.types.map(t => `<option>${esc(t)}</option>`).join('')}</select></label></div>
     <div><label>Prix (Ar)<input class="mi-prix" type="number" min="0" step="1"></label></div></div>
+    <label>Catégorie<select class="mi-cat">${catOptions(needKey ? needId(needKey) : 0)}</select></label>
     <label>Titre<input class="mi-titre" maxlength="90" placeholder="${esc(POST_TYPES.vente.titrePh)}"></label>
     <label>Marque / modèle (facultatif)<input class="mi-extra" maxlength="120"></label>
     <label>Description (facultatif)<textarea class="mi-desc" rows="2"></textarea></label>
@@ -2188,17 +2198,17 @@ $('postMulti').onsubmit = async e => {
   e.preventDefault();
   const msg = $('multiMsg'), go = $('multiGo'); msg.className = 'msg';
   if (!user) { close('mPost'); setAuthMode(false); open('mAuth'); return; }
-  const id = needId('vente');
-  if (!(id > 0)) { msg.textContent = 'Cette catégorie n\'est pas encore disponible.'; return; }
+  if (!saleCats().length) { msg.textContent = 'Les catégories ne sont pas encore disponibles.'; return; }
   const digits = $('mTel').value.replace(/\D/g, '');
   if (digits.length < 9 || digits.length > 13) { msg.textContent = 'Numéro de téléphone invalide.'; return; }
   const items = [...$('mItems').children].map(el => ({
-    el, etat: el.querySelector('.mi-etat').value, titre: el.querySelector('.mi-titre').value.trim(),
+    el, etat: el.querySelector('.mi-etat').value, cat: +el.querySelector('.mi-cat').value, titre: el.querySelector('.mi-titre').value.trim(),
     extra: el.querySelector('.mi-extra').value.trim(), desc: el.querySelector('.mi-desc').value.trim(),
     prix: el.querySelector('.mi-prix').value, files: [...el.querySelector('.mi-photos').files].slice(0, 4)
   }));
   for (const [i, it] of items.entries()) {
     const err = !it.titre ? 'le titre est obligatoire.'
+      : !(it.cat > 0) ? 'choisissez une catégorie.'
       : it.files.some(f => !/^image\/(jpeg|png|webp|gif)$/.test(f.type)) ? 'formats acceptés : JPG, PNG, WebP, GIF.'
       : it.files.some(f => f.size > 5 * 1024 * 1024) ? 'chaque photo doit faire moins de 5 Mo.' : '';
     if (err) { $('mItems').querySelectorAll('details').forEach(x => x.open = x === it.el); it.el.scrollIntoView({ block: 'nearest' }); msg.textContent = 'Pièce ' + (i + 1) + ' : ' + err; return; }
@@ -2216,7 +2226,7 @@ $('postMulti').onsubmit = async e => {
         paths.push(path); urls.push(bucket.getPublicUrl(path).data.publicUrl);
       }
       const lines = ['État du produit : ' + it.etat]; if (it.extra) lines.push('Marque / modèle : ' + it.extra);
-      rows.push({ category_id: +id, titre: it.titre, description: lines.join('\n') + (it.desc ? '\n\n' + it.desc : ''),
+      rows.push({ category_id: it.cat, titre: it.titre, description: lines.join('\n') + (it.desc ? '\n\n' + it.desc : ''),
         prix: it.prix === '' ? null : +it.prix, ville: $('mVille').value.trim(), telephone: $('mTel').value.trim(), photos: urls });
     }
     const { error } = await SB.from('ann_annonces').insert(rows);          /* un seul envoi : tout est publié, ou rien */
