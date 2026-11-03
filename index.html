@@ -920,6 +920,15 @@ body.rolepick{overflow:hidden}
 .phint{margin:6px 2px 0;font-size:.85rem;opacity:.8}
 .phint.err{color:var(--red);opacity:1}
 .phint.ok{color:var(--forest);opacity:1}
+/* Boutons « Select photo » / « Select video » côte à côte */
+.filepick{position:relative;display:flex;gap:10px;margin:8px 0 2px}
+.fhide{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.fbtn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;margin:0;padding:12px 8px;border:1.5px dashed var(--forest);border-radius:12px;background:#fff7ef;color:var(--forest);font-weight:700;text-align:center;cursor:pointer;transition:transform .15s,box-shadow .15s,background .15s}
+.fbtn small{font-weight:400;font-size:.78rem;color:var(--muted)}
+.fbtn:hover{background:#fff;transform:translateY(-1px);box-shadow:0 4px 12px rgba(122,58,16,.16)}
+.fhide:focus-visible+.fbtn{outline:2px solid var(--forest);outline-offset:2px}
+.fhide:disabled+.fbtn{opacity:.5;pointer-events:none}
+:root[data-th] .fbtn{background:var(--surf)}
 .passbox{position:relative}
 .passbox input{padding-right:84px}
 .passbox button{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:none;padding:6px 8px;color:var(--forest);font-weight:700;font-size:.82rem}
@@ -1197,7 +1206,7 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
           <div class="m3-face m3-thick"></div><span class="m3-sfx" aria-hidden="true">Zip !</span>
           <div class="m3-num">2</div><h3>Remplissez l’annonce</h3>
           <svg class="m3-icon" viewBox="0 0 120 80" fill="none" stroke="#0d0d0d" stroke-width="4" stroke-linejoin="round" aria-hidden="true"><rect x="22" y="6" width="54" height="68" fill="#fff"/><path d="M32 22h34M32 34h34M32 46h20"/><path d="M104 18L58 62l-3 12 12-3 46-44z" fill="#2fa36b"/></svg>
-          <div class="m3-speech"><p>Ajoutez un titre, le prix, votre ville, votre numéro de téléphone et jusqu’à 4 photos et 4 vidéos de 8 secondes.</p></div>
+          <div class="m3-speech"><p>Ajoutez un titre, le prix, votre ville, votre numéro de téléphone et jusqu’à 4 photos et 4 vidéos.</p></div>
         </div></div>
         <div class="m3-panel"><div class="m3-card" data-tilt style="--c:var(--p)">
           <div class="m3-face m3-thick"></div><span class="m3-sfx" aria-hidden="true">Dring !</span>
@@ -1402,17 +1411,20 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
     <div id="pCatBox" hidden><label for="pCat">Catégorie</label><select id="pCat" required></select></div>
     <label for="pExtra" id="pExtraLbl">Détail</label><input id="pExtra" maxlength="120">
     <div class="row"><div><label for="pPrix" id="pPrixLbl">Prix (Ar)</label><input id="pPrix" type="number" min="0" step="1"></div><div><label for="pVille">Ville</label><input id="pVille" placeholder="Antananarivo"></div></div>
-    <label for="pTel">Téléphone</label><input id="pTel" type="tel" placeholder="034 00 000 00" required>
+    <label for="pTel">Téléphone</label><div class="phonebox"><span>🇲🇬 +261</span><input id="pTel" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="34 12 345 67" required></div><p class="phint" id="pTelHint">9 chiffres, commençant par 32, 33, 34, 36, 37 ou 38</p>
     <label for="pDesc">Description</label><textarea id="pDesc" rows="3"></textarea>
-    <label for="pPhotos">Photos (4 maximum)</label><input id="pPhotos" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
-    <label for="pVideos">Vidéos (4 maximum, 8 secondes chacune)</label><input id="pVideos" type="file" accept="video/mp4,video/webm,video/quicktime" multiple>
+    <div class="filepick">
+      <input id="pPhotos" class="fhide" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple><label class="fbtn" for="pPhotos">📷 Select photo<small id="pPhotosN">4 maximum</small></label>
+      <input id="pVideos" class="fhide" type="file" accept="video/mp4,video/webm,video/quicktime" multiple><label class="fbtn" for="pVideos">🎬 Select video<small id="pVideosN">4 maximum</small></label>
+    </div>
     <p class="msg" id="postMsg" role="status"></p>
     <div class="act" style="margin-top:14px"><button class="btn cta" id="postGo">Publier l'annonce</button></div>
   </form>
   <!-- Vente : plusieurs pièces -->
   <form id="postMulti" hidden>
     <button type="button" class="pback" id="mBack">← Changer de choix</button>
-    <div class="row"><div><label for="mVille">Ville</label><input id="mVille" placeholder="Antananarivo"></div><div><label for="mTel">Téléphone</label><input id="mTel" type="tel" placeholder="034 00 000 00" required></div></div>
+    <label for="mVille">Ville</label><input id="mVille" placeholder="Antananarivo">
+    <label for="mTel">Téléphone</label><div class="phonebox"><span>🇲🇬 +261</span><input id="mTel" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="34 12 345 67" required></div><p class="phint" id="mTelHint">9 chiffres, commençant par 32, 33, 34, 36, 37 ou 38</p>
     <div id="mItems"></div>
     <button type="button" class="btn plain" id="mAdd">+ Ajouter une pièce</button>
     <p class="msg" id="multiMsg" role="status"></p>
@@ -1433,13 +1445,13 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
   <form id="editForm">
     <label for="eTitre">Titre</label><input id="eTitre" maxlength="90" required>
     <div class="row"><div><label for="ePrix">Prix (Ar)</label><input id="ePrix" type="number" min="0" step="1"></div><div><label for="eVille">Ville</label><input id="eVille"></div></div>
-    <label for="eTel">Téléphone</label><input id="eTel" type="tel" required>
+    <label for="eTel">Téléphone</label><div class="phonebox"><span>🇲🇬 +261</span><input id="eTel" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="34 12 345 67" required></div><p class="phint" id="eTelHint">9 chiffres, commençant par 32, 33, 34, 36, 37 ou 38</p>
     <label for="eDesc">Description</label><textarea id="eDesc" rows="6"></textarea>
     <label id="ePLbl">Photos</label><div class="mgrid" id="ePGrid"></div>
     <input id="ePAdd" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
     <label id="eVLbl">Vidéos</label><div class="mgrid" id="eVGrid"></div>
     <input id="eVAdd" type="file" accept="video/mp4,video/webm,video/quicktime" multiple>
-    <p class="mhint">4 photos et 4 vidéos au maximum. Chaque vidéo dure 8 secondes au plus.</p>
+    <p class="mhint">4 photos et 4 vidéos au maximum.</p>
     <p class="msg" id="eMsg" role="status"></p>
     <div class="act" style="margin-top:14px"><button class="btn cta" id="eGo" type="submit">Enregistrer</button><button class="btn alt" id="eCancel" type="button">Annuler</button></div>
   </form>
@@ -2079,7 +2091,7 @@ function openPostForm(key, titre, typeIdx, mode) {
   $('pType').innerHTML = T.types.map(t => `<option>${t}</option>`).join('');
   if (typeIdx >= 0 && typeIdx < T.types.length) $('pType').selectedIndex = typeIdx;
   $('pExtraLbl').textContent = T.extraLbl; $('pPrixLbl').textContent = T.prixLbl;
-  $('pTitre').placeholder = T.titrePh; $('pTitre').value = titre || '';
+  $('pTitre').value = titre || '';
   $('postMsg').textContent = '';
   $('mPost').classList.remove('pop');
   $('postChoice').hidden = true; $('postForm').hidden = false;
@@ -2088,6 +2100,29 @@ function openPostForm(key, titre, typeIdx, mode) {
 /* Menu « + » : une entrée « Vendre … » par catégorie (même liste que « Ici votre besoin ») */
 $('postChoice').querySelector('.pchoices').innerHTML = NEED.map(([label, key]) =>
   `<button type="button" class="pchoice" data-ck="${key}"><div>${esc(saleLbl(key))}</div></button>`).join('');
+/* « Select photo » / « Select video » : affiche le nombre de fichiers choisis */
+[['pPhotos', 'pPhotosN', 'photo'], ['pVideos', 'pVideosN', 'vidéo']].forEach(([i, n, w]) => {
+  const inp = $(i), out = $(n), upd = () => { const c = inp.files.length;
+    out.textContent = c ? Math.min(c, 4) + ' ' + w + (c > 1 ? 's' : '') + ' choisie' + (c > 1 ? 's' : '') + (c > 4 ? ' (4 max)' : '') : '4 maximum'; };
+  inp.addEventListener('change', upd); $('postForm').addEventListener('reset', () => setTimeout(upd, 0));
+});
+/* Titre : l'exemple s'écrit et s'efface tout seul (« Ex. : ma bouteille d'eau »…) */
+const TITRE_EX = ["ma bouteille d'eau", 'ma chaussure préférée', 'mon casque audio', 'ma veste en cuir'];
+function typePlaceholder(inp, list) {
+  const pre = 'Ex. : ';
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) { inp.placeholder = pre + list[0]; return; }
+  let i = 0, j = 0, del = false;
+  (function tick() {
+    if (!inp.isConnected) return;
+    if (document.hidden || !inp.offsetParent || inp.value) { setTimeout(tick, 600); return; }
+    const w = list[i]; let wait = del ? 35 : 75;
+    if (!del) { j++; if (j >= w.length) { del = true; wait = 1500; } }
+    else { j--; if (j <= 0) { del = false; i = (i + 1) % list.length; wait = 350; } }
+    inp.placeholder = pre + w.slice(0, j);
+    setTimeout(tick, wait);
+  })();
+}
+typePlaceholder($('pTitre'), TITRE_EX);
 document.querySelectorAll('.pchoice[data-ck]').forEach(b => b.onclick = () => { postCatKey = b.dataset.ck; openPostForm('vente', ''); });
 $('pBack').onclick = () => postKey === 'vente' ? showSaleMode(pendingPost.titre, pendingPost.typeIdx) : showPostChoice();
 function buildDesc() {
@@ -2105,8 +2140,8 @@ $('postForm').onsubmit = async e => {
   if (files.some(f => f.size > 5 * 1024 * 1024)) { msg.textContent = 'Chaque photo doit faire moins de 5 Mo.'; return; }
   const vfiles = [...$('pVideos').files].slice(0, 4);
   { msg.textContent = vfiles.length ? 'Vérification des vidéos…' : ''; const verr = await checkVideos(vfiles); if (verr) { msg.textContent = verr; return; } }
-  const digits = $('pTel').value.replace(/\D/g, '');
-  if (digits.length < 9 || digits.length > 13) { msg.textContent = 'Numéro de téléphone invalide.'; return; }
+  const telNum = mgTel($('pTel').value);
+  if (!telNum) { msg.textContent = TEL_ERR; $('pTel').focus(); return; }
 
   go.disabled = true; msg.textContent = 'Envoi en cours…';
   const bucket = SB.storage.from('annonces'), paths = [], urls = [], vurls = [];
@@ -2128,7 +2163,7 @@ $('postForm').onsubmit = async e => {
       ...(vurls.length ? { videos: vurls } : {}),
       category_id: +$('pCat').value, titre: $('pTitre').value.trim(), description: buildDesc(),
       prix: $('pPrix').value === '' ? null : +$('pPrix').value, ville: $('pVille').value.trim(),
-      telephone: $('pTel').value.trim(), photos: urls
+      telephone: telNum, photos: urls
     });
     if (error) throw new Error('Publication impossible : ' + error.message);
   } catch (err) {
@@ -2182,13 +2217,13 @@ function addItem() {
     <div class="row"><div><label>État du produit<select class="mi-etat">${POST_TYPES.vente.types.map(t => `<option>${esc(t)}</option>`).join('')}</select></label></div>
     <div><label>Prix (Ar)<input class="mi-prix" type="number" min="0" step="1"></label></div></div>
     <label>Catégorie<select class="mi-cat">${catOptions(defCat())}</select></label>
-    <label>Titre<input class="mi-titre" maxlength="90" placeholder="${esc(POST_TYPES.vente.titrePh)}"></label>
+    <label>Titre<input class="mi-titre" maxlength="90"></label>
     <label>Marque / modèle (facultatif)<input class="mi-extra" maxlength="120"></label>
     <label>Description (facultatif)<textarea class="mi-desc" rows="2"></textarea></label>
     <label>Photos (4 maximum)<input class="mi-photos" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple></label>
     <button type="button" class="btn plain mi-rm">Retirer cette pièce</button></div>`;
   d.querySelector('.mi-rm').onclick = () => { d.remove(); refreshItems(); };
-  box.appendChild(d); refreshItems();
+  box.appendChild(d); refreshItems(); typePlaceholder(d.querySelector('.mi-titre'), TITRE_EX);
   if (box.children.length > 1) { d.scrollIntoView({ block: 'nearest' }); d.querySelector('.mi-titre').focus(); }
 }
 $('mAdd').onclick = addItem;
@@ -2199,8 +2234,8 @@ $('postMulti').onsubmit = async e => {
   const msg = $('multiMsg'), go = $('multiGo'); msg.className = 'msg';
   if (!user) { close('mPost'); setAuthMode(false); open('mAuth'); return; }
   if (!saleCats().length) { msg.textContent = 'Les catégories ne sont pas encore disponibles.'; return; }
-  const digits = $('mTel').value.replace(/\D/g, '');
-  if (digits.length < 9 || digits.length > 13) { msg.textContent = 'Numéro de téléphone invalide.'; return; }
+  const telNum = mgTel($('mTel').value);
+  if (!telNum) { msg.textContent = TEL_ERR; $('mTel').focus(); return; }
   const items = [...$('mItems').children].map(el => ({
     el, etat: el.querySelector('.mi-etat').value, cat: +el.querySelector('.mi-cat').value, titre: el.querySelector('.mi-titre').value.trim(),
     extra: el.querySelector('.mi-extra').value.trim(), desc: el.querySelector('.mi-desc').value.trim(),
@@ -2227,7 +2262,7 @@ $('postMulti').onsubmit = async e => {
       }
       const lines = ['État du produit : ' + it.etat]; if (it.extra) lines.push('Marque / modèle : ' + it.extra);
       rows.push({ category_id: it.cat, titre: it.titre, description: lines.join('\n') + (it.desc ? '\n\n' + it.desc : ''),
-        prix: it.prix === '' ? null : +it.prix, ville: $('mVille').value.trim(), telephone: $('mTel').value.trim(), photos: urls });
+        prix: it.prix === '' ? null : +it.prix, ville: $('mVille').value.trim(), telephone: telNum, photos: urls });
     }
     const { error } = await SB.from('ann_annonces').insert(rows);          /* un seul envoi : tout est publié, ou rien */
     if (error) throw new Error('Publication impossible : ' + error.message);
@@ -2304,8 +2339,8 @@ function mgClean(d) {
   if (d.length > 1 && !'234678'.includes(d[1])) return { d: d[0], bad: true };
   return { d, bad: false };
 }
-(function mgPhoneUI() {
-  const inp = $('phone'), hint = $('phoneHint'), HINT = '9 chiffres, commençant par 32, 33, 34, 36, 37 ou 38';
+function mgPhoneAttach(inp, hint) {
+  const HINT = '9 chiffres, commençant par 32, 33, 34, 36, 37 ou 38';
   const show = (txt, cls) => { hint.textContent = txt; hint.className = 'phint' + (cls ? ' ' + cls : ''); inp.classList.toggle('bad', cls === 'err'); };
   inp.addEventListener('input', () => {
     const raw = inp.value, t = raw.trim().replace(/^00/, '+');
@@ -2324,7 +2359,13 @@ function mgClean(d) {
     else if (d.length) show('Encore ' + (9 - d.length) + ' chiffre' + (9 - d.length > 1 ? 's' : '') + '…', '');
     else show(HINT, '');
   });
-})();
+  if (inp.form) inp.form.addEventListener('reset', () => setTimeout(() => inp.dispatchEvent(new Event('input')), 0));
+}
+/* même règle partout : signup + dépôt (une pièce / plusieurs) + modification */
+[['phone', 'phoneHint'], ['pTel', 'pTelHint'], ['mTel', 'mTelHint'], ['eTel', 'eTelHint']].forEach(([i, h]) => mgPhoneAttach($(i), $(h)));
+/* numéro enregistré : « +261 34 12 345 67 » (vide si invalide) */
+const mgTel = v => { const n = mgNational(v); return MG_PHONE_RE.test(n) ? '+261 ' + mgFormat(n) : ''; };
+const TEL_ERR = 'Numéro invalide : après +261, il doit commencer par 32, 33, 34, 36, 37 ou 38 et compter 9 chiffres (ex. 34 12 345 67).';
 
 /* ===== Choix du profil : Client / Travailleur / Vendeur (un seul profil par compte) ===== */
 const ROLES = { client: 'Client', travailleur: 'Travailleur', vendeur: 'Vendeur' };
@@ -2663,8 +2704,8 @@ fitQHint();
 </script>
 
 <script>
-/* ===== Vidéos (8 s max) et modification d'une annonce ===== */
-const MAX_VID_S = 8.5, MAX_VID_MB = 25;
+/* ===== Vidéos (sans limite de durée, 25 Mo max) et modification d'une annonce ===== */
+const MAX_VID_MB = 25;
 const vidExt = f => ({ 'video/mp4': 'mp4', 'video/webm': 'webm', 'video/quicktime': 'mov' }[f.type] || 'mp4');
 const vidDuration = f => new Promise(res => {
   const v = document.createElement('video'), u = URL.createObjectURL(f); v.preload = 'metadata';
@@ -2678,7 +2719,6 @@ async function checkVideos(files) {
     if (f.size > MAX_VID_MB * 1024 * 1024) return 'Chaque vidéo doit faire moins de ' + MAX_VID_MB + ' Mo.';
     const d = await vidDuration(f);
     if (!isFinite(d)) return 'Impossible de lire la vidéo « ' + f.name + ' ». Utilisez une vidéo MP4.';
-    if (d > MAX_VID_S) return 'Chaque vidéo doit durer 8 secondes au maximum (« ' + f.name + ' » : ' + Math.round(d) + ' s).';
   }
   return '';
 }
@@ -2688,7 +2728,7 @@ async function checkVideos(files) {
   const freeUrls = () => [...E.np, ...E.nv].forEach(o => URL.revokeObjectURL(o.url));
   function render() {
     const nP = E.photos.length + E.np.length, nV = E.videos.length + E.nv.length;
-    $('ePLbl').textContent = 'Photos (' + nP + '/4)'; $('eVLbl').textContent = 'Vidéos (' + nV + '/4, 8 secondes chacune)';
+    $('ePLbl').textContent = 'Photos (' + nP + '/4)'; $('eVLbl').textContent = 'Vidéos (' + nV + '/4)';
     const btn = (k, w, i) => `<button type="button" data-k="${k}" data-w="${w}" data-i="${i}" aria-label="Retirer">×</button>`;
     $('ePGrid').innerHTML = E.photos.map((u, i) => `<div class="mth"><img src="${esc(u)}" alt="">${btn('p', 'o', i)}</div>`).join('')
       + E.np.map((o, i) => `<div class="mth new"><img src="${esc(o.url)}" alt="">${btn('p', 'n', i)}</div>`).join('');
@@ -2729,7 +2769,7 @@ async function checkVideos(files) {
     close('mDet'); freeUrls();
     Object.assign(E, { a, photos: (a.photos || []).filter(safeUrl), videos: (a.videos || []).filter(safeUrl), np: [], nv: [], removed: [] });
     $('eTitre').value = a.titre || ''; $('ePrix').value = a.prix == null ? '' : a.prix; $('eVille').value = a.ville || '';
-    $('eTel').value = a.telephone || ''; $('eDesc').value = a.description || '';
+    $('eTel').value = a.telephone || ''; $('eTel').dispatchEvent(new Event('input')); $('eDesc').value = a.description || '';
     $('eMsg').className = 'msg'; $('eMsg').textContent = ''; $('eGo').disabled = false;
     render(); open('mEdit');
   };
@@ -2738,9 +2778,9 @@ async function checkVideos(files) {
     e.preventDefault();
     const msg = $('eMsg'), go = $('eGo'), a = E.a; msg.className = 'msg';
     if (!a || !user) return;
-    const titre = $('eTitre').value.trim(), digits = $('eTel').value.replace(/\D/g, '');
+    const titre = $('eTitre').value.trim(), telNum = mgTel($('eTel').value);
     if (!titre) { msg.textContent = 'Le titre est obligatoire.'; return; }
-    if (digits.length < 9 || digits.length > 13) { msg.textContent = 'Numéro de téléphone invalide.'; return; }
+    if (!telNum) { msg.textContent = TEL_ERR; $('eTel').focus(); return; }
     go.disabled = true; msg.textContent = 'Enregistrement…';
     const bucket = SB.storage.from('annonces'), sent = [], newP = [], newV = [];
     try {
@@ -2755,7 +2795,7 @@ async function checkVideos(files) {
         sent.push(path); newV.push(bucket.getPublicUrl(path).data.publicUrl);
       }
       const payload = { titre, description: $('eDesc').value.trim(), prix: $('ePrix').value === '' ? null : +$('ePrix').value,
-        ville: $('eVille').value.trim(), telephone: $('eTel').value.trim(), photos: E.photos.concat(newP) };
+        ville: $('eVille').value.trim(), telephone: telNum, photos: E.photos.concat(newP) };
       if (Array.isArray(a.videos) || E.videos.length || newV.length) payload.videos = E.videos.concat(newV);
       const { data, error } = await SB.from('ann_annonces').update(payload).eq('id', a.id).eq('user_id', user.id).select('id');
       if (error) throw new Error('Modification impossible : ' + error.message);
