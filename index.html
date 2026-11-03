@@ -1090,16 +1090,21 @@ body.landing .hero p{max-width:62ch;margin-bottom:16px}
 .sline i{width:28px;height:28px;border-radius:50%;overflow:hidden;background:var(--forest);color:#fff;display:inline-grid;place-items:center;font:700 .85rem Georgia,serif;font-style:normal}
 .sline i img{width:100%;height:100%;object-fit:cover}
 /* ===== Page de profil (style réseau social) ===== */
-#mShopView .box{margin:auto;max-width:min(560px,100%);padding:0;overflow-x:hidden;overflow-y:auto;max-height:calc(100dvh - 32px)}
+/* Profil = tiroir qui glisse depuis la droite (comme le menu à gauche) */
+#mShopView{padding:0;justify-content:flex-end;align-items:stretch;overflow:hidden}
+#mShopView .box{margin:0;width:min(430px,92vw);max-width:none;height:100dvh;max-height:none;padding:0;overflow-x:hidden;overflow-y:auto;border-radius:18px 0 0 18px;box-shadow:-8px 0 30px rgba(40,15,0,.3)}
+#mShopView.open .box{animation:pfslide .28s ease}
+@keyframes pfslide{from{transform:translateX(100%)}to{transform:translateX(0)}}
+@media(prefers-reduced-motion:reduce){#mShopView.open .box{animation:none}}
 #mShopView .x{z-index:3;color:#fff;background:rgba(0,0,0,.28);width:34px;height:34px;border-radius:50%;font-size:1.3rem;display:grid;place-items:center;right:10px;top:10px}
-.pf-cover{position:relative;height:112px;background:linear-gradient(135deg,var(--forest2),var(--forest) 62%,#c9742e) center/cover no-repeat}
+.pf-cover{position:relative;height:180px;background:linear-gradient(135deg,var(--forest2),var(--forest) 62%,#c9742e) center/cover no-repeat}
 .pf-covbar{position:absolute;right:10px;bottom:10px;display:flex;gap:6px;z-index:2}
 .pf-covbtn{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.94);color:var(--ink);border:0;border-radius:999px;padding:6px 12px;font-size:.8rem;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.25);cursor:pointer}
 .pf-covbtn:hover{background:#fff}.pf-covbtn.rm{padding:6px 10px}.pf-covbtn:disabled{opacity:.6;cursor:wait}
 @media(max-width:420px){.pf-covbtn span{display:none}}
 .pf-body{padding:0 16px 16px}
-.pf-top{display:flex;gap:12px;align-items:flex-end;margin-top:-40px;flex-wrap:wrap;position:relative;z-index:1}
-.pf-top .shoplogo{width:88px;height:88px;font-size:2.2rem;border:4px solid #fff;box-shadow:0 0 0 2px var(--forest),0 4px 12px rgba(42,23,11,.25)}
+.pf-top{display:flex;gap:12px;align-items:flex-end;margin-top:-46px;flex-wrap:wrap;position:relative;z-index:1}
+.pf-top .shoplogo{width:92px;height:92px;font-size:2.2rem;border:4px solid #fff;box-shadow:0 0 0 2px var(--forest),0 4px 12px rgba(42,23,11,.25)}
 .pf-id{flex:1;min-width:150px;padding-bottom:4px}
 .pf-id h2{font-size:1.3rem;margin:0}
 .pf-act{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px}
