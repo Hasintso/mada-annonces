@@ -1090,15 +1090,19 @@ body.landing .hero p{max-width:62ch;margin-bottom:16px}
 .sline i{width:28px;height:28px;border-radius:50%;overflow:hidden;background:var(--forest);color:#fff;display:inline-grid;place-items:center;font:700 .85rem Georgia,serif;font-style:normal}
 .sline i img{width:100%;height:100%;object-fit:cover}
 /* ===== Page de profil (style réseau social) ===== */
-#mShopView .box{margin:auto;max-width:min(720px,100%);padding:0;overflow-x:hidden;overflow-y:auto;max-height:calc(100dvh - 32px)}
+#mShopView .box{margin:auto;max-width:min(560px,100%);padding:0;overflow-x:hidden;overflow-y:auto;max-height:calc(100dvh - 32px)}
 #mShopView .x{z-index:3;color:#fff;background:rgba(0,0,0,.28);width:34px;height:34px;border-radius:50%;font-size:1.3rem;display:grid;place-items:center;right:10px;top:10px}
-.pf-cover{height:124px;background:linear-gradient(135deg,var(--forest2),var(--forest) 62%,#c9742e)}
-.pf-body{padding:0 20px 20px}
-.pf-top{display:flex;gap:14px;align-items:flex-end;margin-top:-52px;flex-wrap:wrap}
-.pf-top .shoplogo{width:104px;height:104px;font-size:2.6rem;border:4px solid #fff;box-shadow:0 3px 10px rgba(42,23,11,.2)}
+.pf-cover{position:relative;height:112px;background:linear-gradient(135deg,var(--forest2),var(--forest) 62%,#c9742e) center/cover no-repeat}
+.pf-covbar{position:absolute;right:10px;bottom:10px;display:flex;gap:6px;z-index:2}
+.pf-covbtn{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.94);color:var(--ink);border:0;border-radius:999px;padding:6px 12px;font-size:.8rem;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.25);cursor:pointer}
+.pf-covbtn:hover{background:#fff}.pf-covbtn.rm{padding:6px 10px}.pf-covbtn:disabled{opacity:.6;cursor:wait}
+@media(max-width:420px){.pf-covbtn span{display:none}}
+.pf-body{padding:0 16px 16px}
+.pf-top{display:flex;gap:12px;align-items:flex-end;margin-top:-40px;flex-wrap:wrap;position:relative;z-index:1}
+.pf-top .shoplogo{width:88px;height:88px;font-size:2.2rem;border:4px solid #fff;box-shadow:0 0 0 2px var(--forest),0 4px 12px rgba(42,23,11,.25)}
 .pf-id{flex:1;min-width:150px;padding-bottom:4px}
-.pf-id h2{font-size:1.45rem;margin:0}
-.pf-act{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 4px}
+.pf-id h2{font-size:1.3rem;margin:0}
+.pf-act{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px}
 .pf-act .btn{padding:8px 14px;font-size:.9rem;text-decoration:none;display:inline-block}
 .pf-prog{background:#fff7e6;border:1px solid #f2d28a;border-radius:12px;padding:10px 12px;margin:12px 0;font-size:.88rem}
 .pf-bar{height:8px;border-radius:99px;background:#efe3cc;margin:6px 0;overflow:hidden}
@@ -1112,7 +1116,10 @@ body.landing .hero p{max-width:62ch;margin-bottom:16px}
 .pf-date{font-size:.78rem;color:var(--muted);margin-top:2px}
 .pf-own{display:flex;gap:8px;padding:0 8px 8px 98px}
 .pf-own .btn{padding:5px 12px;font-size:.8rem}
-.pf-about dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:8px 14px}
+.pf-about{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:10px 0 4px}
+.pf-about dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:5px 12px;font-size:.9rem}
+.pf-about .trust{margin:10px 0 0}.pf-about .trust span{background:#fff;font-size:.76rem;padding:3px 9px}
+.pf-h{font-size:1rem;margin:14px 0 8px;font-weight:700;color:var(--forest)}
 .pf-about dt{color:var(--muted);font-size:.86rem}.pf-about dd{margin:0;font-weight:600;word-break:break-word}
 .shopads{margin-top:0}
 .shprog{margin:10px 0 2px}
@@ -2780,7 +2787,10 @@ async function openShop(uid) {
   const badges = [safeUrl(shop.avatar_url) ? '📷 Photo' : '', tel ? '📞 Téléphone' : '', shop.email ? '✉️ E-mail' : '', shop.description ? '📝 Présentation' : '', since ? '🗓️ Membre depuis ' + since : '']
     .filter(Boolean);
   const firstAd = list[0];
-  $('shopView').innerHTML = `<div class="pf-cover"></div><div class="pf-body">
+  const cov = safeUrl(shop.cover_url) ? cssUrl(shop.cover_url) : '';
+  const covBar = mine ? `<div class="pf-covbar"><button class="pf-covbtn" id="pfCov" type="button">📷 <span id="pfCovTxt">${cov ? 'Modifier la couverture' : 'Ajouter une photo de couverture'}</span></button>`
+    + `<button class="pf-covbtn rm" id="pfCovDel" type="button" title="Retirer la couverture" aria-label="Retirer la couverture"${cov ? '' : ' hidden'}>✕</button></div><input type="file" id="pfCovFile" accept="image/*" hidden>` : '';
+  $('shopView').innerHTML = `<div class="pf-cover" id="pfCover"${cov ? ` style="background-image:url('${cov}')"` : ''}>${covBar}</div><div class="pf-body">
     <div class="pf-top"><div class="shoplogo">${avatarHtml(shop.avatar_url, nom)}</div>
       <div class="pf-id"><h2>${esc(nom)}</h2><div class="meta">${esc(shop.ville || 'Madagascar')} · ${list.length} publication${list.length > 1 ? 's' : ''}</div></div></div>
     ${complete ? '<div class="trust"><span>✅ Profil complet</span></div>' : ''}
@@ -2790,26 +2800,22 @@ async function openShop(uid) {
           + (shop.email ? `<a class="btn alt" href="mailto:${esc(shop.email)}">✉️ E-mail</a>` : '')}
       <button class="btn plain" id="pfShare" type="button">🔗 Partager</button>
     </div>
-    ${mine && !complete ? `<div class="pf-prog"><b>Profil complété à ${shopPct(shop)} %</b><div class="pf-bar"><i style="width:${shopPct(shop)}%"></i></div>Il manque : ${esc(miss.join(', '))}. Un profil complet est obligatoire pour publier et rassure les acheteurs.</div>` : ''}
-    <div class="pf-tabs" role="tablist"><button class="on" data-t="pub" type="button">Publications (${list.length})</button><button data-t="abt" type="button">À propos</button></div>
-    <div id="pfPub" class="shopads">${list.length ? list.map((x, i) => { const p0 = cssUrl(x.photos && x.photos[0]);
-      return `<div class="pf-post"><div class="shopad" data-i="${i}" role="button" tabindex="0"><div class="th" ${p0 ? `style="background-image:url('${p0}')"` : ''}>${p0 ? '' : 'Pas de photo'}</div>
-        <div><div class="price">${money(x.prix)}</div><div>${esc(x.titre)}</div><div class="pf-date">${esc(x.ann_categories ? x.ann_categories.nom + ' · ' : '')}Publié le ${esc(fmtDay(x.cree_le))} · ${esc(ago(x.cree_le))}</div></div></div>
-        ${mine ? `<div class="pf-own"><button class="btn alt" data-ed="${i}" type="button">Modifier</button><button class="btn danger" data-del="${i}" type="button">Supprimer</button></div>` : ''}</div>`; }).join('')
-      : `<p style="color:var(--muted)">${mine ? "Vous n'avez encore rien publié. Touchez le « + » pour déposer votre première annonce." : 'Aucune publication pour le moment.'}</p>`}</div>
-    <div id="pfAbt" class="pf-about" hidden><dl>
+    <div id="pfAbt" class="pf-about"><dl>
       <dt>Présentation</dt><dd>${esc(shop.description || 'Non renseignée')}</dd>
       <dt>Ville</dt><dd>${esc(shop.ville || 'Non renseignée')}</dd>
       <dt>Téléphone</dt><dd>${tel ? `<a href="tel:${esc(tel)}">${esc(shop.telephone)}</a>` : 'Non renseigné'}</dd>
       <dt>E-mail</dt><dd>${shop.email ? `<a href="mailto:${esc(shop.email)}">${esc(shop.email)}</a>` : 'Non renseigné'}</dd>
       <dt>Membre depuis</dt><dd>${esc(since || '—')}</dd></dl>
-      ${badges.length ? '<div class="trust" style="margin-top:14px">' + badges.map(x => `<span>${esc(x)}</span>`).join('') + '</div>' : ''}</div>
+      ${badges.length ? '<div class="trust">' + badges.map(x => `<span>${esc(x)}</span>`).join('') + '</div>' : ''}</div>
+    ${mine && !complete ? `<div class="pf-prog"><b>Profil complété à ${shopPct(shop)} %</b><div class="pf-bar"><i style="width:${shopPct(shop)}%"></i></div>Il manque : ${esc(miss.join(', '))}. Un profil complet est obligatoire pour publier et rassure les acheteurs.</div>` : ''}
+    <h3 class="pf-h">Publications (${list.length})</h3>
+    <div id="pfPub" class="shopads">${list.length ? list.map((x, i) => { const p0 = cssUrl(x.photos && x.photos[0]);
+      return `<div class="pf-post"><div class="shopad" data-i="${i}" role="button" tabindex="0"><div class="th" ${p0 ? `style="background-image:url('${p0}')"` : ''}>${p0 ? '' : 'Pas de photo'}</div>
+        <div><div class="price">${money(x.prix)}</div><div>${esc(x.titre)}</div><div class="pf-date">${esc(x.ann_categories ? x.ann_categories.nom + ' · ' : '')}Publié le ${esc(fmtDay(x.cree_le))} · ${esc(ago(x.cree_le))}</div></div></div>
+        ${mine ? `<div class="pf-own"><button class="btn alt" data-ed="${i}" type="button">Modifier</button><button class="btn danger" data-del="${i}" type="button">Supprimer</button></div>` : ''}</div>`; }).join('')
+      : `<p style="color:var(--muted)">${mine ? "Vous n'avez encore rien publié. Touchez le « + » pour déposer votre première annonce." : 'Aucune publication pour le moment.'}</p>`}</div>
   </div>`;
   const root = $('shopView');
-  root.querySelectorAll('.pf-tabs button').forEach(b => b.onclick = () => {
-    root.querySelectorAll('.pf-tabs button').forEach(x => x.classList.toggle('on', x === b));
-    $('pfPub').hidden = b.dataset.t !== 'pub'; $('pfAbt').hidden = b.dataset.t !== 'abt';
-  });
   root.querySelectorAll('.shopad').forEach(b => {
     const go = () => { close('mShopView'); showAd(list[+b.dataset.i]); };
     b.onclick = go; b.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } };
@@ -2822,6 +2828,41 @@ async function openShop(uid) {
     loadAds(); loadCounts(); openShop(uid);
   });
   const pe = $('pfEdit'); if (pe) pe.onclick = () => openMyShop();
+  /* --- Photo de couverture (propriétaire uniquement) : réduite à 1200 px puis enregistrée dans ann_boutiques.cover_url --- */
+  const pcv = $('pfCov');
+  if (pcv) {
+    const cover = $('pfCover'), txt = $('pfCovTxt'), del = $('pfCovDel'), file = $('pfCovFile');
+    const covErr = e => /cover_url|column/i.test((e && e.message) || '') ? "La couverture n'est pas encore activée : exécutez couverture.sql dans Supabase." : shopErr(e);
+    const saveCover = async url => {
+      const { data, error } = await SB.from('ann_boutiques').update({ cover_url: url, maj_le: new Date().toISOString() }).eq('user_id', user.id).select('user_id');
+      if (error) throw error;
+      if (!data || !data.length) throw new Error("Complétez d'abord votre profil (bouton « Modifier le profil »), puis ajoutez la couverture.");
+    };
+    const busy = b => { pcv.disabled = del.disabled = b; };
+    pcv.onclick = () => file.click();
+    file.onchange = async e => {
+      const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+      if (!/^image\//.test(f.type)) { window.bpSay ? window.bpSay('Choisissez une image (JPG ou PNG)') : alert('Choisissez une image (JPG ou PNG).'); return; }
+      busy(true); txt.textContent = 'Envoi…';
+      try {
+        const blob = await shrinkImage(f, 1200), bucket = SB.storage.from('annonces'), path = `${user.id}/couverture_${Date.now()}.jpg`;
+        const up = await bucket.upload(path, blob, { contentType: 'image/jpeg' });
+        if (up.error) throw new Error('Couverture non envoyée : ' + up.error.message);
+        const url = bucket.getPublicUrl(path).data.publicUrl;
+        await saveCover(url);
+        cover.style.backgroundImage = `url('${cssUrl(url)}')`; del.hidden = false; txt.textContent = 'Modifier la couverture';
+        window.bpSay && window.bpSay('Couverture enregistrée ✓');
+      } catch (err) { txt.textContent = cov || cover.style.backgroundImage ? 'Modifier la couverture' : 'Ajouter une photo de couverture'; alert(covErr(err)); }
+      busy(false);
+    };
+    del.onclick = async () => {
+      if (!confirm('Retirer la photo de couverture ?')) return;
+      busy(true);
+      try { await saveCover(null); cover.style.backgroundImage = ''; del.hidden = true; txt.textContent = 'Ajouter une photo de couverture'; }
+      catch (err) { alert(covErr(err)); }
+      busy(false);
+    };
+  }
   const pm = $('pfMsg'); if (pm) pm.onclick = () => { close('mShopView'); openChat(firstAd); };
   $('pfShare').onclick = async () => {
     const link = location.origin + location.pathname + '?vendeur=' + uid;
