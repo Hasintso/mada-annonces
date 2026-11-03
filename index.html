@@ -1383,13 +1383,8 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
   <button class="x" data-close aria-label="Fermer">×</button>
   <h2 id="postTitle">Déposer une annonce</h2>
   <div id="postChoice">
-    <p style="color:var(--muted);margin-bottom:8px">Que voulez-vous déposer ?</p>
-    <div class="pchoices">
-      <button type="button" class="pchoice" data-pk="vente"><div>Déposer une vente<small>Produit à vendre</small></div></button>
-      <button type="button" class="pchoice" data-pk="confie"><div>Déposer un Confie<small>Tâche à confier</small></div></button>
-      <button type="button" class="pchoice" data-pk="music"><div>Déposer une chanson / Musics<small>Chanson, production, producteur</small></div></button>
-      <button type="button" class="pchoice" data-pk="creation"><div>Déposer une création<small>Vidéo, graphisme, web…</small></div></button>
-    </div>
+    <p style="color:var(--muted);margin-bottom:8px">Que voulez-vous vendre ?</p>
+    <div class="pchoices"></div>
   </div>
   <!-- Vente : 1) une seule pièce ou plusieurs ? -->
   <div id="postMode" hidden>
@@ -2050,7 +2045,10 @@ const POST_TYPES = {
 /* Catégories disponibles en base, dans l'ordre du menu (pour les listes de choix du dépôt) */
 const saleCats = () => NEED.map(([label, key]) => [label, needId(key)]).filter(x => x[1] > 0);
 const catOptions = sel => saleCats().map(([label, id]) => `<option value="${id}"${id === sel ? ' selected' : ''}>${esc(label)}</option>`).join('');
-let postKey = null;
+let postKey = null, postCatKey = null;
+const saleLbl = key => 'Vendre ' + NEED.find(n => n[1] === key)[0].toLowerCase();      /* « Vendre sakafo » */
+const saleTitle = () => postCatKey ? saleLbl(postCatKey) : 'Déposer une vente';
+const defCat = () => postCatKey ? needId(postCatKey) : (needKey ? needId(needKey) : 0);
 function placePostMenu() {
   const m = $('mPost'), b = $('btnPost'), h = document.querySelector('header');
   if (!b) return;
@@ -2061,7 +2059,7 @@ function placePostMenu() {
   m.style.setProperty('--by', (hb + 4) + 'px');
 }
 function showPostChoice() {
-  postKey = null; $('postTitle').textContent = 'Déposer une annonce';
+  postKey = null; postCatKey = null; $('postTitle').textContent = 'Déposer une annonce';
   $('postChoice').hidden = false; $('postForm').hidden = true; $('postMode').hidden = true; $('postMulti').hidden = true;
   placePostMenu(); $('mPost').classList.add('pop');
 }
@@ -2074,9 +2072,9 @@ function openPostForm(key, titre, typeIdx, mode) {
   $('postMode').hidden = true; $('postMulti').hidden = true;
   postKey = key; $('postForm').reset();
   if (key === 'vente') {            /* vente : on choisit la catégorie (Sakafo, Maison, Technologie…) */
-    $('pCat').innerHTML = catOptions(needKey ? needId(needKey) : 0); $('pCatBox').hidden = false;
+    $('pCat').innerHTML = catOptions(defCat()); $('pCatBox').hidden = false;
   } else { $('pCat').innerHTML = `<option value="${id}">${T.titre}</option>`; $('pCat').value = id; $('pCatBox').hidden = true; }
-  $('postTitle').textContent = T.titre;
+  $('postTitle').textContent = key === 'vente' ? saleTitle() : T.titre;
   $('pTypeLbl').textContent = T.typeLbl;
   $('pType').innerHTML = T.types.map(t => `<option>${t}</option>`).join('');
   if (typeIdx >= 0 && typeIdx < T.types.length) $('pType').selectedIndex = typeIdx;
@@ -2087,7 +2085,10 @@ function openPostForm(key, titre, typeIdx, mode) {
   $('postChoice').hidden = true; $('postForm').hidden = false;
   $('pTitre').focus();
 }
-document.querySelectorAll('.pchoice[data-pk]').forEach(b => b.onclick = () => openPostForm(b.dataset.pk, ''));
+/* Menu « + » : une entrée « Vendre … » par catégorie (même liste que « Ici votre besoin ») */
+$('postChoice').querySelector('.pchoices').innerHTML = NEED.map(([label, key]) =>
+  `<button type="button" class="pchoice" data-ck="${key}"><div>${esc(saleLbl(key))}</div></button>`).join('');
+document.querySelectorAll('.pchoice[data-ck]').forEach(b => b.onclick = () => { postCatKey = b.dataset.ck; openPostForm('vente', ''); });
 $('pBack').onclick = () => postKey === 'vente' ? showSaleMode(pendingPost.titre, pendingPost.typeIdx) : showPostChoice();
 function buildDesc() {
   const T = POST_TYPES[postKey], lines = [];
@@ -2145,7 +2146,7 @@ let pendingPost = { titre: '', typeIdx: -1 };
 const MAX_ITEMS = 10;
 function showSaleMode(titre, typeIdx) {
   pendingPost = { titre: titre || '', typeIdx: typeIdx == null ? -1 : typeIdx };
-  postKey = null; $('postTitle').textContent = 'Déposer une vente';
+  postKey = null; $('postTitle').textContent = saleTitle();
   $('mPost').classList.remove('pop');
   $('postChoice').hidden = true; $('postForm').hidden = true; $('postMulti').hidden = true; $('postMode').hidden = false;
 }
@@ -2180,7 +2181,7 @@ function addItem() {
   d.innerHTML = `<summary><span class="mi-n"></span><span class="mi-sum"></span></summary><div class="mi-body">
     <div class="row"><div><label>État du produit<select class="mi-etat">${POST_TYPES.vente.types.map(t => `<option>${esc(t)}</option>`).join('')}</select></label></div>
     <div><label>Prix (Ar)<input class="mi-prix" type="number" min="0" step="1"></label></div></div>
-    <label>Catégorie<select class="mi-cat">${catOptions(needKey ? needId(needKey) : 0)}</select></label>
+    <label>Catégorie<select class="mi-cat">${catOptions(defCat())}</select></label>
     <label>Titre<input class="mi-titre" maxlength="90" placeholder="${esc(POST_TYPES.vente.titrePh)}"></label>
     <label>Marque / modèle (facultatif)<input class="mi-extra" maxlength="120"></label>
     <label>Description (facultatif)<textarea class="mi-desc" rows="2"></textarea></label>
