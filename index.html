@@ -1097,16 +1097,20 @@ body.landing .hero p{max-width:62ch;margin-bottom:16px}
 @keyframes pfslide{from{transform:translateX(100%)}to{transform:translateX(0)}}
 @media(prefers-reduced-motion:reduce){#mShopView.open .box{animation:none}}
 #mShopView .x{z-index:3;color:#fff;background:rgba(0,0,0,.28);width:34px;height:34px;border-radius:50%;font-size:1.3rem;display:grid;place-items:center;right:10px;top:10px}
-.pf-cover{position:relative;height:180px;background:linear-gradient(135deg,var(--forest2),var(--forest) 62%,#c9742e) center/cover no-repeat}
-.pf-covbar{position:absolute;right:10px;bottom:10px;display:flex;gap:6px;z-index:2}
+.pf-cover{position:relative;height:240px;background:linear-gradient(135deg,var(--forest2),var(--forest) 62%,#c9742e) center/cover no-repeat}
+.pf-covbar{position:absolute;left:10px;top:10px;display:flex;gap:6px;z-index:2}
 .pf-covbtn{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.94);color:var(--ink);border:0;border-radius:999px;padding:6px 12px;font-size:.8rem;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.25);cursor:pointer}
 .pf-covbtn:hover{background:#fff}.pf-covbtn.rm{padding:6px 10px}.pf-covbtn:disabled{opacity:.6;cursor:wait}
 @media(max-width:420px){.pf-covbtn span{display:none}}
 .pf-body{padding:0 16px 16px}
-.pf-top{display:flex;gap:12px;align-items:flex-end;margin-top:-46px;flex-wrap:wrap;position:relative;z-index:1}
+.pf-top{display:flex;gap:12px;align-items:flex-end;margin-top:-106px;flex-wrap:nowrap;position:relative;z-index:1}
 .pf-top .shoplogo{width:92px;height:92px;font-size:2.2rem;border:4px solid #fff;box-shadow:0 0 0 2px var(--forest),0 4px 12px rgba(42,23,11,.25)}
 .pf-id{flex:1;min-width:150px;padding-bottom:4px}
-.pf-id h2{font-size:1.3rem;margin:0}
+.pf-cover::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(20,10,0,.62) 0%,rgba(20,10,0,0) 55%);pointer-events:none}
+.pf-id{padding-bottom:8px}.pf-id h2{font-size:1.3rem;margin:0;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.6)}
+.pf-id .meta{color:rgba(255,255,255,.92);text-shadow:0 1px 3px rgba(0,0,0,.6)}
+.pf-top .shoplogo{flex:none}
+.pf-act{margin-top:14px}
 .pf-act{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px}
 .pf-act .btn{padding:8px 14px;font-size:.9rem;text-decoration:none;display:inline-block}
 .pf-prog{background:#fff7e6;border:1px solid #f2d28a;border-radius:12px;padding:10px 12px;margin:12px 0;font-size:.88rem}
@@ -2670,14 +2674,14 @@ function shopMissing(d) {
   return m;
 }
 const shopPct = d => Math.round((6 - shopMissing(d).length) / 6 * 100);
-function shrinkImage(file, max = 400) {
+function shrinkImage(file, max = 400, q = .85) {
   return new Promise((ok, ko) => {
     const img = new Image(), u = URL.createObjectURL(file);
     img.onload = () => {
       const r = Math.min(1, max / Math.max(img.width, img.height)), c = document.createElement('canvas');
       c.width = Math.round(img.width * r); c.height = Math.round(img.height * r);
       c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(u);
-      c.toBlob(b => b ? ok(b) : ko(new Error('Photo illisible')), 'image/jpeg', .85);
+      c.toBlob(b => b ? ok(b) : ko(new Error('Photo illisible')), 'image/jpeg', q);
     };
     img.onerror = () => { URL.revokeObjectURL(u); ko(new Error('Photo illisible')); };
     img.src = u;
@@ -2833,7 +2837,7 @@ async function openShop(uid) {
     loadAds(); loadCounts(); openShop(uid);
   });
   const pe = $('pfEdit'); if (pe) pe.onclick = () => openMyShop();
-  /* --- Photo de couverture (propriétaire uniquement) : réduite à 1200 px puis enregistrée dans ann_boutiques.cover_url --- */
+  /* --- Photo de couverture (propriétaire uniquement) : réduite à 1600 px puis enregistrée dans ann_boutiques.cover_url --- */
   const pcv = $('pfCov');
   if (pcv) {
     const cover = $('pfCover'), txt = $('pfCovTxt'), del = $('pfCovDel'), file = $('pfCovFile');
@@ -2850,7 +2854,7 @@ async function openShop(uid) {
       if (!/^image\//.test(f.type)) { window.bpSay ? window.bpSay('Choisissez une image (JPG ou PNG)') : alert('Choisissez une image (JPG ou PNG).'); return; }
       busy(true); txt.textContent = 'Envoi…';
       try {
-        const blob = await shrinkImage(f, 1200), bucket = SB.storage.from('annonces'), path = `${user.id}/couverture_${Date.now()}.jpg`;
+        const blob = await shrinkImage(f, 1600, .92), bucket = SB.storage.from('annonces'), path = `${user.id}/couverture_${Date.now()}.jpg`;
         const up = await bucket.upload(path, blob, { contentType: 'image/jpeg' });
         if (up.error) throw new Error('Couverture non envoyée : ' + up.error.message);
         const url = bucket.getPublicUrl(path).data.publicUrl;
