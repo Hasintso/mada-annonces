@@ -766,6 +766,20 @@ body:not(.landing) header{border-bottom:0;border-image:none}
 .citem .cp{color:var(--forest);font-weight:700;font-size:.9rem}
 .citem .btn{padding:6px 10px;font-size:.82rem;cursor:pointer}
 .ctotal{text-align:right;font-weight:700;margin-top:10px}
+/* Panier vendeur : clients qui ont mis une de vos annonces au panier */
+#cartBuyers .cbuy-h{display:flex;align-items:center;gap:8px;margin:4px 0 8px;font-size:1rem}
+#cartBuyers .cbuy-h span{background:var(--forest);color:#fff;border-radius:99px;padding:1px 9px;font-size:.78rem}
+.cbuy{display:flex;gap:10px;align-items:center;padding:9px 10px;margin-bottom:6px;border:1px solid var(--line);border-radius:12px;background:#fff7ef}
+.cbuy.new{border-color:var(--forest);box-shadow:0 0 0 2px rgba(122,58,16,.12)}
+.cbuy .av{flex:none;display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:var(--forest);color:#fff;font-weight:700}
+.cbuy .ct{flex:1;min-width:0}
+.cbuy .ct b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cbuy .ct em{margin-left:6px;padding:1px 7px;border-radius:99px;background:var(--forest);color:#fff;font-style:normal;font-size:.7rem;font-weight:700}
+.cbuy .ct small{display:block;color:var(--muted);line-height:1.3}
+.cbuy .btn{padding:6px 12px;font-size:.82rem;cursor:pointer}
+.cbuy-sep{border:0;border-top:2px dashed var(--line);margin:12px 0 8px}
+.cnote{margin-top:10px;font-size:.8rem;color:var(--muted)}
+:root[data-th] .cbuy{background:var(--surf)}
 @media(max-width:560px){#mDet .box{padding:14px}#mDet .gal img{max-height:30vh}}
 
 /* ===== Choix de dépôt : liste verticale, texte seul ===== */
@@ -1490,6 +1504,7 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
 <div class="mask" id="mCart"><div class="box" role="dialog" aria-modal="true" aria-label="Mon panier">
   <button class="x" data-close aria-label="Fermer">×</button>
   <h2>Mon panier</h2>
+  <div id="cartBuyers"></div>
   <div id="cartList"></div>
 </div></div>
 
@@ -2008,13 +2023,29 @@ function showAd(a) {
 }
 
 /* ===== Panier : annonces mises de côté (gardées sur cet appareil) ===== */
+let cartNotifN = 0;                    /* nouveaux clients intéressés (pour le vendeur) */
+/* Panier -> vendeur : quand un client met une annonce au panier, le vendeur est prévenu (table ann_panier_notifs) */
+const cartMyName = () => { const m = (user && user.user_metadata) || {}; return m.full_name || m.name || 'Client'; };
+function cartNotify(a, on) {
+  if (!user || !sbReady || !a || !a.user_id || a.user_id === user.id) return;
+  const q = on
+    ? SB.from('ann_panier_notifs').insert({ annonce_id: String(a.id), annonce_titre: a.titre || '', annonce_photo: (a.photos || []).filter(safeUrl)[0] || '',
+        vendeur_id: a.user_id, client_id: user.id, client_nom: cartMyName() })
+    : SB.from('ann_panier_notifs').delete().eq('annonce_id', String(a.id)).eq('client_id', user.id);
+  Promise.resolve(q).catch(() => {});
+}
+function cartUnnotify(id) {
+  if (!user || !sbReady) return;
+  Promise.resolve(SB.from('ann_panier_notifs').delete().eq('annonce_id', String(id)).eq('client_id', user.id)).catch(() => {});
+}
 function cartGet() { try { return JSON.parse(localStorage.getItem('bp_panier') || '[]'); } catch (e) { return []; } }
 function cartSet(v) { try { localStorage.setItem('bp_panier', JSON.stringify(v)); } catch (e) {} cartBadge(); cartSync(); }
 function cartHas(id) { return cartGet().some(x => x.id === id); }
 function cartToggle(a) {
   const was = cartHas(a.id);
   if (was) cartSet(cartGet().filter(x => x.id !== a.id));
-  else cartSet(cartGet().concat([{ id: a.id, titre: a.titre, prix: a.prix, photo: (a.photos || []).filter(safeUrl)[0] || '' }]));
+  else cartSet(cartGet().concat([{ id: a.id, titre: a.titre, prix: a.prix, photo: (a.photos || []).filter(safeUrl)[0] || '', uid: a.user_id || '' }]));
+  cartNotify(a, !was);
   window.bpSay && window.bpSay(was ? 'Retiré du panier' : 'Ajouté au panier');
   return !was;
 }
@@ -2043,7 +2074,7 @@ function cardActions(a, i) {
     + `<button type="button" class="cb ic cartb" data-i="${i}" aria-label="Mettre dans le panier" title="Mettre dans le panier" aria-pressed="false">${IC_CART}</button>`
     + (t ? `<a class="cb order" href="${smsHref(a, true)}">Commander</a>` : `<button type="button" class="cb order nonum">Commander</button>`);
 }
-function cartBadge() { const n = cartGet().length, b = $('cartBadge'); if (b) { b.textContent = n; b.hidden = !n; } }
+function cartBadge() { const n = cartGet().length + cartNotifN, b = $('cartBadge'); if (b) { b.textContent = n; b.hidden = !n; } }
 function renderCart() {
   const c = cartGet(), box = $('cartList');
   if (!c.length) { box.innerHTML = '<p style="color:var(--muted);padding:6px 0">Votre panier est vide. Ouvrez une annonce et touchez « Ajouter au panier ».</p>'; return; }
@@ -2053,15 +2084,45 @@ function renderCart() {
       <div class="ct"><b>${esc(x.titre)}</b><span class="cp">${money(x.prix)}</span></div>
       <button type="button" class="btn plain" data-see="${esc(x.id)}">Voir</button>
       <button type="button" class="btn plain" data-rm="${esc(x.id)}">Retirer</button></div>`).join('')
-    + (total ? `<p class="ctotal">Total : ${money(total)}</p>` : '');
-  box.querySelectorAll('[data-rm]').forEach(b => b.onclick = () => { cartSet(cartGet().filter(x => String(x.id) !== b.dataset.rm)); renderCart(); });
+    + (total ? `<p class="ctotal">Total : ${money(total)}</p>` : '')
+    + (user ? '<p class="cnote">Les vendeurs de ces annonces voient votre nom dans leur panier et peuvent vous écrire.</p>' : '');
+  box.querySelectorAll('[data-rm]').forEach(b => b.onclick = () => { cartUnnotify(b.dataset.rm); cartSet(cartGet().filter(x => String(x.id) !== b.dataset.rm)); renderCart(); });
   box.querySelectorAll('[data-see]').forEach(b => b.onclick = async () => {
     const { data } = await SB.from('ann_annonces').select('*, ann_categories(nom)').eq('id', b.dataset.see).maybeSingle();
     if (data) { close('mCart'); showAd(data); }
-    else { cartSet(cartGet().filter(x => String(x.id) !== b.dataset.see)); renderCart(); window.bpSay && window.bpSay('Cette annonce n\'existe plus'); }
+    else { cartUnnotify(b.dataset.see); cartSet(cartGet().filter(x => String(x.id) !== b.dataset.see)); renderCart(); window.bpSay && window.bpSay('Cette annonce n\'existe plus'); }
   });
 }
-$('btnCart').onclick = () => { renderCart(); open('mCart'); };
+/* Vendeur : liste des clients qui ont mis vos annonces au panier */
+async function renderBuyers() {
+  const box = $('cartBuyers'); if (!box) return;
+  let rows = [];
+  if (user && sbReady) {
+    const { data, error } = await SB.from('ann_panier_notifs').select('*').eq('vendeur_id', user.id).order('cree_le', { ascending: false }).limit(100);
+    if (!error) rows = data || [];
+  }
+  if (!rows.length) { box.innerHTML = ''; return; }
+  box.innerHTML = `<h3 class="cbuy-h">Clients intéressés <span>${rows.length}</span></h3>` + rows.map((r, i) => `<div class="cbuy${r.lu ? '' : ' new'}">
+      <span class="av">${esc((r.client_nom || '?').trim().charAt(0).toUpperCase())}</span>
+      <div class="ct"><b>${esc(r.client_nom || 'Client')}${r.lu ? '' : '<em>Nouveau</em>'}</b><small>a mis « ${esc(r.annonce_titre || 'votre annonce')} » dans son panier · ${esc(ago(r.cree_le))}</small></div>
+      <button type="button" class="btn plain" data-bw="${i}">Écrire</button></div>`).join('')
+    + '<hr class="cbuy-sep"><h3 class="cbuy-h">Mon panier</h3>';
+  box.querySelectorAll('[data-bw]').forEach(b => b.onclick = () => {
+    const r = rows[+b.dataset.bw], nom = r.client_nom || 'Client';
+    close('mCart');
+    window.openChat && window.openChat({ id: r.annonce_id, user_id: r.client_id, titre: r.annonce_titre, nom,
+      prefill: 'Bonjour ' + nom + ', merci de votre intérêt pour « ' + (r.annonce_titre || 'mon annonce') + ' ». Je peux vous proposer des facilités de paiement et la livraison. Souhaitez-vous en discuter ?' });
+  });
+  const ids = rows.filter(r => !r.lu).map(r => r.id);
+  if (ids.length) { Promise.resolve(SB.from('ann_panier_notifs').update({ lu: true }).in('id', ids)).catch(() => {}); cartNotifN = 0; cartBadge(); }
+}
+async function cartNotifPoll() {
+  if (!user || !sbReady) { cartNotifN = 0; cartBadge(); return; }
+  const { count, error } = await SB.from('ann_panier_notifs').select('id', { count: 'exact', head: true }).eq('vendeur_id', user.id).eq('lu', false);
+  cartNotifN = error ? 0 : (count || 0); cartBadge();
+}
+setInterval(cartNotifPoll, 20000); setTimeout(cartNotifPoll, 3000);
+$('btnCart').onclick = () => { renderCart(); renderBuyers(); open('mCart'); };
 cartBadge();
 
 /* « Déposer une annonce » : 1) on choisit Vente / Confie / Musics / Création, 2) on voit les champs adaptés */
@@ -2696,10 +2757,13 @@ fitQHint();
     let c = S.convs.find(x => x.key === key);
     if (!c) {
       c = { key, other: a.user_id, annonce_id: String(a.id), titre: a.titre || '', nom: '', role: '', msgs: [], unread: 0 };
-      try { const { data } = await SB.from('ann_boutiques').select('nom').eq('user_id', a.user_id).maybeSingle(); c.nom = (data && data.nom) || ''; } catch (e) {}
+      if (a.nom) c.nom = a.nom;                                     /* écrire à un client depuis le panier : on connaît son nom */
+      else { try { const { data } = await SB.from('ann_boutiques').select('nom').eq('user_id', a.user_id).maybeSingle(); c.nom = (data && data.nom) || ''; } catch (e) {} }
       c.nom = c.nom || 'Annonceur';
     }
-    S.cur = c; renderThread(true); $('chatText').focus();
+    S.cur = c; renderThread(true);
+    if (a.prefill && !c.msgs.length) $('chatText').value = a.prefill;
+    $('chatText').focus();
   };
   $('chatForm').onsubmit = async e => {
     e.preventDefault();
