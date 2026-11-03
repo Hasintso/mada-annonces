@@ -1068,6 +1068,27 @@ body.landing .hero p{max-width:62ch;margin-bottom:16px}
 .mitem .mi-rm{margin-top:10px;font-size:.84rem;padding:6px 10px}
 #mAdd{width:100%;margin-top:10px;border-style:dashed;color:var(--forest2);font-weight:700}
 #mAdd:disabled{opacity:.5;cursor:not-allowed}
+/* ===== Profil vendeur : rond à côté du panier + page publique ===== */
+.pbtn{position:relative;display:inline-grid;place-items:center;width:48px;height:48px;padding:0;border-radius:50%;overflow:hidden;background:var(--forest);color:#fff;border:2px solid #fff;box-shadow:0 3px 10px rgba(42,23,11,.25);transition:transform .15s;font:700 1.15rem Georgia,serif}
+.pbtn:hover{transform:scale(1.07)}
+.pbtn[hidden]{display:none}
+.pbtn img{width:100%;height:100%;object-fit:cover;display:block}
+.pbtn svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.pbtn.todo::after{content:"";position:absolute;top:2px;right:2px;width:11px;height:11px;border-radius:50%;background:#f28c1b;border:2px solid #fff}
+@media(max-width:560px){.pbtn{width:44px;height:44px}}
+.avedit{display:flex;align-items:center;gap:14px;margin:6px 0 4px}
+.avprev{flex:none;width:84px;height:84px;border-radius:50%;background:var(--forest);color:#fff;display:grid;place-items:center;overflow:hidden;font:700 2rem Georgia,serif;border:3px solid var(--line)}
+.avprev img{width:100%;height:100%;object-fit:cover}
+.avedit .btn{padding:8px 14px;font-size:.88rem}
+.avedit small{display:block;color:var(--muted);margin-top:4px}
+.shoplogo{overflow:hidden}
+.shoplogo img{width:100%;height:100%;object-fit:cover;display:block}
+.shoplogo.big{width:84px;height:84px;font-size:2.2rem}
+.trust{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 12px}
+.trust span{display:inline-flex;align-items:center;gap:5px;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:4px 11px;font-size:.82rem;font-weight:600;color:var(--ink)}
+.sline{display:inline-flex;align-items:center;gap:8px}
+.sline i{width:28px;height:28px;border-radius:50%;overflow:hidden;background:var(--forest);color:#fff;display:inline-grid;place-items:center;font:700 .85rem Georgia,serif;font-style:normal}
+.sline i img{width:100%;height:100%;object-fit:cover}
 </style>
 <script>
 /* Applique tout de suite les réglages d'apparence enregistrés (avant l'affichage de la page) */
@@ -1129,6 +1150,7 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
    <button class="post" id="btnPost" type="button" aria-label="Déposer une annonce" title="Déposer une annonce"><span aria-hidden="true">+</span></button>
    <button class="hbtn" id="btnMsg" type="button" aria-label="Messages" title="Messages"><span class="badge" id="msgBadge" hidden>0</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H10l-5 4v-4H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/></svg></button>
    <button class="hbtn" id="btnCart" type="button" aria-label="Panier" title="Panier"><span class="badge" id="cartBadge" hidden>0</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.5l2.2 10.2a1 1 0 0 0 1 .8h8.6a1 1 0 0 0 1-.8L20 8H6.3"/><circle cx="9.5" cy="19" r="1.4"/><circle cx="16.5" cy="19" r="1.4"/></svg></button>
+   <button class="pbtn" id="btnProfile" type="button" aria-label="Mon profil" title="Mon profil" hidden></button>
   </div>
 </header>
 
@@ -1472,16 +1494,26 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
 </div></div>
 
 <!-- Boutique du vendeur : modifier (mShop) et page publique (mShopView) -->
-<div class="mask" id="mShop"><div class="box" role="dialog" aria-modal="true" aria-label="Ma boutique">
+<div class="mask" id="mShop"><div class="box" role="dialog" aria-modal="true" aria-label="Mon profil vendeur">
   <button class="x" data-close aria-label="Fermer">×</button>
-  <h2>Ma boutique</h2>
-  <p style="color:var(--muted)">Ces informations sont visibles par tous les acheteurs.</p>
+  <h2>Mon profil vendeur</h2>
+  <p style="color:var(--muted)">Un profil complet rassure les acheteurs. Ces informations sont visibles par tous.</p>
   <form id="shopForm">
-    <label for="shNom">Nom de la boutique</label><input id="shNom" maxlength="60" required placeholder="Ex. : Boutique Mialy">
+    <div class="avedit">
+      <div class="avprev" id="shAvPrev">A</div>
+      <div>
+        <button class="btn alt" type="button" id="shAvPick">Choisir une photo</button>
+        <button class="btn plain" type="button" id="shAvDel" hidden>Retirer</button>
+        <small>Photo de vous ou de votre boutique (JPG ou PNG).</small>
+        <input type="file" id="shPhoto" accept="image/*" hidden>
+      </div>
+    </div>
+    <label for="shNom">Nom ou nom de la boutique</label><input id="shNom" maxlength="60" required placeholder="Ex. : Boutique Mialy">
     <label for="shDesc">Présentation</label><textarea id="shDesc" maxlength="400" rows="4" placeholder="Que vendez-vous ? Où ? À quels horaires ?"></textarea>
     <label for="shVille">Ville</label><input id="shVille" maxlength="60" placeholder="Ex. : Antananarivo">
+    <label for="shTel">Téléphone / WhatsApp</label><input id="shTel" type="tel" maxlength="20" inputmode="tel" placeholder="Ex. : 034 00 000 00">
     <p class="msg" id="shMsg" role="status"></p>
-    <div class="act" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button class="btn cta" id="shGo" type="submit">Enregistrer ma boutique</button><button class="btn" id="shSee" type="button" hidden>Voir ma page publique</button></div>
+    <div class="act" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button class="btn cta" id="shGo" type="submit">Enregistrer mon profil</button><button class="btn" id="shSee" type="button" hidden>Voir ma page publique</button></div>
   </form>
 </div></div>
 <div class="mask" id="mShopView"><div class="box wide" role="dialog" aria-modal="true" aria-label="Boutique">
@@ -1706,6 +1738,7 @@ function renderAuthBtn() {
   $('btnLogin').hidden = !!user;   // connecté : « Se déconnecter » se trouve dans le menu (3 barres)
   $('btnSignup').hidden = !!user;
   $('mnSignup').hidden = !!user;
+  if (typeof loadMyShop === 'function') loadMyShop(); else renderProfileBtn && renderProfileBtn();
 }
 $('btnAuth').onclick = async () => {
   if (user) { await SB.auth.signOut(); leaveApp(); return; }
@@ -2002,9 +2035,9 @@ function showAd(a) {
     <div class="desc">${esc(a.description)}</div>
     <div class="act">${tel ? `<a class="btn cta" href="tel:${esc(tel)}" style="text-decoration:none">Appeler ${esc(a.telephone)}</a>` : ''}
     ${mine ? '<button class="btn alt" id="editAd">Modifier mon annonce</button><button class="btn danger" id="delAd">Supprimer mon annonce</button>' : ''}</div>`;
-  Promise.resolve(SB.from('ann_boutiques').select('nom').eq('user_id', a.user_id).maybeSingle()).then(({ data }) => {
+  Promise.resolve(SB.from('ann_boutiques').select('nom,avatar_url').eq('user_id', a.user_id).maybeSingle()).then(({ data }) => {
     const l = $('sellerLine'); if (!data || !l) return;
-    l.innerHTML = 'Vendu par <a href="#" id="seeShop" style="font-weight:700">' + esc(data.nom) + '</a>';
+    l.innerHTML = '<span class="sline"><i>' + avatarHtml(data.avatar_url, data.nom) + '</i>Vendu par <a href="#" id="seeShop" style="font-weight:700">' + esc(data.nom) + '</a></span>';
     $('seeShop').onclick = ev => { ev.preventDefault(); close('mDet'); openShop(a.user_id); };
   }).catch(() => {});
   const ac = $('addCart');
@@ -2457,12 +2490,13 @@ const roleSet = r => { try { localStorage.setItem('ah_role', r); } catch (e) {} 
 const accountRole = () => { const r = user && user.user_metadata && user.user_metadata.role; return ROLES[r] ? r : ''; };
 function renderRole() {
   const r = accountRole() || roleGet(), chip = $('roleChip');
+  if (typeof renderProfileBtn === 'function') renderProfileBtn();
   chip.hidden = !r; if (!r) return;
   const shopChip = !!user && r === 'vendeur';
   chip.dataset.role = r;
   chip.innerHTML = (shopChip ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9l2-5h14l2 5"/><path d="M4 9v11h16V9"/><path d="M9 20v-6h6v6"/></svg>' : '') + ROLES[r] + (user ? '' : ' ▾');
   chip.classList.toggle('fixed', !!user && !shopChip);
-  chip.title = shopChip ? 'Modifier ma boutique' : user ? 'Profil de votre compte' : 'Changer de profil';
+  chip.title = shopChip ? 'Modifier mon profil' : user ? 'Profil de votre compte' : 'Changer de profil';
 }
 /* Règle de sécurité : un e-mail = un seul profil. Un compte Vendeur ne peut pas servir de compte Client (et inversement).
    Si le profil choisi avant la connexion n'est pas celui du compte, on déconnecte et on demande un autre compte avec un autre e-mail. */
@@ -2544,21 +2578,89 @@ document.querySelectorAll('#roleGate .rg-card').forEach(c => {
 $('roleChip').onclick = () => { if (!user) showRoleGate(); else if (accountRole() === 'vendeur') openMyShop(); };
 /* ===== Boutique du vendeur : « Ma boutique » (modifier) + page publique (table ann_boutiques) ===== */
 const shopErr = e => /ann_boutiques|42P01|relation/.test(((e && e.code) || '') + ' ' + ((e && e.message) || '')) ? "La boutique n'est pas encore activée sur le site." : ((e && e.message) || 'Erreur');
+/* --- Photo de profil : réduite à 400 px côté navigateur avant l'envoi (rapide, même en 3G) --- */
+var shBlob = null, shAvatar = '', shRemove = false, myShop = null;
+function initial(n) { return esc(String(n || '?').trim().charAt(0).toUpperCase() || '?'); }
+function avatarHtml(url, nom) { return safeUrl(url) ? `<img src="${esc(url)}" alt="" loading="lazy">` : initial(nom); }
+function shrinkImage(file, max = 400) {
+  return new Promise((ok, ko) => {
+    const img = new Image(), u = URL.createObjectURL(file);
+    img.onload = () => {
+      const r = Math.min(1, max / Math.max(img.width, img.height)), c = document.createElement('canvas');
+      c.width = Math.round(img.width * r); c.height = Math.round(img.height * r);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(u);
+      c.toBlob(b => b ? ok(b) : ko(new Error('Photo illisible')), 'image/jpeg', .85);
+    };
+    img.onerror = () => { URL.revokeObjectURL(u); ko(new Error('Photo illisible')); };
+    img.src = u;
+  });
+}
+function shPreview() {
+  const box = $('shAvPrev'), nom = $('shNom').value;
+  if (shBlob) { box.innerHTML = '<img alt="">'; box.firstChild.src = URL.createObjectURL(shBlob); }
+  else if (shAvatar && !shRemove) box.innerHTML = avatarHtml(shAvatar, nom);
+  else box.textContent = initial(nom).replace(/&.*;/, '?');
+  $('shAvDel').hidden = !(shBlob || (shAvatar && !shRemove));
+}
+$('shAvPick').onclick = () => $('shPhoto').click();
+$('shPhoto').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  const msg = $('shMsg'); msg.className = 'msg'; msg.textContent = '';
+  if (!/^image\//.test(f.type)) { msg.textContent = 'Choisissez une image (JPG ou PNG).'; return; }
+  try { shBlob = await shrinkImage(f); shRemove = false; shPreview(); } catch (err) { msg.textContent = err.message; }
+};
+$('shAvDel').onclick = () => { shBlob = null; shRemove = true; shPreview(); };
+$('shNom').addEventListener('input', () => { if (!shBlob && !(shAvatar && !shRemove)) shPreview(); });
+
+/* --- Rond de profil dans l'en-tête (à côté du panier) --- */
+async function loadMyShop() {
+  if (!user || !sbReady) { myShop = null; renderProfileBtn(); return; }
+  const { data } = await SB.from('ann_boutiques').select('*').eq('user_id', user.id).maybeSingle();
+  myShop = data || null; renderProfileBtn();
+}
+function renderProfileBtn() {
+  const b = $('btnProfile'); if (!b) return;
+  const show = !!user && accountRole() === 'vendeur';
+  b.hidden = !show; if (!show) return;
+  const nom = (myShop && myShop.nom) || (user.user_metadata || {}).full_name || (user.user_metadata || {}).name || '';
+  const complete = !!(myShop && myShop.nom && safeUrl(myShop.avatar_url));
+  b.classList.toggle('todo', !complete);
+  b.title = complete ? 'Mon profil' : 'Complétez votre profil';
+  b.innerHTML = safeUrl(myShop && myShop.avatar_url) ? `<img src="${esc(myShop.avatar_url)}" alt="Mon profil">`
+    : nom ? initial(nom) : '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>';
+}
+$('btnProfile').onclick = () => { if (user) openMyShop(); };
+
 async function openMyShop() {
   const msg = $('shMsg'); msg.className = 'msg'; msg.textContent = '';
   const { data, error } = await SB.from('ann_boutiques').select('*').eq('user_id', user.id).maybeSingle();
   if (error) msg.textContent = shopErr(error);
-  $('shNom').value = (data && data.nom) || ''; $('shDesc').value = (data && data.description) || '';
-  $('shVille').value = (data && data.ville) || (user.user_metadata || {}).region || '';
-  $('shSee').hidden = !data; open('mShop');
+  const m = user.user_metadata || {};
+  shBlob = null; shRemove = false; shAvatar = (data && data.avatar_url) || '';
+  $('shNom').value = (data && data.nom) || m.full_name || m.name || ''; $('shDesc').value = (data && data.description) || '';
+  $('shVille').value = (data && data.ville) || m.region || '';
+  $('shTel').value = (data && data.telephone) || m.phone || m.telephone || '';
+  shPreview(); $('shSee').hidden = !data; open('mShop');
 }
 $('shopForm').onsubmit = async e => {
   e.preventDefault(); const msg = $('shMsg'), go = $('shGo'); msg.className = 'msg'; msg.textContent = ''; go.disabled = true;
-  const { error } = await SB.from('ann_boutiques').upsert({ user_id: user.id, nom: $('shNom').value.trim(), description: $('shDesc').value.trim(),
-    ville: $('shVille').value.trim(), maj_le: new Date().toISOString() }, { onConflict: 'user_id' });
+  try {
+    let url = shRemove ? '' : shAvatar;
+    if (shBlob) {
+      const bucket = SB.storage.from('annonces'), path = `${user.id}/profil_${Date.now()}.jpg`;
+      const up = await bucket.upload(path, shBlob, { contentType: 'image/jpeg' });
+      if (up.error) throw new Error('Photo non envoyée : ' + up.error.message);
+      url = bucket.getPublicUrl(path).data.publicUrl;
+    }
+    const { error } = await SB.from('ann_boutiques').upsert({ user_id: user.id, nom: $('shNom').value.trim(), description: $('shDesc').value.trim(),
+      ville: $('shVille').value.trim(), telephone: $('shTel').value.trim(), avatar_url: url || null, maj_le: new Date().toISOString() }, { onConflict: 'user_id' });
+    if (error) throw error;
+    shAvatar = url; shBlob = null; shRemove = false; shPreview();
+    msg.className = 'msg ok'; msg.textContent = 'Profil enregistré ✓'; $('shSee').hidden = false; loadMyShop();
+  } catch (err) {
+    msg.textContent = /avatar_url|telephone|column/i.test((err && err.message) || '') ? "Le profil n'est pas encore activé : exécutez profil-vendeur.sql dans Supabase." : shopErr(err);
+  }
   go.disabled = false;
-  if (error) { msg.textContent = shopErr(error); return; }
-  msg.className = 'msg ok'; msg.textContent = 'Boutique enregistrée ✓'; $('shSee').hidden = false;
 };
 $('shSee').onclick = () => { close('mShop'); openShop(user.id); };
 async function openShop(uid) {
@@ -2567,9 +2669,14 @@ async function openShop(uid) {
     SB.from('ann_boutiques').select('*').eq('user_id', uid).maybeSingle(),
     SB.from('ann_annonces').select('*, ann_categories(nom)').eq('user_id', uid).eq('statut', 'valide').order('cree_le', { ascending: false }).limit(50)]);
   const shop = s.data || {}, list = a.data || [], nom = shop.nom || 'Vendeur';
-  $('shopView').innerHTML = `<div class="shophead"><div class="shoplogo">${esc(nom.trim().charAt(0).toUpperCase())}</div>
+  const tel = String(shop.telephone || '').replace(/[^\d+]/g, '');
+  const since = shop.cree_le ? new Date(shop.cree_le).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }) : '';
+  const badges = [safeUrl(shop.avatar_url) ? '📷 Photo vérifiée' : '', tel ? '📞 Téléphone renseigné' : '', shop.description ? '📝 Présentation complète' : '', since ? '🗓️ Membre depuis ' + since : ''].filter(Boolean);
+  $('shopView').innerHTML = `<div class="shophead"><div class="shoplogo big">${avatarHtml(shop.avatar_url, nom)}</div>
     <div><h2 style="margin:0">${esc(nom)}</h2><div class="meta">${esc(shop.ville || 'Madagascar')} · ${list.length} annonce${list.length > 1 ? 's' : ''}</div></div></div>`
+    + (badges.length ? '<div class="trust">' + badges.map(x => `<span>${esc(x)}</span>`).join('') + '</div>' : '')
     + (shop.description ? `<p class="desc">${esc(shop.description)}</p>` : '')
+    + (tel ? `<p><a class="btn cta" href="tel:${esc(tel)}" style="text-decoration:none;display:inline-block">Appeler ${esc(shop.telephone)}</a></p>` : '')
     + '<div class="shopads">' + (list.length ? list.map((x, i) => { const p0 = cssUrl(x.photos && x.photos[0]);
       return `<div class="shopad" data-i="${i}" role="button" tabindex="0"><div class="th" ${p0 ? `style="background-image:url('${p0}')"` : ''}>${p0 ? '' : 'Pas de photo'}</div>
         <div><div class="price">${money(x.prix)}</div><div>${esc(x.titre)}</div></div></div>`; }).join('')
