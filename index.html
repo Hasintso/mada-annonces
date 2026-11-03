@@ -923,7 +923,7 @@ body.rolepick{overflow:hidden}
 /* Boutons « Select photo » / « Select video » côte à côte */
 .filepick{position:relative;display:flex;gap:10px;margin:8px 0 2px}
 .fhide{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
-.fbtn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;margin:0;padding:12px 8px;border:1.5px dashed var(--forest);border-radius:12px;background:#fff7ef;color:var(--forest);font-weight:700;text-align:center;cursor:pointer;transition:transform .15s,box-shadow .15s,background .15s}
+.fbtn{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;margin:0;padding:12px 8px;border:1.5px dashed var(--forest);border-radius:12px;background:#fff7ef;color:var(--forest);font-weight:700;text-align:center;cursor:pointer;transition:transform .15s,box-shadow .15s,background .15s}
 .fbtn small{font-weight:400;font-size:.78rem;color:var(--muted)}
 .fbtn:hover{background:#fff;transform:translateY(-1px);box-shadow:0 4px 12px rgba(122,58,16,.16)}
 .fhide:focus-visible+.fbtn{outline:2px solid var(--forest);outline-offset:2px}
@@ -1564,8 +1564,10 @@ const cssUrl = u => safeUrl(u).replace(/['"()\s]/g, c => '%' + c.charCodeAt(0).t
 const open = id => $(id).classList.add('open');
 const close = id => $(id).classList.remove('open');
 document.querySelectorAll('[data-close]').forEach(b => b.onclick = () => { const m = b.closest('.mask'); if (m.id === 'mAuth' && authView === 'complete') { cancelProfile(); return; } m.classList.remove('open'); });
-document.querySelectorAll('.mask').forEach(m => m.addEventListener('mousedown', e => { if (e.target === m && !(m.id === 'mAuth' && authView === 'complete')) m.classList.remove('open'); }));
-document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.mask.open').forEach(m => { if (!(m.id === 'mAuth' && authView === 'complete')) m.classList.remove('open'); }); });
+/* Fenêtres qui ne se ferment pas en cliquant à côté ni avec Échap : profil à compléter, et formulaires de dépôt (menu « + » exclu) */
+const stayOpen = m => (m.id === 'mAuth' && authView === 'complete') || (m.id === 'mPost' && !m.classList.contains('pop'));
+document.querySelectorAll('.mask').forEach(m => m.addEventListener('mousedown', e => { if (e.target === m && !stayOpen(m)) m.classList.remove('open'); }));
+document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.mask.open').forEach(m => { if (!stayOpen(m)) m.classList.remove('open'); }); });
 
 /* Page d'accueil : affichée seule à chaque nouvelle visite (une fois par session).
    Pour l'afficher UNE SEULE FOIS pour toujours, remplacez sessionStorage par localStorage (3 endroits). */
@@ -2220,13 +2222,18 @@ function addItem() {
     <label>Titre<input class="mi-titre" maxlength="90"></label>
     <label>Marque / modèle (facultatif)<input class="mi-extra" maxlength="120"></label>
     <label>Description (facultatif)<textarea class="mi-desc" rows="2"></textarea></label>
-    <label>Photos (4 maximum)<input class="mi-photos" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple></label>
+    <div class="filepick"><label class="fbtn">📷 Select photo<small class="mi-pn">4 maximum</small><input class="mi-photos fhide" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple></label></div>
     <button type="button" class="btn plain mi-rm">Retirer cette pièce</button></div>`;
   d.querySelector('.mi-rm').onclick = () => { d.remove(); refreshItems(); };
   box.appendChild(d); refreshItems(); typePlaceholder(d.querySelector('.mi-titre'), TITRE_EX);
   if (box.children.length > 1) { d.scrollIntoView({ block: 'nearest' }); d.querySelector('.mi-titre').focus(); }
 }
 $('mAdd').onclick = addItem;
+$('mItems').addEventListener('change', e => {           /* « Select photo » : nombre de photos choisies */
+  const inp = e.target.closest('.mi-photos'); if (!inp) return;
+  const c = inp.files.length, out = inp.parentElement.querySelector('.mi-pn');
+  out.textContent = c ? Math.min(c, 4) + ' photo' + (c > 1 ? 's' : '') + ' choisie' + (c > 1 ? 's' : '') + (c > 4 ? ' (4 max)' : '') : '4 maximum';
+});
 $('mItems').addEventListener('input', refreshItems);
 
 $('postMulti').onsubmit = async e => {
