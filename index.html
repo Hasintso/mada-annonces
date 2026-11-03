@@ -1820,7 +1820,7 @@ async function loadCats() {
   loadCounts();
 }
 
-/* Menu « Ici votre besoin » : sous « Toutes catégories », 9 catégories reliées à la base par leur nom (table ann_categories).
+/* Menu « Ici votre besoin » : sous « Toutes catégories », 8 catégories reliées à la base par leur nom (table ann_categories).
    Pour ajouter une catégorie : l'ajouter ici ET dans ann_categories (SQL). */
 const PETIT_PRIX = 100000; // « Petit prix » = annonces jusqu'à ce montant (en Ar) : modifiez ici si besoin
 const NEED = [
@@ -1831,8 +1831,7 @@ const NEED = [
   ['Chaussure', 'chaussure', []],
   ['Auto-moto', 'auto', []],
   ['Technologie', 'technologie', []],
-  ['Book', 'book', []],
-  ['Création', 'creation', []]
+  ['Book & Création', 'creation', []]
 ];
 const qCatVal = key => needId(key) > 0 ? needId(key) : 'k:' + key;
 const needId = key => { const c = cats.find(x => norm(x.nom).includes(key)); return c ? c.id : -1; };
