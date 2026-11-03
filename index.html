@@ -1410,7 +1410,7 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
     <label for="pTitre">Titre</label><input id="pTitre" maxlength="90" required>
     <div id="pCatBox" hidden><label for="pCat">Catégorie</label><select id="pCat" required></select></div>
     <label for="pExtra" id="pExtraLbl">Détail</label><input id="pExtra" maxlength="120">
-    <div class="row"><div><label for="pPrix" id="pPrixLbl">Prix (Ar)</label><input id="pPrix" type="number" min="0" step="1"></div><div><label for="pVille">Ville</label><input id="pVille" placeholder="Antananarivo"></div></div>
+    <div class="row"><div><label for="pPrix" id="pPrixLbl">Prix (Ar)</label><input id="pPrix" type="text" inputmode="numeric" autocomplete="off" placeholder="Ex. : 12.000"></div><div><label for="pVille">Ville</label><input id="pVille" placeholder="Antananarivo"></div></div>
     <label for="pTel">Téléphone</label><div class="phonebox"><span>🇲🇬 +261</span><input id="pTel" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="34 12 345 67" required></div><p class="phint" id="pTelHint">9 chiffres, commençant par 32, 33, 34, 36, 37 ou 38</p>
     <label for="pDesc">Description</label><textarea id="pDesc" rows="3"></textarea>
     <div class="filepick">
@@ -1444,7 +1444,7 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
   <h2>Modifier mon annonce</h2>
   <form id="editForm">
     <label for="eTitre">Titre</label><input id="eTitre" maxlength="90" required>
-    <div class="row"><div><label for="ePrix">Prix (Ar)</label><input id="ePrix" type="number" min="0" step="1"></div><div><label for="eVille">Ville</label><input id="eVille"></div></div>
+    <div class="row"><div><label for="ePrix">Prix (Ar)</label><input id="ePrix" type="text" inputmode="numeric" autocomplete="off" placeholder="Ex. : 12.000"></div><div><label for="eVille">Ville</label><input id="eVille"></div></div>
     <label for="eTel">Téléphone</label><div class="phonebox"><span>🇲🇬 +261</span><input id="eTel" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="34 12 345 67" required></div><p class="phint" id="eTelHint">9 chiffres, commençant par 32, 33, 34, 36, 37 ou 38</p>
     <label for="eDesc">Description</label><textarea id="eDesc" rows="6"></textarea>
     <label id="ePLbl">Photos</label><div class="mgrid" id="ePGrid"></div>
@@ -1553,7 +1553,22 @@ let maxPrix = null, needKey = null;
 let user = null, cats = [], cat = null, q = '', signup = false, ads = [], reqId = 0, sort = 'recent';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const money = n => n == null || n === '' ? 'Prix à débattre' : new Intl.NumberFormat('fr-FR').format(n) + ' Ar';
+/* Prix en Ariary : points de milliers (12000 → 12.000) */
+const prixDots = n => String(Math.round(Number(n) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+const prixNum = v => { const d = String(v ?? '').replace(/\D/g, ''); return d === '' ? null : Number(d); };   /* « 12.000 » → 12000 (null si vide) */
+const money = n => n == null || n === '' ? 'Prix à débattre' : prixDots(n) + ' Ar';
+/* mise en forme pendant la saisie, curseur conservé (champs #pPrix, #ePrix et .mi-prix) */
+document.addEventListener('input', e => {
+  const inp = e.target; if (!inp.matches || !inp.matches('#pPrix, #ePrix, .mi-prix')) return;
+  const raw = inp.value, caret = inp.selectionStart == null ? raw.length : inp.selectionStart;
+  const d = raw.replace(/\D/g, '').replace(/^0+(?=\d)/, '').slice(0, 9);           /* 9 chiffres max (999.999.999 Ar) */
+  let n = Math.min(raw.slice(0, caret).replace(/\D/g, '').length, d.length), pos = 0;
+  const f = d.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  if (f === raw) return;
+  inp.value = f;
+  while (pos < f.length && n > 0) { if (f[pos] !== '.') n--; pos++; }
+  if (document.activeElement === inp) inp.setSelectionRange(pos, pos);
+});
 const ago = d => { const m = Math.max(Math.round((Date.now() - new Date(d)) / 60000), 1);
   if (m < 60) return 'il y a ' + m + ' min'; if (m < 1440) return 'il y a ' + Math.round(m/60) + ' h';
   return 'il y a ' + Math.round(m/1440) + ' j'; };
@@ -2164,7 +2179,7 @@ $('postForm').onsubmit = async e => {
     const { error } = await SB.from('ann_annonces').insert({
       ...(vurls.length ? { videos: vurls } : {}),
       category_id: +$('pCat').value, titre: $('pTitre').value.trim(), description: buildDesc(),
-      prix: $('pPrix').value === '' ? null : +$('pPrix').value, ville: $('pVille').value.trim(),
+      prix: prixNum($('pPrix').value), ville: $('pVille').value.trim(),
       telephone: telNum, photos: urls
     });
     if (error) throw new Error('Publication impossible : ' + error.message);
@@ -2204,7 +2219,7 @@ function refreshItems() {
   items.forEach((d, i) => {
     d.querySelector('.mi-n').textContent = 'Pièce ' + (i + 1);
     const t = d.querySelector('.mi-titre').value.trim(), p = d.querySelector('.mi-prix').value;
-    d.querySelector('.mi-sum').textContent = [t, p !== '' ? Number(p).toLocaleString('fr-FR') + ' Ar' : ''].filter(Boolean).join(' · ');
+    d.querySelector('.mi-sum').textContent = [t, prixNum(p) !== null ? prixDots(prixNum(p)) + ' Ar' : ''].filter(Boolean).join(' · ');
     d.querySelector('.mi-rm').hidden = n < 2;
   });
   $('mAdd').disabled = n >= MAX_ITEMS;
@@ -2217,7 +2232,7 @@ function addItem() {
   const d = document.createElement('details'); d.className = 'mitem'; d.open = true;
   d.innerHTML = `<summary><span class="mi-n"></span><span class="mi-sum"></span></summary><div class="mi-body">
     <div class="row"><div><label>État du produit<select class="mi-etat">${POST_TYPES.vente.types.map(t => `<option>${esc(t)}</option>`).join('')}</select></label></div>
-    <div><label>Prix (Ar)<input class="mi-prix" type="number" min="0" step="1"></label></div></div>
+    <div><label>Prix (Ar)<input class="mi-prix" type="text" inputmode="numeric" autocomplete="off" placeholder="Ex. : 12.000"></label></div></div>
     <label>Catégorie<select class="mi-cat">${catOptions(defCat())}</select></label>
     <label>Titre<input class="mi-titre" maxlength="90"></label>
     <label>Marque / modèle (facultatif)<input class="mi-extra" maxlength="120"></label>
@@ -2269,7 +2284,7 @@ $('postMulti').onsubmit = async e => {
       }
       const lines = ['État du produit : ' + it.etat]; if (it.extra) lines.push('Marque / modèle : ' + it.extra);
       rows.push({ category_id: it.cat, titre: it.titre, description: lines.join('\n') + (it.desc ? '\n\n' + it.desc : ''),
-        prix: it.prix === '' ? null : +it.prix, ville: $('mVille').value.trim(), telephone: telNum, photos: urls });
+        prix: prixNum(it.prix), ville: $('mVille').value.trim(), telephone: telNum, photos: urls });
     }
     const { error } = await SB.from('ann_annonces').insert(rows);          /* un seul envoi : tout est publié, ou rien */
     if (error) throw new Error('Publication impossible : ' + error.message);
@@ -2775,7 +2790,7 @@ async function checkVideos(files) {
     if (!a || !user || user.id !== a.user_id) return;
     close('mDet'); freeUrls();
     Object.assign(E, { a, photos: (a.photos || []).filter(safeUrl), videos: (a.videos || []).filter(safeUrl), np: [], nv: [], removed: [] });
-    $('eTitre').value = a.titre || ''; $('ePrix').value = a.prix == null ? '' : a.prix; $('eVille').value = a.ville || '';
+    $('eTitre').value = a.titre || ''; $('ePrix').value = a.prix == null ? '' : prixDots(a.prix); $('eVille').value = a.ville || '';
     $('eTel').value = a.telephone || ''; $('eTel').dispatchEvent(new Event('input')); $('eDesc').value = a.description || '';
     $('eMsg').className = 'msg'; $('eMsg').textContent = ''; $('eGo').disabled = false;
     render(); open('mEdit');
@@ -2801,7 +2816,7 @@ async function checkVideos(files) {
         const { error } = await bucket.upload(path, o.file, { contentType: o.file.type }); if (error) throw new Error('Vidéo non envoyée : ' + error.message);
         sent.push(path); newV.push(bucket.getPublicUrl(path).data.publicUrl);
       }
-      const payload = { titre, description: $('eDesc').value.trim(), prix: $('ePrix').value === '' ? null : +$('ePrix').value,
+      const payload = { titre, description: $('eDesc').value.trim(), prix: prixNum($('ePrix').value),
         ville: $('eVille').value.trim(), telephone: telNum, photos: E.photos.concat(newP) };
       if (Array.isArray(a.videos) || E.videos.length || newV.length) payload.videos = E.videos.concat(newV);
       const { data, error } = await SB.from('ann_annonces').update(payload).eq('id', a.id).eq('user_id', user.id).select('id');
