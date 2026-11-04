@@ -1051,6 +1051,15 @@ body:not(.landing) footer .flegal a:hover{color:var(--forest)}
 .hl-card h3{flex:1 1 auto;min-width:0;margin:0;font:600 .8rem/1.2 "Segoe UI",Roboto,Arial,sans-serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hl-card h3::before,.hl-card .mt::before{content:"·";margin-right:6px;color:var(--muted);font-weight:700}
 .hl-card .mt{flex:0 1 auto;min-width:0;max-width:34%;overflow:hidden;text-overflow:ellipsis;font-size:.72rem;color:var(--muted)}
+/* Cartes « Dernières annonces » : plus de fond blanc, pastille en verre sombre sur le paysage */
+.hl-card{background:transparent;box-shadow:none;overflow:visible;border-radius:14px}
+.hl-card .ph{border-radius:14px;box-shadow:0 8px 22px rgba(0,0,0,.35)}
+.hl-card .b{margin:8px 0 0;background:rgba(25,12,4,.55);border:1px solid rgba(255,255,255,.22);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 4px 12px rgba(0,0,0,.25)}
+.hl-card:hover .b,.hl-card:focus-visible .b{background:rgba(25,12,4,.72);border-color:var(--saffron)}
+.hl-card .pr{color:var(--saffron);text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.hl-card h3{color:#fff}
+.hl-card .mt{color:rgba(255,255,255,.8)}
+.hl-card h3::before,.hl-card .mt::before{color:rgba(255,255,255,.6)}
 /* Texte lisible sur la photo : panneau en verre sombre */
 #welcome .manga3d .m3-why{background:rgba(25,12,4,.55);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-radius:20px;padding:28px 24px;margin-top:44px}
 .safety{margin:44px 0 0;color:#fff;background:rgba(25,12,4,.55);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-radius:20px;padding:26px 24px}
