@@ -758,6 +758,43 @@ body:not(.landing) header{border-bottom:0;border-image:none}
 .chat-form{display:flex;gap:8px;align-items:flex-end;padding-top:10px;border-top:1px solid var(--line)}
 .chat-form textarea{flex:1;resize:none;border:1.5px solid var(--line);border-radius:14px;padding:10px 12px;font:inherit;min-height:44px;max-height:110px}
 .chat-form .btn{cursor:pointer;padding:11px 16px}
+/* ===== Messagerie v2 : petite fenêtre en bas, style « Google Messages » ===== */
+#mMsg{align-items:flex-end;justify-content:center;padding:0;background:rgba(20,36,31,.35)}
+#mMsg .box{margin:0;width:100%;max-width:430px;height:min(560px,78dvh);padding:14px 14px 12px;border-radius:22px 22px 0 0;box-shadow:0 -8px 30px rgba(40,15,0,.28);animation:msgup .25s ease}
+@keyframes msgup{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+@media(prefers-reduced-motion:reduce){#mMsg .box{animation:none}}
+@media(min-width:640px){#mMsg{justify-content:flex-end;padding:0 18px 18px}#mMsg .box{border-radius:22px;max-width:400px;height:min(540px,76dvh)}}
+#mMsg h2{font-size:1.15rem;margin:0 34px 8px 0}
+#mMsg .x{top:8px;right:10px;width:32px;height:32px;border-radius:50%;background:var(--paper);display:grid;place-items:center;font-size:1.3rem}
+#chatTools{display:none;flex:none;margin-bottom:6px}
+.chat-search{display:flex;align-items:center;gap:8px;background:#f4ece0;border-radius:999px;padding:0 14px}
+.chat-search svg{width:16px;height:16px;flex:none;fill:none;stroke:var(--muted);stroke-width:2;stroke-linecap:round}
+.chat-search input{flex:1;min-width:0;border:0;background:transparent;font:inherit;font-size:.92rem;padding:10px 0;outline:0}
+.chat-chips{display:flex;gap:6px;margin:8px 0 2px;overflow-x:auto;scrollbar-width:none}
+.chat-chips::-webkit-scrollbar{display:none}
+.chat-chips button{flex:none;border:1.5px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;padding:5px 12px;font:600 .8rem/1.2 inherit;cursor:pointer}
+.chat-chips button.on{background:var(--forest);border-color:var(--forest);color:#fff}
+.cv{gap:11px;padding:10px 6px;border-radius:12px;border-bottom:0;align-items:flex-start}
+.cv+.cv{margin-top:1px}
+.cv .av{width:44px;height:44px;font-size:1.05rem;text-shadow:0 1px 2px rgba(0,0,0,.2)}
+.cv .tx{display:flex;flex-direction:column;gap:2px}
+.cv .r1,.cv .r2{display:flex;align-items:center;gap:8px;min-width:0}
+.cv .r1 b{flex:1;min-width:0;display:block;font-weight:600;font-size:.97rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cv .r1 time{flex:none;font-size:.74rem;color:var(--muted)}
+.cv .r2 .pv{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.88rem;color:var(--muted)}
+.cv .tg{align-self:flex-start;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.72rem;color:var(--forest);background:#f4ece0;border-radius:6px;padding:1px 7px;margin-top:2px}
+.cv.unread{background:#fff7e6}
+.cv.unread .r1 b{font-weight:800}
+.cv.unread .r1 time{color:#b45f06;font-weight:700}
+.cv.unread .r2 .pv{color:var(--ink);font-weight:700}
+.cv .un{min-width:20px;height:20px;line-height:20px;font-size:.72rem}
+.chat-top .who{display:flex;align-items:center;gap:10px}
+.chat-top .who>div{min-width:0}
+.chat-top .av.sm{width:36px;height:36px;border-radius:50%;color:#fff;display:grid;place-items:center;font-weight:800;flex:none}
+.bub{border-radius:18px}
+.bub.me{border-bottom-right-radius:5px}.bub.you{border-bottom-left-radius:5px}
+.chat-form textarea{border-radius:22px}
+.chat-form .btn{border-radius:22px}
 #mCart .box{margin:auto;max-width:min(460px,100%);max-height:calc(100dvh - 32px);overflow-y:auto}
 .citem{display:flex;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
 .citem img{width:54px;height:54px;border-radius:8px;object-fit:cover;flex:none}
@@ -1583,6 +1620,10 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
 <div class="mask" id="mMsg"><div class="box" role="dialog" aria-modal="true" aria-label="Messages">
   <button class="x" data-close aria-label="Fermer">×</button>
   <h2 id="chatTitle">Messages</h2>
+  <div id="chatTools">
+    <label class="chat-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="chatSearch" type="search" placeholder="Rechercher une conversation" aria-label="Rechercher une conversation" autocomplete="off"></label>
+    <div class="chat-chips" id="chatChips" role="tablist" aria-label="Filtrer les messages"></div>
+  </div>
   <div id="chatList"></div>
   <div id="chatThread">
     <div class="chat-top"><button type="button" class="btn alt" id="chatBack" style="padding:6px 12px">← Retour</button><div class="who" id="chatWho"></div></div>
@@ -2976,7 +3017,9 @@ fitQHint();
 /* ===== Messagerie : client <-> vendeur (table ann_messages) ===== */
 (function () {
   const TB = 'ann_messages';
-  const S = { convs: [], cur: null, tick: 0, busy: false };
+  const S = { convs: [], cur: null, tick: 0, busy: false, f: 'all', q: '' };
+  const AVC = ['#0f7a4f','#2f7fe0','#a2501a','#8e44ad','#c0392b','#00838f','#6d4c41','#ad1457'];
+  const avc = n => { let h = 0; for (const ch of String(n || '?')) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return AVC[h % AVC.length]; };
   const say = m => window.bpSay && window.bpSay(m);
   const me = () => user && user.id;
   const myName = () => { const m = (user && user.user_metadata) || {}; return m.full_name || m.name || 'Utilisateur'; };
@@ -3010,23 +3053,43 @@ fitQHint();
     $('chatList').style.display = v === 'list' ? '' : 'none';
     $('chatThread').style.display = v === 'thread' ? 'flex' : 'none';
     $('chatTitle').hidden = v === 'thread';
+    $('chatTools').style.display = v === 'list' ? 'block' : 'none';
+  }
+  function renderChips() {
+    const nU = S.convs.filter(c => c.unread).length, nV = S.convs.filter(c => c.role === 'vendeur').length, nC = S.convs.filter(c => c.role === 'client').length;
+    const defs = [['all', 'Tous'], ['unread', 'Non lus' + (nU ? ' (' + nU + ')' : '')]];
+    const nT = S.convs.filter(c => c.role === 'travailleur').length;
+    if (nV) defs.push(['vendeur', 'Vendeurs']); if (nC) defs.push(['client', 'Clients']); if (nT) defs.push(['travailleur', 'Travailleurs']);
+    $('chatChips').innerHTML = defs.map(d => `<button type="button" role="tab" data-f="${d[0]}" class="${S.f === d[0] ? 'on' : ''}" aria-selected="${S.f === d[0]}">${esc(d[1])}</button>`).join('');
+    $('chatChips').querySelectorAll('button').forEach(b => b.onclick = () => { S.f = b.dataset.f; renderList(); });
   }
   function renderList() {
-    showView('list');
-    const box = $('chatList');
+    showView('list'); renderChips();
+    const box = $('chatList'), top = box.scrollTop;
     if (!S.convs.length) { box.innerHTML = '<div class="chat-empty">Aucun message pour le moment.<br>Ouvrez une annonce et touchez « Message » pour écrire à son auteur.</div>'; return; }
-    box.innerHTML = S.convs.map((c, i) => {
+    const q = S.q.trim().toLowerCase();
+    const items = S.convs.map((c, i) => ({ c, i })).filter(({ c }) => {
+      if (S.f === 'unread' && !c.unread) return false;
+      if (['vendeur', 'client', 'travailleur'].includes(S.f) && c.role !== S.f) return false;
+      if (!q) return true;
+      const l = c.msgs[c.msgs.length - 1];
+      return ((c.nom || '') + ' ' + (c.titre || '') + ' ' + (l ? l.texte : '')).toLowerCase().includes(q);
+    });
+    if (!items.length) { box.innerHTML = '<div class="chat-empty">' + (S.f === 'unread' && !q ? 'Aucun message non lu 🎉' : 'Aucune conversation trouvée.') + '</div>'; return; }
+    box.innerHTML = items.map(({ c, i }) => {
       const l = c.msgs[c.msgs.length - 1], mine = l.de_id === me();
-      return `<button type="button" class="cv" data-i="${i}"><span class="av">${esc((c.nom || '?').trim().charAt(0).toUpperCase())}</span>
-        <span class="tx"><b>${esc(c.nom)}${roleTag(c.role)}</b><small>${esc(c.titre || 'Annonce')}</small><small>${mine ? 'Vous : ' : ''}${esc(l.texte)}</small></span>
-        ${c.unread ? `<span class="un">${c.unread}</span>` : `<small style="color:var(--muted);flex:none">${esc(ago(l.cree_le))}</small>`}</button>`;
+      return `<button type="button" class="cv${c.unread ? ' unread' : ''}" data-i="${i}"><span class="av" style="background:${avc(c.nom)}">${esc((c.nom || '?').trim().charAt(0).toUpperCase())}</span>
+        <span class="tx"><span class="r1"><b>${esc(c.nom)}${roleTag(c.role)}</b><time>${esc(ago(l.cree_le))}</time></span>
+        <span class="r2"><span class="pv">${mine ? 'Vous : ' : ''}${esc(l.texte)}</span>${c.unread ? `<span class="un">${c.unread}</span>` : ''}</span>
+        ${c.titre ? `<span class="tg">📦 ${esc(c.titre)}</span>` : ''}</span></button>`;
     }).join('');
     box.querySelectorAll('.cv').forEach(b => b.onclick = () => { S.cur = S.convs[+b.dataset.i]; renderThread(true); });
+    box.scrollTop = top;
   }
   function renderThread(scroll) {
     const c = S.cur; if (!c) return;
     showView('thread'); $('chatErr').textContent = '';
-    $('chatWho').innerHTML = `<b>${esc(c.nom || 'Annonceur')}${roleTag(c.role)}</b><small>${esc(c.titre || 'Annonce')}</small>`;
+    $('chatWho').innerHTML = `<span class="av sm" style="background:${avc(c.nom)}">${esc((c.nom || '?').trim().charAt(0).toUpperCase())}</span><div><b>${esc(c.nom || 'Annonceur')}${roleTag(c.role)}</b><small>${esc(c.titre || 'Annonce')}</small></div>`;
     const box = $('chatMsgs'), atEnd = scroll || box.scrollHeight - box.scrollTop - box.clientHeight < 60;
     box.innerHTML = c.msgs.length ? c.msgs.map(m => `<div class="bub ${m.de_id === me() ? 'me' : 'you'}">${esc(m.texte)}<small>${esc(ago(m.cree_le))}</small></div>`).join('')
       : '<div class="chat-empty">Écrivez votre premier message ci-dessous.</div>';
@@ -3044,10 +3107,11 @@ fitQHint();
   /* Ouvrir la boîte de messages (bouton de l'en-tête) */
   $('btnMsg').onclick = async () => {
     if (!user) { say('Connectez-vous pour voir vos messages.'); return; }
-    S.cur = null; $('chatList').innerHTML = '<div class="chat-empty">Chargement…</div>'; showView('list'); open('mMsg');
+    S.cur = null; S.f = 'all'; S.q = ''; $('chatSearch').value = ''; $('chatList').innerHTML = '<div class="chat-empty">Chargement…</div>'; showView('list'); open('mMsg');
     if (await refresh()) renderList();
   };
   $('chatBack').onclick = () => { S.cur = null; renderList(); };
+  $('chatSearch').addEventListener('input', e => { S.q = e.target.value; if (S.convs.length) renderList(); });
   /* Écrire à l'auteur d'une annonce (client -> vendeur, ou vendeur -> client) */
   window.openChat = async function (a) {
     if (!a) return;
