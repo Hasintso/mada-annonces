@@ -758,12 +758,15 @@ body:not(.landing) header{border-bottom:0;border-image:none}
 .chat-form{display:flex;gap:8px;align-items:flex-end;padding-top:10px;border-top:1px solid var(--line)}
 .chat-form textarea{flex:1;resize:none;border:1.5px solid var(--line);border-radius:14px;padding:10px 12px;font:inherit;min-height:44px;max-height:110px}
 .chat-form .btn{cursor:pointer;padding:11px 16px}
-/* ===== Messagerie v2 : petite fenêtre en bas, style « Google Messages » ===== */
-#mMsg{align-items:flex-end;justify-content:center;padding:0;background:rgba(20,36,31,.35)}
-#mMsg .box{margin:0;width:100%;max-width:430px;height:min(560px,78dvh);padding:14px 14px 12px;border-radius:22px 22px 0 0;box-shadow:0 -8px 30px rgba(40,15,0,.28);animation:msgup .25s ease}
-@keyframes msgup{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+/* ===== Messagerie v2 : s'ouvre juste sous le bouton de message, comme le menu « + » ===== */
+#mMsg{background:transparent;padding:0}
+#mMsg .box{position:fixed;left:var(--mx,12px);top:var(--my,84px);width:var(--mw,380px);max-width:none;margin:0;
+  height:min(540px,calc(100dvh - var(--my,84px) - 12px));padding:14px 14px 12px;border-radius:18px;overflow:visible;
+  border:1px solid var(--line);box-shadow:0 14px 38px rgba(42,23,11,.35);animation:msgdrop .18s ease}
+#mMsg .box::before{content:"";position:absolute;top:-8px;left:var(--ax,calc(100% - 40px));width:14px;height:14px;background:#fff;
+  border-left:1px solid var(--line);border-top:1px solid var(--line);transform:translateX(-50%) rotate(45deg);border-top-left-radius:3px}
+@keyframes msgdrop{from{transform:translateY(-8px);opacity:0}to{transform:none;opacity:1}}
 @media(prefers-reduced-motion:reduce){#mMsg .box{animation:none}}
-@media(min-width:640px){#mMsg{justify-content:flex-end;padding:0 18px 18px}#mMsg .box{border-radius:22px;max-width:400px;height:min(540px,76dvh)}}
 #mMsg h2{font-size:1.15rem;margin:0 34px 8px 0}
 #mMsg .x{top:8px;right:10px;width:32px;height:32px;border-radius:50%;background:var(--paper);display:grid;place-items:center;font-size:1.3rem}
 #chatTools{display:none;flex:none;margin-bottom:6px}
@@ -792,6 +795,7 @@ body:not(.landing) header{border-bottom:0;border-image:none}
 .chat-top .who>div{min-width:0}
 .chat-top .av.sm{width:36px;height:36px;border-radius:50%;color:#fff;display:grid;place-items:center;font-weight:800;flex:none}
 .bub{border-radius:18px}
+.dsep{align-self:center;background:#f1e8dc;color:var(--muted);font-size:.72rem;font-weight:700;border-radius:999px;padding:3px 12px;margin:8px 0 2px}
 .bub.me{border-bottom-right-radius:5px}.bub.you{border-bottom-left-radius:5px}
 .chat-form textarea{border-radius:22px}
 .chat-form .btn{border-radius:22px}
@@ -3019,6 +3023,30 @@ fitQHint();
   const TB = 'ann_messages';
   const S = { convs: [], cur: null, tick: 0, busy: false, f: 'all', q: '' };
   const AVC = ['#0f7a4f','#2f7fe0','#a2501a','#8e44ad','#c0392b','#00838f','#6d4c41','#ad1457'];
+  const sameDay = (a, b) => a.toDateString() === b.toDateString();
+  const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
+  const hhmm = iso => new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  const dayLbl = iso => {                       /* séparateur de date dans la conversation */
+    const d = new Date(iso), n = new Date(), y = new Date(); y.setDate(n.getDate() - 1);
+    if (sameDay(d, n)) return "Aujourd'hui"; if (sameDay(d, y)) return 'Hier';
+    const o = { weekday: 'long', day: 'numeric', month: 'long' }; if (d.getFullYear() !== n.getFullYear()) o.year = 'numeric';
+    return cap(d.toLocaleDateString('fr-FR', o));
+  };
+  const listTime = iso => {                     /* heure ou date courte dans la liste */
+    const d = new Date(iso), n = new Date(), y = new Date(); y.setDate(n.getDate() - 1);
+    if (sameDay(d, n)) return hhmm(iso); if (sameDay(d, y)) return 'Hier';
+    if (n - d < 6 * 864e5) return d.toLocaleDateString('fr-FR', { weekday: 'short' });
+    return d.toLocaleDateString('fr-FR', d.getFullYear() === n.getFullYear() ? { day: 'numeric', month: 'short' } : { day: 'numeric', month: 'short', year: 'numeric' });
+  };
+  function placeMsg() {                         /* sous le bouton de message, aligné à l'écran */
+    const m = $('mMsg'), b = $('btnMsg'), h = document.querySelector('header');
+    if (!b) return;
+    const r = b.getBoundingClientRect(), cw = document.documentElement.clientWidth, w = Math.min(380, cw - 24);
+    const hb = h ? h.getBoundingClientRect().bottom : 76, left = Math.max(12, Math.min(r.left + r.width / 2 - w + 40, cw - w - 12));
+    m.style.setProperty('--mw', w + 'px'); m.style.setProperty('--mx', left + 'px'); m.style.setProperty('--my', (hb + 6) + 'px');
+    m.style.setProperty('--ax', Math.max(22, Math.min(r.left + r.width / 2 - left, w - 22)) + 'px');
+  }
+  window.addEventListener('resize', () => { if (isOpen()) placeMsg(); });
   const avc = n => { let h = 0; for (const ch of String(n || '?')) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return AVC[h % AVC.length]; };
   const say = m => window.bpSay && window.bpSay(m);
   const me = () => user && user.id;
@@ -3079,7 +3107,7 @@ fitQHint();
     box.innerHTML = items.map(({ c, i }) => {
       const l = c.msgs[c.msgs.length - 1], mine = l.de_id === me();
       return `<button type="button" class="cv${c.unread ? ' unread' : ''}" data-i="${i}"><span class="av" style="background:${avc(c.nom)}">${esc((c.nom || '?').trim().charAt(0).toUpperCase())}</span>
-        <span class="tx"><span class="r1"><b>${esc(c.nom)}${roleTag(c.role)}</b><time>${esc(ago(l.cree_le))}</time></span>
+        <span class="tx"><span class="r1"><b>${esc(c.nom)}${roleTag(c.role)}</b><time>${esc(listTime(l.cree_le))}</time></span>
         <span class="r2"><span class="pv">${mine ? 'Vous : ' : ''}${esc(l.texte)}</span>${c.unread ? `<span class="un">${c.unread}</span>` : ''}</span>
         ${c.titre ? `<span class="tg">📦 ${esc(c.titre)}</span>` : ''}</span></button>`;
     }).join('');
@@ -3091,7 +3119,11 @@ fitQHint();
     showView('thread'); $('chatErr').textContent = '';
     $('chatWho').innerHTML = `<span class="av sm" style="background:${avc(c.nom)}">${esc((c.nom || '?').trim().charAt(0).toUpperCase())}</span><div><b>${esc(c.nom || 'Annonceur')}${roleTag(c.role)}</b><small>${esc(c.titre || 'Annonce')}</small></div>`;
     const box = $('chatMsgs'), atEnd = scroll || box.scrollHeight - box.scrollTop - box.clientHeight < 60;
-    box.innerHTML = c.msgs.length ? c.msgs.map(m => `<div class="bub ${m.de_id === me() ? 'me' : 'you'}">${esc(m.texte)}<small>${esc(ago(m.cree_le))}</small></div>`).join('')
+    let lastDay = '';
+    box.innerHTML = c.msgs.length ? c.msgs.map(m => {
+      const dk = new Date(m.cree_le).toDateString(), sep = dk !== lastDay ? `<div class="dsep">${esc(dayLbl(m.cree_le))}</div>` : ''; lastDay = dk;
+      return sep + `<div class="bub ${m.de_id === me() ? 'me' : 'you'}">${esc(m.texte)}<small>${esc(hhmm(m.cree_le))}</small></div>`;
+    }).join('')
       : '<div class="chat-empty">Écrivez votre premier message ci-dessous.</div>';
     if (atEnd) box.scrollTop = box.scrollHeight;
     const ids = c.msgs.filter(m => m.a_id === me() && !m.lu).map(m => m.id);
@@ -3107,7 +3139,7 @@ fitQHint();
   /* Ouvrir la boîte de messages (bouton de l'en-tête) */
   $('btnMsg').onclick = async () => {
     if (!user) { say('Connectez-vous pour voir vos messages.'); return; }
-    S.cur = null; S.f = 'all'; S.q = ''; $('chatSearch').value = ''; $('chatList').innerHTML = '<div class="chat-empty">Chargement…</div>'; showView('list'); open('mMsg');
+    S.cur = null; S.f = 'all'; S.q = ''; $('chatSearch').value = ''; $('chatList').innerHTML = '<div class="chat-empty">Chargement…</div>'; showView('list'); placeMsg(); open('mMsg');
     if (await refresh()) renderList();
   };
   $('chatBack').onclick = () => { S.cur = null; renderList(); };
@@ -3118,7 +3150,7 @@ fitQHint();
     if (!user) { say('Connectez-vous pour envoyer un message.'); return; }
     if (!a.user_id) { say('Cet annonceur ne peut pas être contacté.'); return; }
     if (a.user_id === user.id) { say("C'est votre annonce."); return; }
-    close('mDet'); S.cur = null; showView('thread'); $('chatMsgs').innerHTML = '<div class="chat-empty">Chargement…</div>'; $('chatWho').textContent = ''; open('mMsg');
+    close('mDet'); S.cur = null; showView('thread'); $('chatMsgs').innerHTML = '<div class="chat-empty">Chargement…</div>'; $('chatWho').textContent = ''; placeMsg(); open('mMsg');
     const ok = await refresh();
     if (!ok) { showView('list'); return; }
     const key = a.user_id + '|' + String(a.id);
