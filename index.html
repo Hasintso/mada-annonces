@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ALL-Hasintsoa – Petites annonces à Madagascar</title>
+<title>Bustoplay – Petites annonces à Madagascar</title>
 <meta name="description" content="Déposez et consultez des petites annonces à Madagascar : auto, immobilier, emploi, formation et plus.">
 <meta name="theme-color" content="#a2501a">
-<meta property="og:title" content="ALL-Hasintsoa – Petites annonces à Madagascar">
+<meta property="og:title" content="Bustoplay – Petites annonces à Madagascar">
 <meta property="og:description" content="Achetez, vendez et trouvez près de chez vous, partout à Madagascar. Déposer une annonce est gratuit.">
 <meta property="og:type" content="website">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23a2501a'/%3E%3Ctext x='32' y='45' font-size='36' font-family='Georgia,serif' font-weight='700' text-anchor='middle' fill='%23f2b705'%3EA%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23a2501a'/%3E%3Ctext x='32' y='45' font-size='36' font-family='Georgia,serif' font-weight='700' text-anchor='middle' fill='%23f2b705'%3EB%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Bangers&family=Nunito:wght@600;800&family=Poppins:wght@400;600;700&family=Lora:wght@400;600;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
@@ -1197,7 +1197,7 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
 <!-- Choix du profil (affiché en premier à chaque nouveau visiteur) -->
 <div id="roleGate" hidden role="dialog" aria-modal="true" aria-labelledby="rgTitle">
   <div class="rg-in">
-    <p class="rg-brand">ALL-Hasintsoa</p>
+    <p class="rg-brand">Bustoplay</p>
     <h1 id="rgTitle">Qui êtes-vous ?</h1>
     <p class="rg-sub">Choisissez comment vous voulez utiliser le site. Un compte correspond à un seul profil.</p>
     <div class="rg-cards" id="rgCards" role="radiogroup" aria-label="Choisissez votre profil">
@@ -1349,7 +1349,7 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
       </div>
 
       <div class="m3-why m3-thick">
-        <h2 class="m3-ext">Pourquoi choisir ALL-Hasintsoa ?</h2>
+        <h2 class="m3-ext">Pourquoi choisir Bustoplay ?</h2>
         <div class="m3-perks">
           <div class="m3-perkwrap"><div class="m3-perk" data-tilt><b>1</b><div><h3>100 % gratuit</h3><p>Déposer une annonce ne coûte rien.</p></div></div></div>
           <div class="m3-perkwrap"><div class="m3-perk" data-tilt><b>2</b><div><h3>Contact direct</h3><p>Les acheteurs vous appellent, sans intermédiaire.</p></div></div></div>
@@ -2924,7 +2924,7 @@ async function openShop(uid) {
   const pm = $('pfMsg'); if (pm) pm.onclick = () => { close('mShopView'); openChat(firstAd); };
   $('pfShare').onclick = async () => {
     const link = location.origin + location.pathname + '?vendeur=' + uid;
-    try { if (navigator.share) { await navigator.share({ title: nom, text: nom + ' sur ALL-Hasintsoa', url: link }); return; } } catch (e) { return; }
+    try { if (navigator.share) { await navigator.share({ title: nom, text: nom + ' sur Bustoplay', url: link }); return; } } catch (e) { return; }
     try { await navigator.clipboard.writeText(link); window.bpSay && window.bpSay('Lien du profil copié'); } catch (e) { prompt('Copiez ce lien :', link); }
   };
 }   /* un visiteur peut changer ; un compte garde son profil */
