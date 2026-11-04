@@ -162,6 +162,16 @@ footer button.flink:hover{color:var(--forest);text-decoration:underline}
 .p-emploi{background-image:url(cat-emploi.webp)}
 .p-sakafo{background-image:url(cat-sakafo.webp)}
 .p-formation{background-image:url(cat-formation.webp)}
+/* Catégories : style moderne — plus de cadre blanc ni de fond marron, photo pleine carte + étiquette en verre sombre */
+.tile{position:relative;border:0;background:transparent;border-radius:18px;box-shadow:0 10px 24px rgba(0,0,0,.28);isolation:isolate}
+.tile .pic{height:170px;border-radius:18px;transition:transform .35s ease}
+.tile:hover .pic,.tile:focus-visible .pic{transform:scale(1.06)}
+.tile::after{content:"";position:absolute;inset:0;border-radius:18px;background:linear-gradient(to top,rgba(20,10,3,.78) 0%,rgba(20,10,3,.15) 52%,transparent 100%);pointer-events:none}
+.tile .lab{position:absolute;left:8px;right:8px;bottom:8px;z-index:1;flex:none;padding:7px 10px;border-radius:999px;background:rgba(25,12,4,.5);border:1px solid rgba(255,255,255,.2);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);font-size:.92rem;text-shadow:0 1px 2px rgba(0,0,0,.4);transition:background .2s,border-color .2s}
+.tile .ic{width:30px;height:30px;background:rgba(255,255,255,.18)}
+.tile:hover .lab,.tile:focus-visible .lab{background:rgba(25,12,4,.7);border-color:var(--saffron)}
+.tile:focus-visible{outline:2px solid var(--saffron);outline-offset:3px}
+@media(max-width:560px){.tile .pic{height:140px}.tile .lab{font-size:.85rem}}
 #welcome h2{font-size:1.4rem;margin:38px 0 18px}
 
 @media(max-width:760px){
