@@ -1045,10 +1045,12 @@ body:not(.landing) footer .flegal a:hover{color:var(--forest)}
 .hl-card:hover{transform:translateY(-3px)}
 .hl-card{display:block;width:100%}
 .hl-card .ph{width:100%;aspect-ratio:auto;height:130px;background:#eadfce center/cover no-repeat;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.8rem}
-.hl-card .b{padding:10px 12px 12px}
-.hl-card .pr{font-weight:800;color:var(--forest)}
-.hl-card h3{font:600 .95rem/1.25 "Segoe UI",Roboto,Arial,sans-serif;margin:3px 0 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.hl-card .mt{font-size:.78rem;color:var(--muted)}
+.hl-card .b{display:flex;align-items:center;gap:6px;margin:7px;padding:6px 11px;border-radius:999px;background:#fbf3e6;border:1px solid #ecd9bd;white-space:nowrap;overflow:hidden;transition:background .15s,border-color .15s}
+.hl-card:hover .b,.hl-card:focus-visible .b{background:#f6e3c1;border-color:var(--forest)}
+.hl-card .pr{flex:none;max-width:46%;overflow:hidden;text-overflow:ellipsis;font-size:.8rem;font-weight:800;color:var(--forest)}
+.hl-card h3{flex:1 1 auto;min-width:0;margin:0;font:600 .8rem/1.2 "Segoe UI",Roboto,Arial,sans-serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hl-card h3::before,.hl-card .mt::before{content:"·";margin-right:6px;color:var(--muted);font-weight:700}
+.hl-card .mt{flex:0 1 auto;min-width:0;max-width:34%;overflow:hidden;text-overflow:ellipsis;font-size:.72rem;color:var(--muted)}
 /* Texte lisible sur la photo : panneau en verre sombre */
 #welcome .manga3d .m3-why{background:rgba(25,12,4,.55);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-radius:20px;padding:28px 24px;margin-top:44px}
 .safety{margin:44px 0 0;color:#fff;background:rgba(25,12,4,.55);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-radius:20px;padding:26px 24px}
