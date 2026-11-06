@@ -1227,11 +1227,38 @@ body.landing .hero p{max-width:62ch;margin-bottom:16px}
 .tg-n{font-size:.8rem;color:var(--muted);margin-right:auto}
 .tg-box button{border:0;border-radius:10px;padding:9px 14px;font-weight:700;font-size:.92rem;cursor:pointer}
 .tg-skip{background:transparent;color:var(--muted)}.tg-prev{background:var(--line);color:var(--ink)}.tg-next{background:var(--forest);color:#fff}
+
+/* ===== Apparence moderne ===== */
+.pref{border-top:0;margin-top:4px;background:var(--paper);border-radius:14px;padding:2px}
+.dd .pref-t{border-radius:12px;font-weight:700}
+.pref-b{padding:2px 10px 12px}
+.pref h4{margin:16px 0 8px;font-size:.7rem;letter-spacing:.08em}
+.dd .seg{display:flex;gap:4px;background:rgba(0,0,0,.07);border-radius:12px;padding:4px}
+.dd .seg button{flex:1;text-align:center;padding:9px 4px;border-radius:9px;font-size:.92rem;font-weight:700;color:var(--muted);background:transparent;border:0;margin:0;width:auto;transition:all .2s}
+.dd .seg button.on{background:var(--card,#fff);color:var(--forest);box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.fgrid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.dd .fgrid2 .pf{display:flex;flex-direction:column;align-items:center;gap:2px;margin:0;padding:10px 6px;border:2px solid transparent;border-radius:14px;background:var(--card,#fff);box-shadow:0 1px 4px rgba(0,0,0,.1);text-align:center;transition:transform .15s,border-color .2s}
+.dd .fgrid2 .pf:hover{transform:translateY(-2px)}
+.dd .fgrid2 .pf b{font-size:1.5rem;line-height:1.1;color:var(--ink)}
+.dd .fgrid2 .pf small{font-size:.72rem;color:var(--muted);font-family:inherit}
+.dd .fgrid2 .pf.on{border-color:var(--forest)}
+.dd .fgrid2 .pf.on b{color:var(--forest)}
+.swr{display:flex;flex-wrap:wrap;gap:10px}
+.dd .sw,.dd .ac{width:34px;height:34px;border-radius:50%;padding:0;flex:none;border:2px solid rgba(0,0,0,.12);position:relative;transition:transform .15s}
+.dd .sw:hover,.dd .ac:hover{transform:scale(1.12)}
+.dd .sw.on,.dd .ac.on{border-color:var(--card,#fff);box-shadow:0 0 0 3px var(--forest)}
+.dd .sw.on::after,.dd .ac.on::after{content:"✓";position:absolute;inset:0;display:grid;place-items:center;font-size:.85rem;font-weight:900;color:#fff;text-shadow:0 0 3px #000}
+.dd .sw[data-th=""].on::after,.dd .sw[data-th="blanc"].on::after,.dd .sw[data-th="ciel"].on::after,.dd .sw[data-th="menthe"].on::after,.dd .sw[data-th="rose"].on::after{color:var(--forest);text-shadow:none}
+.dd .preset{border:0;background:rgba(0,0,0,.07);border-radius:12px;font-weight:700;margin-top:16px}
+:root[data-ac="vert"]{--forest:#1f8a4c;--forest2:#176b3a}
+:root[data-ac="bleu"]{--forest:#1f6fd1;--forest2:#1856a3}
+:root[data-ac="violet"]{--forest:#7b3fc4;--forest2:#5f2f9a}
+:root[data-ac="rouge"]{--forest:#c8332b;--forest2:#9f2620}
 </style>
 <script>
 /* Applique tout de suite les réglages d'apparence enregistrés (avant l'affichage de la page) */
 try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = document.documentElement;
-  if (t.th) h.dataset.th = t.th; if (t.ff) h.dataset.ff = t.ff; if (t.fs) h.dataset.fs = t.fs; if (t.bg) h.style.setProperty('--paper', t.bg); } catch (e) {}
+  if (t.th) h.dataset.th = t.th; if (t.ff) h.dataset.ff = t.ff; if (t.fs) h.dataset.fs = t.fs; if (t.ac) h.dataset.ac = t.ac; if (t.bg) h.style.setProperty('--paper', t.bg); } catch (e) {}
 </script>
 </head>
 <body class="landing">
@@ -1701,17 +1728,32 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
       <div class="pref" id="prefBox">
         <button type="button" class="pref-t" id="prefToggle" aria-expanded="false"><span>⚙️ Apparence</span><i aria-hidden="true">▾</i></button>
         <div class="pref-b">
+          <h4>Mode</h4>
+          <div class="seg" id="modeSeg">
+            <button type="button" class="md" data-md="">☀️ Clair</button>
+            <button type="button" class="md" data-md="sombre">🌙 Sombre</button>
+          </div>
           <h4>Style d'écriture</h4>
-          <button type="button" class="pf" data-ff="" style="font-family:'Segoe UI',Arial,sans-serif">Par défaut</button>
-          <button type="button" class="pf" data-ff="moderne" style="font-family:Poppins,sans-serif">Moderne</button>
-          <button type="button" class="pf" data-ff="elegant" style="font-family:Lora,serif">Élégant</button>
-          <button type="button" class="pf" data-ff="rond" style="font-family:Quicksand,sans-serif">Arrondi</button>
-          <button type="button" class="pf" data-ff="classique" style="font-family:Georgia,serif">Classique</button>
+          <div class="fgrid2">
+            <button type="button" class="pf" data-ff="" style="font-family:'Segoe UI',Arial,sans-serif"><b>Aa</b><small>Par défaut</small></button>
+            <button type="button" class="pf" data-ff="moderne" style="font-family:Poppins,sans-serif"><b>Aa</b><small>Moderne</small></button>
+            <button type="button" class="pf" data-ff="elegant" style="font-family:Lora,serif"><b>Aa</b><small>Élégant</small></button>
+            <button type="button" class="pf" data-ff="rond" style="font-family:Quicksand,sans-serif"><b>Aa</b><small>Arrondi</small></button>
+            <button type="button" class="pf" data-ff="classique" style="font-family:Georgia,serif"><b>Aa</b><small>Classique</small></button>
+          </div>
           <h4>Taille du texte</h4>
-          <div class="pzr">
-            <button type="button" class="pz" data-fs="" style="font-size:.9rem">A</button>
-            <button type="button" class="pz" data-fs="grand" style="font-size:1.1rem">A</button>
-            <button type="button" class="pz" data-fs="tres" style="font-size:1.35rem">A</button>
+          <div class="seg">
+            <button type="button" class="pz" data-fs="" style="font-size:.85rem">A</button>
+            <button type="button" class="pz" data-fs="grand" style="font-size:1.05rem">A</button>
+            <button type="button" class="pz" data-fs="tres" style="font-size:1.3rem">A</button>
+          </div>
+          <h4>Couleur principale</h4>
+          <div class="swr">
+            <button type="button" class="ac" data-ac="" style="background:#a2501a" aria-label="Brun"></button>
+            <button type="button" class="ac" data-ac="vert" style="background:#1f8a4c" aria-label="Vert"></button>
+            <button type="button" class="ac" data-ac="bleu" style="background:#1f6fd1" aria-label="Bleu"></button>
+            <button type="button" class="ac" data-ac="violet" style="background:#7b3fc4" aria-label="Violet"></button>
+            <button type="button" class="ac" data-ac="rouge" style="background:#c8332b" aria-label="Rouge"></button>
           </div>
           <h4>Couleur de fond</h4>
           <div class="swr">
@@ -1723,7 +1765,7 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
             <button type="button" class="sw" data-th="sombre" style="background:#140f0b" aria-label="Sombre"></button>
           </div>
           <label class="pcol">Couleur libre <input type="color" id="prefColor" value="#faf5ee"></label>
-          <button type="button" class="preset" id="prefReset">Tout remettre par défaut</button>
+          <button type="button" class="preset" id="prefReset">↺ Tout remettre par défaut</button>
         </div>
       </div>
       <button id="mnSecurity" hidden>🔒 Sécurité (mot de passe)</button>
@@ -2602,10 +2644,12 @@ let look = {};
 try { look = JSON.parse(localStorage.getItem(APP_KEY) || '{}') || {}; } catch (e) {}
 function applyLook() {
   const h = document.documentElement;
-  ['th', 'ff', 'fs'].forEach(k => look[k] ? h.dataset[k] = look[k] : delete h.dataset[k]);
+  ['th', 'ff', 'fs', 'ac'].forEach(k => look[k] ? h.dataset[k] = look[k] : delete h.dataset[k]);
   if (look.bg) h.style.setProperty('--paper', look.bg); else h.style.removeProperty('--paper');
   document.querySelectorAll('.pf').forEach(b => b.classList.toggle('on', (b.dataset.ff || '') === (look.ff || '')));
   document.querySelectorAll('.pz').forEach(b => b.classList.toggle('on', (b.dataset.fs || '') === (look.fs || '')));
+  document.querySelectorAll('.ac').forEach(b => b.classList.toggle('on', (b.dataset.ac || '') === (look.ac || '')));
+  document.querySelectorAll('.md').forEach(b => b.classList.toggle('on', (b.dataset.md || '') === (look.th === 'sombre' ? 'sombre' : '')));
   document.querySelectorAll('.sw').forEach(b => b.classList.toggle('on', !look.bg && (b.dataset.th || '') === (look.th || '')));
   const cs = getComputedStyle(h).getPropertyValue('--paper').trim();
   if (/^#[0-9a-f]{6}$/i.test(cs)) $('prefColor').value = cs;
@@ -2615,6 +2659,8 @@ $('prefToggle').onclick = () => { const b = $('prefBox'); const o = b.classList.
 document.querySelectorAll('.pf').forEach(b => b.onclick = () => { look.ff = b.dataset.ff; applyLook(); });
 document.querySelectorAll('.pz').forEach(b => b.onclick = () => { look.fs = b.dataset.fs; applyLook(); });
 document.querySelectorAll('.sw').forEach(b => b.onclick = () => { look.th = b.dataset.th; delete look.bg; applyLook(); });
+document.querySelectorAll('.ac').forEach(b => b.onclick = () => { look.ac = b.dataset.ac; applyLook(); });
+document.querySelectorAll('.md').forEach(b => b.onclick = () => { look.th = b.dataset.md; delete look.bg; applyLook(); });
 $('prefColor').oninput = e => { look.bg = e.target.value; document.querySelectorAll('.sw').forEach(x => x.classList.remove('on')); document.documentElement.style.setProperty('--paper', look.bg); try { localStorage.setItem(APP_KEY, JSON.stringify(look)); } catch (e2) {} };
 $('prefReset').onclick = () => { look = {}; applyLook(); };
 applyLook();
