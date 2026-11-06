@@ -1207,6 +1207,26 @@ body.landing .hero p{max-width:62ch;margin-bottom:16px}
 .sav img{width:100%;height:100%;object-fit:cover;display:block}
 .sav svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 @media(max-width:560px){.sav{width:34px;height:34px;top:8px;right:9px;font-size:.9rem}.ad .b.hasav .price,.ad .b.hasav h3{padding-right:42px}}
+
+/* ===== Menu en rubriques + guide pas à pas ===== */
+.dd .mgt{margin:12px 8px 2px;font-size:.72rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.dd .mgt[hidden]{display:none}
+.dd a{display:block;padding:12px 14px;border-radius:8px;font-weight:600;color:var(--ink);text-decoration:none;font-size:1rem}
+.dd a:hover{background:#fbeedd}
+:root[data-th] .dd a:hover{background:var(--paper)}
+.dd .mnout{color:var(--red);border-top:1px solid var(--line);margin-top:6px;border-radius:0 0 8px 8px}
+.dd .mver{margin:10px 8px 0;font-size:.75rem;color:var(--muted);text-align:center}
+.tg-shield{position:fixed;inset:0;z-index:1200;background:transparent}
+.tg-hole{position:fixed;z-index:1201;border-radius:14px;pointer-events:none;box-shadow:0 0 0 9999px rgba(20,10,0,.66);transition:all .3s ease}
+.tg-hole::after{content:"";position:absolute;inset:-5px;border-radius:18px;border:3px solid var(--saffron);animation:tgp 1.3s ease-out infinite}
+@keyframes tgp{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.18)}}
+.tg-box{position:fixed;z-index:1202;width:min(330px,92vw);background:var(--card,#fff);color:var(--ink);border-radius:16px;padding:16px 16px 14px;box-shadow:0 14px 40px rgba(0,0,0,.4);transition:top .3s ease,left .3s ease}
+.tg-box h3{margin:0 0 6px;font-size:1.05rem;color:var(--forest)}
+.tg-box p{margin:0 0 12px;font-size:.93rem;line-height:1.45}
+.tg-bar{display:flex;align-items:center;gap:8px}
+.tg-n{font-size:.8rem;color:var(--muted);margin-right:auto}
+.tg-box button{border:0;border-radius:10px;padding:9px 14px;font-weight:700;font-size:.92rem;cursor:pointer}
+.tg-skip{background:transparent;color:var(--muted)}.tg-prev{background:var(--line);color:var(--ink)}.tg-next{background:var(--forest);color:#fff}
 </style>
 <script>
 /* Applique tout de suite les réglages d'apparence enregistrés (avant l'affichage de la page) */
@@ -1668,11 +1688,16 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
 <div class="ovl" id="menuOv" hidden></div>
 <div class="dd" id="menuList" role="navigation" aria-label="Menu principal" hidden>
   <div class="ddhead"><span class="ddlogo">Accueil</span><button type="button" id="menuClose" class="ddx" aria-label="Fermer le menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
-      <button id="mnHome">Accueil</button>
-      <button id="mnAds">Annonces</button>
-      <button id="btnHelp">Comment ça marche ?</button>
-      <button id="mnSignup">S'inscrire</button>
-      <button id="btnAuth">Se connecter</button>
+      <div class="mgt">Navigation</div>
+      <button id="mnHome">🏠 Accueil</button>
+      <button id="mnAds">📋 Annonces</button>
+      <div class="mgt" id="mgAcc" hidden>Mon compte</div>
+      <button id="mnProfile" hidden>👤 Mon profil</button>
+      <button id="mnEdit" hidden>✏️ Modifier mon profil</button>
+      <button id="mnPost" hidden>➕ Vendre un produit</button>
+      <button id="mnMsg" hidden>💬 Messages</button>
+      <button id="mnCart" hidden>🛒 Mon panier</button>
+      <div class="mgt">Paramètres</div>
       <div class="pref" id="prefBox">
         <button type="button" class="pref-t" id="prefToggle" aria-expanded="false"><span>⚙️ Apparence</span><i aria-hidden="true">▾</i></button>
         <div class="pref-b">
@@ -1701,6 +1726,16 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
           <button type="button" class="preset" id="prefReset">Tout remettre par défaut</button>
         </div>
       </div>
+      <button id="mnSecurity" hidden>🔒 Sécurité (mot de passe)</button>
+      <div class="mgt">Aide</div>
+      <button id="btnHelp">❓ Comment ça marche ?</button>
+      <button id="mnSupport">📞 Contacter le support</button>
+      <a href="conditions.html" target="_blank" rel="noopener">📄 Conditions d’utilisation</a>
+      <a href="confidentialite.html" target="_blank" rel="noopener">🛡️ Politique de confidentialité</a>
+      <div class="mgt">Compte</div>
+      <button id="mnSignup">S'inscrire</button>
+      <button id="btnAuth" class="mnout">Se connecter</button>
+      <div class="mver">Bustoplay · version 1.0</div>
 </div>
 <script>
 const SB_URL = 'https://ujxctcwkppmhamgkpvmg.supabase.co', SB_KEY = 'sb_publishable_5TMigzGHfUs0RY9Jf-DTWA_K3YoBMh_';
@@ -3317,6 +3352,102 @@ async function checkVideos(files) {
     freeUrls(); go.disabled = false; close('mEdit'); loadAds(); loadCounts();
     window.bpSay && window.bpSay('Annonce modifiée');
   };
+})();
+
+/* ===== Menu complet : rubriques selon le profil ===== */
+function menuSync() {
+  const li = !!user, v = li && accountRole() === 'vendeur';
+  ['mgAcc', 'mnPost', 'mnMsg', 'mnCart', 'mnSecurity'].forEach(i => $(i).hidden = !li);
+  ['mnProfile', 'mnEdit'].forEach(i => $(i).hidden = !v);
+}
+$('btnMenu').addEventListener('click', menuSync);
+$('mnProfile').onclick = () => $('btnProfile').click();
+$('mnEdit').onclick = () => { if (typeof openMyShop === 'function') openMyShop(); };
+$('mnPost').onclick = () => $('btnPost').click();
+$('mnMsg').onclick = () => $('btnMsg').click();
+$('mnCart').onclick = () => $('btnCart').click();
+$('mnSupport').onclick = () => window.open('https://wa.me/261386949366', '_blank', 'noopener');
+$('mnSecurity').onclick = async () => {
+  if (!user || !user.email) return;
+  if (!confirm('Envoyer un e-mail pour changer votre mot de passe à ' + user.email + ' ?')) return;
+  const { error } = await SB.auth.resetPasswordForEmail(user.email, { redirectTo: location.origin + location.pathname });
+  window.bpSay && window.bpSay(error ? 'Envoi impossible, réessayez' : 'E-mail envoyé : vérifiez votre boîte');
+};
+
+/* ===== Guide pas à pas « Comment ça marche ? » (vendeur) ===== */
+const GUIDE_VENDEUR = [
+  { sel: '#btnProfile', t: '1. Complétez d’abord votre profil', d: 'C’est obligatoire avant de publier. Ce petit rond est votre profil : photo, nom, téléphone, e-mail et ville.' },
+  { sel: '#btnProfile', t: '2. Cliquez sur Profil', d: 'Ouvrez votre profil, puis appuyez sur « Modifier le profil », remplissez tout et enregistrez. Le badge « Profil complet » rassure vos clients.' },
+  { sel: '#btnPost', t: '3. Cliquez sur le « + » pour vendre', d: 'Un petit menu s’ouvre : choisissez « Vendre sakafo », « Vendre maison »… selon la catégorie de votre produit.' },
+  { sel: '#btnPost', t: '4. Remplissez votre annonce', d: 'Titre, prix en Ar (les points s’ajoutent tout seuls), photos ou vidéos, ville et numéro +261. Puis publiez.' },
+  { sel: '#btnMsg', t: '5. Répondez aux messages', d: 'Les clients vous écrivent ici. Un point rouge indique les messages non lus.' },
+  { sel: '#btnCart', t: '6. Suivez votre panier', d: 'Quand un client met votre annonce au panier, vous voyez la personne ici : écrivez-lui et proposez vos facilités de paiement.' },
+  { sel: '#btnMenu', t: '7. Votre menu', d: 'Mon compte, Apparence, Sécurité, Aide : tout est dans ce bouton.' },
+  { sel: null, t: 'Vous êtes prêt !', d: 'Vous pouvez relancer ce guide à tout moment depuis « Comment ça marche ? ».' }
+];
+const GUIDE_VISITEUR = [
+  { sel: '#btnSignup, #btnMenu', t: '1. Créez votre compte', d: 'Cliquez sur « S’inscrire » (ou ouvrez le menu) et choisissez « Je suis un vendeur » pour vendre.' },
+  { sel: '#btnMenu', t: '2. Le menu', d: 'Accueil, Annonces, Apparence, Aide… Une fois connecté, relancez ce guide pour voir comment vendre.' },
+  { sel: null, t: 'À vous de jouer !', d: 'Après votre inscription, le guide vendeur vous montrera chaque étape.' }
+];
+let TG = null;
+function tgVisible(sel) {
+  if (!sel) return null;
+  for (const q of sel.split(',')) { const el = document.querySelector(q.trim()); if (el && !el.hidden) { const r = el.getBoundingClientRect(); if (r.width > 0 && r.height > 0) return el; } }
+  return null;
+}
+function tgEnd() {
+  if (!TG) return; TG.els.forEach(e => e.remove()); document.removeEventListener('keydown', TG.key); window.removeEventListener('resize', TG.rs); TG = null;
+  try { localStorage.setItem('bp_guide_done', '1'); } catch (e) {}
+}
+function tgShow() {
+  const st = TG.steps[TG.i], el = tgVisible(st.sel), hole = TG.hole, box = TG.box;
+  box.querySelector('h3').textContent = st.t; box.querySelector('p').textContent = st.d;
+  box.querySelector('.tg-n').textContent = (TG.i + 1) + ' / ' + TG.steps.length;
+  box.querySelector('.tg-prev').hidden = TG.i === 0;
+  box.querySelector('.tg-next').textContent = TG.i === TG.steps.length - 1 ? 'Terminer' : 'Suivant';
+  const bw = Math.min(330, innerWidth * .92), bh = box.offsetHeight || 170;
+  if (el) {
+    const r = el.getBoundingClientRect(), pad = 6;
+    Object.assign(hole.style, { display: 'block', top: r.top - pad + 'px', left: r.left - pad + 'px', width: r.width + pad * 2 + 'px', height: r.height + pad * 2 + 'px' });
+    const below = r.bottom + 16 + bh < innerHeight;
+    box.style.top = (below ? r.bottom + 16 : Math.max(10, r.top - bh - 16)) + 'px';
+    box.style.left = Math.max(10, Math.min(innerWidth - bw - 10, r.left + r.width / 2 - bw / 2)) + 'px';
+  } else {
+    Object.assign(hole.style, { display: 'block', top: '50%', left: '50%', width: '0', height: '0' });
+    box.style.top = Math.max(10, (innerHeight - bh) / 2) + 'px'; box.style.left = (innerWidth - bw) / 2 + 'px';
+  }
+}
+function startGuide() {
+  if (TG) return;
+  if ($('menuList').classList.contains('show')) setMenu(false);
+  setTimeout(() => {
+    const all = (user && accountRole() === 'vendeur') ? GUIDE_VENDEUR : GUIDE_VISITEUR;
+    const steps = all.filter(s => !s.sel || tgVisible(s.sel));
+    if (!steps.length) return;
+    const shield = document.createElement('div'); shield.className = 'tg-shield';
+    const hole = document.createElement('div'); hole.className = 'tg-hole';
+    const box = document.createElement('div'); box.className = 'tg-box'; box.setAttribute('role', 'dialog');
+    box.innerHTML = '<h3></h3><p></p><div class="tg-bar"><span class="tg-n"></span><button type="button" class="tg-skip">Passer</button><button type="button" class="tg-prev">Retour</button><button type="button" class="tg-next">Suivant</button></div>';
+    document.body.append(shield, hole, box);
+    TG = { steps, i: 0, hole, box, els: [shield, hole, box] };
+    const go = d => { const n = TG.i + d; if (n >= steps.length) return tgEnd(); if (n < 0) return; TG.i = n; tgShow(); };
+    box.querySelector('.tg-next').onclick = () => go(1); box.querySelector('.tg-prev').onclick = () => go(-1); box.querySelector('.tg-skip').onclick = tgEnd;
+    TG.key = e => { if (e.key === 'Escape') tgEnd(); else if (e.key === 'ArrowRight' || e.key === 'Enter') go(1); else if (e.key === 'ArrowLeft') go(-1); };
+    TG.rs = () => tgShow(); document.addEventListener('keydown', TG.key); window.addEventListener('resize', TG.rs);
+    tgShow(); tgShow();
+  }, 320);
+}
+$('btnHelp').onclick = startGuide;
+$('footHelp').onclick = startGuide;
+/* Premier passage d'un vendeur connecté : le guide se lance une seule fois */
+(function () {
+  let n = 0; const iv = setInterval(() => {
+    if (++n > 25 || TG) return clearInterval(iv);
+    let done = ''; try { done = localStorage.getItem('bp_guide_done'); } catch (e) {}
+    if (done) return clearInterval(iv);
+    if (user && accountRole() === 'vendeur' && tgVisible('#btnProfile') && !document.querySelector('.mask.open') && !document.body.classList.contains('landing')) { clearInterval(iv); startGuide(); }
+  }, 1000);
 })();
 </script>
 
