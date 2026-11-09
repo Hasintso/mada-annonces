@@ -3516,8 +3516,9 @@ $('footHelp').onclick = startGuide;
 /* ===== Messagerie : infos vendeur + appels ===== */
 .chat-top{padding-right:44px}
 .chat-top .who{flex:1;min-width:0;cursor:pointer}
-.av img,.av.sm img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
-.cv .av,.chat-top .av.sm{overflow:hidden}
+.cv .av,.chat-top .av.sm{position:relative;overflow:hidden}
+.cv .av:has(img),.chat-top .av.sm:has(img){background:none!important;text-shadow:none}
+.cv .av img,.chat-top .av.sm img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
 .chat-act{display:flex;gap:6px;flex:none}
 .chat-act button{width:38px;height:38px;border-radius:50%;border:1.5px solid var(--line);background:#fff;cursor:pointer;font-size:1.05rem;display:grid;place-items:center;padding:0}
 .chat-act button:hover{background:var(--paper)}
@@ -3575,7 +3576,16 @@ $('footHelp').onclick = startGuide;
   const initial = n => (String(n || '?').trim().charAt(0) || '?').toUpperCase();
 
   /* ---------- Profil du vendeur : clic sur la photo / le nom ---------- */
-  $('chatWho').onclick = () => { const c = cur(); if (c && c.other && typeof openShop === 'function') { close('mMsg'); openShop(c.other); } };
+  let backTo = null;
+  $('chatWho').onclick = () => { const c = cur(); if (c && c.other && typeof openShop === 'function') {
+    backTo = { id: c.annonce_id, user_id: c.other, titre: c.titre, nom: c.nom }; close('mMsg'); openShop(c.other); } };
+  /* quand on ferme le profil, on revient à la conversation */
+  new MutationObserver(() => {
+    const sv = $('mShopView');
+    if (sv.classList.contains('open') || !backTo) return;
+    const b = backTo; backTo = null;
+    if (!$('mMsg').classList.contains('open') && window.openChat) window.openChat(b);
+  }).observe($('mShopView'), { attributes: true, attributeFilter: ['class'] });
   $('chatWho').title = 'Voir le profil';
 
   /* ---------- Sons ---------- */
