@@ -1667,7 +1667,7 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
 <!-- Boutique du vendeur : modifier (mShop) et page publique (mShopView) -->
 <div class="mask" id="mShop"><div class="box" role="dialog" aria-modal="true" aria-label="Modifier mon profil">
   <button class="x" data-close aria-label="Fermer">×</button>
-  <h2>Mon profil vendeur</h2>
+  <h2>Ma boutique</h2>
   <p style="color:var(--muted);margin-top:0">Un profil complet est <b>obligatoire pour publier</b> : il rassure les acheteurs. Ces informations sont visibles par tous.</p>
   <div class="shprog"><div class="pf-bar"><i id="shBar" style="width:0"></i></div><small id="shProgTxt" style="color:var(--muted)"></small></div>
   <form id="shopForm">
@@ -3885,6 +3885,8 @@ body:not(.landing) .brand b{font:700 clamp(1.25rem,5.2vw,1.9rem)/1.1 Georgia,"Ti
 .pwrap:has(.pbtn[hidden]){display:none}
 .rolecap{position:absolute;top:calc(100% + 2px);left:50%;transform:translateX(-50%);font-size:.62rem;font-weight:800;letter-spacing:.03em;color:var(--muted);white-space:nowrap;pointer-events:none;line-height:1}
 .rolecap:empty{display:none}
+.rolechip.todo{position:relative}
+.rolechip.todo::after{content:"";position:absolute;top:-3px;right:-3px;width:11px;height:11px;border-radius:50%;background:var(--red,#d93025);border:2px solid #fff}
 </style>
 <script>
 (function () {
@@ -3898,15 +3900,21 @@ body:not(.landing) .brand b{font:700 clamp(1.25rem,5.2vw,1.9rem)/1.1 Georgia,"Ti
     const uid = user ? user.id : null; if (uid !== lastUid) { window.bpMode = false; lastUid = uid; }
     const r = mine();
     if (!r) { window.bpMode = false; chip.classList.remove('toggle', 'on'); chip.removeAttribute('aria-pressed'); cap.textContent = ''; return; }
-    chip.classList.add('toggle'); chip.classList.toggle('on', window.bpMode); chip.setAttribute('aria-pressed', String(window.bpMode));
+    chip.classList.add('toggle');
+    if (r === 'vendeur') { window.bpMode = false; chip.classList.remove('on'); chip.removeAttribute('aria-pressed'); }
+    else { chip.classList.toggle('on', window.bpMode); chip.setAttribute('aria-pressed', String(window.bpMode)); }
+    let inc = false; if (r === 'vendeur') { try { inc = !!user && sbReady && shopMissing(myShop).length > 0; } catch (e) {} }
+    chip.classList.toggle('todo', inc);
     chip.dataset.role = r; chip.textContent = r === 'vendeur' ? 'Ma boutique' : 'Ma commande';
-    chip.title = r === 'vendeur' ? 'Afficher seulement mes annonces' : 'Afficher seulement les annonces de ma commande';
+    chip.title = r === 'vendeur' ? (inc ? 'Complétez votre boutique (obligatoire pour publier)' : 'Modifier ma boutique : titre, ce que je vends, e-mail, téléphone, à propos, photo') : 'Afficher seulement les annonces de ma commande';
     cap.textContent = ROLES[r];
   }
+  if (typeof window.renderProfileBtn === 'function') { const orp = window.renderProfileBtn; window.renderProfileBtn = function () { orp.apply(this, arguments); try { ui(); } catch (e) {} }; }
   const orr = renderRole; window.renderRole = function () { orr.apply(this, arguments); ui(); };
   chip.onclick = () => {
     if (!user) { showRoleGate(); return; }
     if (!mine()) return;
+    if (mine() === 'vendeur') { openMyShop(); return; }   /* « Ma boutique » ouvre le formulaire de la boutique du vendeur */
     window.bpMode = !window.bpMode; ui(); loadAds();
     window.bpSay && window.bpSay(window.bpMode ? (mine() === 'vendeur' ? 'Ma boutique : vos annonces' : 'Ma commande : votre panier') : 'Toutes les annonces');
   };
