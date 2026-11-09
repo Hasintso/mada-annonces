@@ -1300,8 +1300,8 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
   <div class="top">
    <!-- Menu : 3 barres (comme Dribbble) -->
    <div class="menu-wrap">
-    <button class="dots" id="btnMenu" aria-label="Paramètres" title="Paramètres" aria-expanded="false">
-     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 7H11M17 7h3.5M3.5 17H7M13 17h7.5"/><circle cx="14" cy="7" r="2.6"/><circle cx="10" cy="17" r="2.6"/></svg>
+    <button class="dots" id="btnMenu" aria-label="Menu" title="Menu" aria-expanded="false">
+     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span class="dotl">MENU</span>
     </button>
    </div>
    <div class="logo" id="logo" role="button" tabindex="0" title="Retour à l'accueil" aria-label="Accueil"><span id="typed"></span><span class="brand"><b>Accueil</b></span></div>
@@ -3747,6 +3747,73 @@ $('footHelp').onclick = startGuide;
   $('callCam').onclick = () => { if (!call || !call.stream) return; const t = call.stream.getVideoTracks()[0]; if (!t) return; t.enabled = !t.enabled;
     $('callCam').classList.toggle('off', !t.enabled); $('callCam').textContent = t.enabled ? '📷' : '🚫'; };
   window.addEventListener('beforeunload', () => { if (call) { try { send(call.peer, { t: 'hangup', id: call.id }); } catch (e) {} } });
+})();
+</script>
+
+<style>
+/* ===== Menu en tiroir sombre à sections dépliables ===== */
+.dots{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:auto;min-width:48px;height:auto;padding:2px 4px}
+.dots svg{width:30px;height:30px}
+.dots .dotl{font-size:.6rem;font-weight:800;letter-spacing:.09em;line-height:1;color:#fff;text-shadow:0 1px 3px rgba(40,15,0,.55)}
+body:not(.landing) .dots .dotl{color:var(--ink);text-shadow:none}
+#menuList{background:#38200f;background:color-mix(in srgb,var(--forest) 30%,#0b0603);color:#fff;padding:0 0 24px;gap:0;border-radius:0;width:min(330px,88vw)}
+#menuList .ddhead{margin:0;padding:16px 16px 14px;border-bottom:1px solid rgba(255,255,255,.14);background:linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,0))}
+#menuList .ddlogo{color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.35)}
+#menuList .ddx{background:rgba(255,255,255,.16);color:#fff}
+#menuList .ddx:hover{background:rgba(255,255,255,.28)}
+#menuList .mg>[hidden]{display:none!important}
+#menuList .mg:has(>.mgt[hidden]){display:none}
+#menuList .mg>button,#menuList .mg>a,#menuList .pref-t{display:flex;align-items:center;justify-content:space-between;width:100%;padding:15px 20px;margin:0;border:0;border-bottom:1px solid rgba(255,255,255,.12);border-radius:0;background:none;color:#fff;font-size:.88rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;text-align:left;text-decoration:none;cursor:pointer}
+#menuList .mg>button:hover,#menuList .mg>a:hover,#menuList .pref-t:hover{background:rgba(255,255,255,.09)}
+#menuList .mgt{display:flex;align-items:center;justify-content:space-between;margin:0;padding:15px 20px;background:rgba(255,255,255,.11);border-bottom:1px solid rgba(255,255,255,.16);color:#fff;font-size:.88rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;user-select:none}
+#menuList .mgt:hover{background:rgba(255,255,255,.17)}
+#menuList .mgt::after{content:"";width:9px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);margin-top:-4px;transition:transform .2s,margin .2s;flex:none}
+#menuList .mg.open>.mgt::after{transform:rotate(-135deg);margin-top:4px}
+#menuList .mg.flat>.mgt{display:none}
+#menuList .mg:not(.flat):not(.open)>:not(.mgt){display:none}
+#menuList .pref{margin:0;padding:0;background:none;border:0;border-radius:0}
+#menuList .pref-t i{color:#fff}
+#menuList .pref-b{background:var(--paper);color:var(--ink);margin:10px 12px 14px;border-radius:14px}
+#menuList .mg>.mnout{color:#ffb4ad;border-top:0;margin:0}
+#menuList .mver{margin:16px 20px 0;color:rgba(255,255,255,.55);text-align:left}
+#menuList .msoc{display:flex;gap:22px;padding:20px 20px 0}
+#menuList .msoc a{display:block;width:28px;height:28px;padding:0;color:#fff;background:none}
+#menuList .msoc a:hover{background:none;opacity:.8}
+#menuList .msoc svg{width:28px;height:28px;fill:currentColor}
+#menuList .msoc svg.ln{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+</style>
+<script>
+/* Menu : sections dépliables + réseaux sociaux */
+(function () {
+  /* Mettez ici les liens de vos pages (laissez '' pour ne pas afficher l'icône) */
+  const SOCIAL = { facebook: '', youtube: '', instagram: '', tiktok: '' };
+  const menu = document.getElementById('menuList'); if (!menu) return;
+  const head = menu.querySelector('.ddhead'), ver = menu.querySelector('.mver');
+  let g = null;
+  [...menu.children].forEach(el => {
+    if (el === head || el === ver) return;
+    if (el.classList.contains('mgt')) {
+      g = document.createElement('div'); g.className = 'mg';
+      if (/^(navigation|compte)$/i.test(el.textContent.trim())) g.classList.add('flat');
+      else { el.setAttribute('role', 'button'); el.tabIndex = 0; el.setAttribute('aria-expanded', 'false'); if (/mon compte/i.test(el.textContent)) { g.classList.add('open'); el.setAttribute('aria-expanded', 'true'); } }
+      menu.insertBefore(g, el); g.appendChild(el);
+    } else if (g) g.appendChild(el);
+  });
+  const toggle = t => { const grp = t.parentElement; if (grp.classList.contains('flat')) return; const o = grp.classList.toggle('open'); t.setAttribute('aria-expanded', String(o)); };
+  menu.addEventListener('click', e => { const t = e.target.closest('.mgt'); if (t) toggle(t); });
+  menu.addEventListener('keydown', e => { const t = e.target.closest && e.target.closest('.mgt'); if (t && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); toggle(t); } });
+  const ICON = {
+    facebook: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.77-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.89h-2.34v6.99A10 10 0 0 0 22 12z"/></svg>',
+    youtube: '<svg class="ln" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5.5" width="19" height="13" rx="4"/><path d="M10 9.5v5l4.5-2.5z" style="fill:currentColor"/></svg>',
+    instagram: '<svg class="ln" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r=".6" style="fill:currentColor"/></svg>',
+    tiktok: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.5 3a4.5 4.5 0 0 0 3.5 4.2V10a7.4 7.4 0 0 1-3.5-1v6.2a5.2 5.2 0 1 1-5.2-5.2c.3 0 .6 0 .9.1v2.9a2.4 2.4 0 1 0 1.6 2.2V3h2.7z"/></svg>'
+  };
+  const links = Object.keys(SOCIAL).filter(k => /^https?:\/\//i.test(SOCIAL[k]));
+  if (links.length) {
+    const d = document.createElement('div'); d.className = 'msoc';
+    d.innerHTML = links.map(k => `<a href="${SOCIAL[k]}" target="_blank" rel="noopener" aria-label="${k}">${ICON[k]}</a>`).join('');
+    menu.insertBefore(d, ver || null);
+  }
 })();
 </script>
 </body>
