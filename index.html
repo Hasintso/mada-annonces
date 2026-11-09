@@ -2181,17 +2181,27 @@ async function loadAds() {
     : r.order('prix', { ascending: sort === 'asc', nullsFirst: false }).order('cree_le', { ascending: false });
   r = r.limit(100);                                 // toutes les annonces publiées (les plus récentes d'abord)
   if (cat) r = r.eq('category_id', cat);
+  let modeEmpty = false;
+  if (window.bpMode && user) {
+    if (accountRole() === 'vendeur') r = r.eq('user_id', user.id);
+    else if (accountRole() === 'client') { const ids = cartGet().map(x => x.id); if (ids.length) r = r.in('id', ids); else modeEmpty = true; }
+  }
   if (maxPrix) r = r.lte('prix', maxPrix);
   const v = clean($('qVille').value);
   if (v) r = r.ilike('ville', `%${v}%`);
   const t = clean(q);
   if (t) r = r.or(`titre.ilike.%${t}%,description.ilike.%${t}%`);
-  const { data, error } = await r;
+  const { data, error } = modeEmpty ? { data: [], error: null } : await r;
   if (my !== reqId) return;                        // une recherche plus récente est en cours : on ignore celle-ci
   setNet(!!error);
   ads = data || [];
   $('title').textContent = t ? `Résultats pour « ${t} »` : (cats.find(c => c.id === cat)?.nom || 'Dernières annonces');
   $('empty').textContent = error ? 'Impossible de charger les annonces. Vérifiez votre connexion et réessayez.' : 'Aucune annonce pour cette recherche. Soyez le premier à en déposer une.';
+  if (window.bpMode && user && !error) {
+    const rv = accountRole() === 'vendeur';
+    if (!t) $('title').textContent = rv ? 'Ma boutique' : 'Ma commande';
+    $('empty').textContent = rv ? "Vous n'avez pas encore d'annonce publiée. Touchez + pour en déposer une." : 'Votre commande est vide. Ajoutez des annonces avec le bouton panier 🛒.';
+  }
   $('empty').hidden = ads.length > 0;
   await loadSellers(ads);
   if (my !== reqId) return;
@@ -2880,17 +2890,18 @@ async function loadMyShop() {
 }
 function renderProfileBtn() {
   const b = $('btnProfile'); if (!b) return;
-  const show = !!user && accountRole() === 'vendeur';
+  const isV = !!user && accountRole() === 'vendeur', show = isV || (!!user && accountRole() === 'client');
   b.hidden = !show; if (!show) return;
   const nom = (myShop && myShop.nom) || (user.user_metadata || {}).full_name || (user.user_metadata || {}).name || '';
-  let complete = true; try { complete = !shopMissing(myShop).length; } catch (e) {}
+  let complete = true; if (isV) { try { complete = !shopMissing(myShop).length; } catch (e) {} }
+  const mav = (myShop && myShop.avatar_url) || (isV ? '' : ((user.user_metadata || {}).avatar_url || (user.user_metadata || {}).picture || ''));
   b.classList.toggle('todo', !complete);
-  b.title = complete ? 'Mon profil' : 'Complétez votre profil (obligatoire pour publier)';
-  b.innerHTML = safeUrl(myShop && myShop.avatar_url) ? `<img src="${esc(myShop.avatar_url)}" alt="Mon profil">`
+  b.title = !isV ? 'Mon compte' : complete ? 'Mon profil' : 'Complétez votre profil (obligatoire pour publier)';
+  b.innerHTML = safeUrl(mav) ? `<img src="${esc(mav)}" alt="Mon profil">`
     : nom ? initial(nom) : '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>';
 }
 /* Le rond ouvre la page de profil (comme Facebook) ; « Modifier le profil » ouvre le formulaire */
-$('btnProfile').onclick = () => { if (user) openShop(user.id); };
+$('btnProfile').onclick = () => { if (!user) return; if (accountRole() === 'vendeur') openShop(user.id); else if (typeof setMenu === 'function') setMenu(true); };
 
 async function openMyShop(force) {
   shForce = force === true;
@@ -3817,6 +3828,48 @@ body:not(.landing) .brand b{font:700 clamp(1.25rem,5.2vw,1.9rem)/1.1 Georgia,"Ti
     d.innerHTML = links.map(k => `<a href="${SOCIAL[k]}" target="_blank" rel="noopener" aria-label="${k}">${ICON[k]}</a>`).join('');
     menu.insertBefore(d, ver || null);
   }
+})();
+</script>
+
+<style>
+/* ===== Boutons « Ma boutique » / « Ma commande » (allumer / éteindre) + mot du rôle sous le rond ===== */
+.rolechip.toggle{background:#fff;color:var(--forest);border:2px solid var(--forest);box-shadow:none;cursor:pointer;gap:8px;padding:6px 16px;transition:background .2s,color .2s}
+.rolechip.toggle[data-role="client"]{color:#2f7fe0;border-color:#2f7fe0}
+.rolechip.toggle::before{content:"";width:9px;height:9px;border-radius:50%;background:currentColor;opacity:.3;flex:none}
+.rolechip.toggle.on{background:var(--forest);color:#fff}
+.rolechip.toggle[data-role="client"].on{background:#2f7fe0;border-color:#2f7fe0}
+.rolechip.toggle.on::before{background:#7dff9a;opacity:1;box-shadow:0 0 8px #7dff9a}
+.pwrap{position:relative;display:inline-flex;flex:none}
+.pwrap:has(.pbtn[hidden]){display:none}
+.rolecap{position:absolute;top:calc(100% + 2px);left:50%;transform:translateX(-50%);font-size:.62rem;font-weight:800;letter-spacing:.03em;color:var(--muted);white-space:nowrap;pointer-events:none;line-height:1}
+.rolecap:empty{display:none}
+</style>
+<script>
+(function () {
+  window.bpMode = false;
+  const pb = $('btnProfile'), chip = $('roleChip');
+  const w = document.createElement('div'); w.className = 'pwrap'; pb.parentNode.insertBefore(w, pb); w.appendChild(pb);
+  const cap = document.createElement('span'); cap.className = 'rolecap'; cap.id = 'roleCap'; w.appendChild(cap);
+  const mine = () => { const r = user ? accountRole() : ''; return r === 'vendeur' || r === 'client' ? r : ''; };
+  let lastUid = null;
+  function ui() {
+    const uid = user ? user.id : null; if (uid !== lastUid) { window.bpMode = false; lastUid = uid; }
+    const r = mine();
+    if (!r) { window.bpMode = false; chip.classList.remove('toggle', 'on'); chip.removeAttribute('aria-pressed'); cap.textContent = ''; return; }
+    chip.classList.add('toggle'); chip.classList.toggle('on', window.bpMode); chip.setAttribute('aria-pressed', String(window.bpMode));
+    chip.dataset.role = r; chip.textContent = r === 'vendeur' ? 'Ma boutique' : 'Ma commande';
+    chip.title = r === 'vendeur' ? 'Afficher seulement mes annonces' : 'Afficher seulement les annonces de ma commande';
+    cap.textContent = ROLES[r];
+  }
+  const orr = renderRole; window.renderRole = function () { orr.apply(this, arguments); ui(); };
+  chip.onclick = () => {
+    if (!user) { showRoleGate(); return; }
+    if (!mine()) return;
+    window.bpMode = !window.bpMode; ui(); loadAds();
+    window.bpSay && window.bpSay(window.bpMode ? (mine() === 'vendeur' ? 'Ma boutique : vos annonces' : 'Ma commande : votre panier') : 'Toutes les annonces');
+  };
+  const ocs = cartSet; window.cartSet = function (v) { ocs.apply(this, arguments); if (window.bpMode && mine() === 'client') loadAds(); };
+  ui();
 })();
 </script>
 </body>
