@@ -2407,8 +2407,7 @@ const POST_TYPES = {
 const saleCats = () => NEED.map(([label, key]) => [label, needId(key)]).filter(x => x[1] > 0);
 const catOptions = sel => saleCats().map(([label, id]) => `<option value="${id}"${id === sel ? ' selected' : ''}>${esc(label)}</option>`).join('');
 let postKey = null, postCatKey = null;
-const isClientAcc = () => { try { return accountRole() === 'client'; } catch (e) { return false; } };
-const saleLbl = key => (isClientAcc() ? 'Commander ' : 'Vendre ') + NEED.find(n => n[1] === key)[0].toLowerCase();      /* « Vendre sakafo » (vendeur) · « Commander sakafo » (client) */
+const saleLbl = key => 'Vendre ' + NEED.find(n => n[1] === key)[0].toLowerCase();      /* « Vendre sakafo » */
 const saleTitle = () => postCatKey ? saleLbl(postCatKey) : 'Déposer une vente';
 const defCat = () => postCatKey ? needId(postCatKey) : (needKey ? needId(needKey) : 0);
 function placePostMenu() {
@@ -2421,7 +2420,6 @@ function placePostMenu() {
   m.style.setProperty('--by', (hb + 4) + 'px');
 }
 function showPostChoice() {
-  rebuildPostChoices();
   postKey = null; postCatKey = null; $('postTitle').textContent = 'Déposer une annonce';
   $('postChoice').hidden = false; $('postForm').hidden = true; $('postMode').hidden = true; $('postMulti').hidden = true;
   placePostMenu(); $('mPost').classList.add('pop');
@@ -2475,11 +2473,6 @@ function typePlaceholder(inp, list) {
 }
 typePlaceholder($('pTitre'), TITRE_EX);
 document.querySelectorAll('.pchoice[data-ck]').forEach(b => b.onclick = () => { postCatKey = b.dataset.ck; openPostForm('vente', ''); });
-function rebuildPostChoices() {      /* le menu « + » est reconstruit à chaque ouverture : « Commander … » pour un client, « Vendre … » sinon */
-  $('postChoice').querySelector('.pchoices').innerHTML = NEED.map(([label, key]) =>
-    `<button type="button" class="pchoice" data-ck="${key}"><div>${esc(saleLbl(key))}</div></button>`).join('');
-  document.querySelectorAll('.pchoice[data-ck]').forEach(b => b.onclick = () => { postCatKey = b.dataset.ck; openPostForm('vente', ''); });
-}
 $('pBack').onclick = () => postKey === 'vente' ? showSaleMode(pendingPost.titre, pendingPost.typeIdx) : showPostChoice();
 function buildDesc() {
   const T = POST_TYPES[postKey], lines = [];
