@@ -1301,10 +1301,10 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
    <!-- Menu : 3 barres (comme Dribbble) -->
    <div class="menu-wrap">
     <button class="dots" id="btnMenu" aria-label="Menu" title="Menu" aria-expanded="false">
-     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span class="dotl">MENU</span>
+     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
     </button>
    </div>
-   <div class="logo" id="logo" role="button" tabindex="0" title="Retour à l'accueil" aria-label="Accueil"><span id="typed"></span><span class="brand"><b>Accueil</b></span></div>
+   <div class="logo" id="logo" role="button" tabindex="0" title="Retour à l'accueil" aria-label="Accueil"><span id="typed"></span><span class="brand"><b>B</b></span></div>
    <div class="links">
    </div>
    <button class="rolechip" id="roleChip" type="button" hidden></button>
@@ -1714,7 +1714,7 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
 
 <div class="ovl" id="menuOv" hidden></div>
 <div class="dd" id="menuList" role="navigation" aria-label="Menu principal" hidden>
-  <div class="ddhead"><span class="ddlogo">Accueil</span><button type="button" id="menuClose" class="ddx" aria-label="Fermer le menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="ddhead"><span class="ddlogo">B</span><button type="button" id="menuClose" class="ddx" aria-label="Fermer le menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
       <div class="mgt">Navigation</div>
       <button id="mnHome">🏠 Accueil</button>
       <button id="mnAds">📋 Annonces</button>
@@ -3751,34 +3751,33 @@ $('footHelp').onclick = startGuide;
 </script>
 
 <style>
-/* ===== Menu en tiroir sombre à sections dépliables ===== */
-.dots{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:auto;min-width:48px;height:auto;padding:2px 4px}
+/* ===== Menu en tiroir (blanc, ou sombre en mode sombre) + en-tête B + trois barres ===== */
 .dots svg{width:30px;height:30px}
-.dots .dotl{font-size:.6rem;font-weight:800;letter-spacing:.09em;line-height:1;color:#fff;text-shadow:0 1px 3px rgba(40,15,0,.55)}
-body:not(.landing) .dots .dotl{color:var(--ink);text-shadow:none}
-#menuList{background:#38200f;background:color-mix(in srgb,var(--forest) 30%,#0b0603);color:#fff;padding:0 0 24px;gap:0;border-radius:0;width:min(330px,88vw)}
-#menuList .ddhead{margin:0;padding:16px 16px 14px;border-bottom:1px solid rgba(255,255,255,.14);background:linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,0))}
-#menuList .ddlogo{color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.35)}
-#menuList .ddx{background:rgba(255,255,255,.16);color:#fff}
-#menuList .ddx:hover{background:rgba(255,255,255,.28)}
+body:not(.landing) .dots{width:44px;height:44px}
+body:not(.landing) .dots svg{stroke-width:2.4}
+body:not(.landing) .logo{order:-1;margin-right:0}
+body:not(.landing) .menu-wrap{order:0;margin:0 auto 0 0}
+body:not(.landing) .brand b{font:700 2.2rem/1 Georgia,"Times New Roman",serif;color:var(--ink);letter-spacing:0}
+#menuList .ddlogo{font:700 2.2rem/1 Georgia,"Times New Roman",serif;color:var(--ink);text-shadow:none}
+#menuList{background:var(--surf,#fff);color:var(--ink);padding:0 0 24px;gap:0;border-radius:0;width:min(330px,88vw)}
+#menuList .ddhead{margin:0;padding:14px 16px;border-bottom:1px solid var(--line);background:none}
 #menuList .mg>[hidden]{display:none!important}
 #menuList .mg:has(>.mgt[hidden]){display:none}
-#menuList .mg>button,#menuList .mg>a,#menuList .pref-t{display:flex;align-items:center;justify-content:space-between;width:100%;padding:15px 20px;margin:0;border:0;border-bottom:1px solid rgba(255,255,255,.12);border-radius:0;background:none;color:#fff;font-size:.88rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;text-align:left;text-decoration:none;cursor:pointer}
-#menuList .mg>button:hover,#menuList .mg>a:hover,#menuList .pref-t:hover{background:rgba(255,255,255,.09)}
-#menuList .mgt{display:flex;align-items:center;justify-content:space-between;margin:0;padding:15px 20px;background:rgba(255,255,255,.11);border-bottom:1px solid rgba(255,255,255,.16);color:#fff;font-size:.88rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;user-select:none}
-#menuList .mgt:hover{background:rgba(255,255,255,.17)}
-#menuList .mgt::after{content:"";width:9px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);margin-top:-4px;transition:transform .2s,margin .2s;flex:none}
+#menuList .mg>button,#menuList .mg>a,#menuList .pref-t{display:flex;align-items:center;justify-content:space-between;width:100%;padding:15px 20px;margin:0;border:0;border-bottom:1px solid var(--line);border-radius:0;background:none;color:var(--ink);font-size:.88rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;text-align:left;text-decoration:none;cursor:pointer}
+#menuList .mg>button:hover,#menuList .mg>a:hover,#menuList .pref-t:hover{background:var(--paper)}
+#menuList .mgt{display:flex;align-items:center;justify-content:space-between;margin:0;padding:15px 20px;background:var(--paper);border-bottom:1px solid var(--line);color:var(--ink);font-size:.88rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;user-select:none}
+#menuList .mgt::after{content:"";width:9px;height:9px;border:solid var(--ink);border-width:0 2px 2px 0;transform:rotate(45deg);margin-top:-4px;transition:transform .2s,margin .2s;flex:none}
 #menuList .mg.open>.mgt::after{transform:rotate(-135deg);margin-top:4px}
 #menuList .mg.flat>.mgt{display:none}
 #menuList .mg:not(.flat):not(.open)>:not(.mgt){display:none}
 #menuList .pref{margin:0;padding:0;background:none;border:0;border-radius:0}
-#menuList .pref-t i{color:#fff}
+#menuList .pref-t i{color:var(--ink)}
 #menuList .pref-b{background:var(--paper);color:var(--ink);margin:10px 12px 14px;border-radius:14px}
-#menuList .mg>.mnout{color:#ffb4ad;border-top:0;margin:0}
-#menuList .mver{margin:16px 20px 0;color:rgba(255,255,255,.55);text-align:left}
+#menuList .mg>.mnout{color:#d9453d;border-top:0;margin:0}
+#menuList .mver{margin:16px 20px 0;color:var(--muted);text-align:left}
 #menuList .msoc{display:flex;gap:22px;padding:20px 20px 0}
-#menuList .msoc a{display:block;width:28px;height:28px;padding:0;color:#fff;background:none}
-#menuList .msoc a:hover{background:none;opacity:.8}
+#menuList .msoc a{display:block;width:28px;height:28px;padding:0;color:var(--ink);background:none}
+#menuList .msoc a:hover{background:none;opacity:.7}
 #menuList .msoc svg{width:28px;height:28px;fill:currentColor}
 #menuList .msoc svg.ln{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 </style>
