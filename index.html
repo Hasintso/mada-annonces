@@ -1699,7 +1699,7 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
   </div>
   <div id="chatList"></div>
   <div id="chatThread">
-    <div class="chat-top"><button type="button" class="btn alt" id="chatBack" style="padding:6px 12px">← Retour</button><div class="who" id="chatWho"></div></div>
+    <div class="chat-top"><button type="button" class="btn alt" id="chatBack" style="padding:6px 12px" aria-label="Retour" title="Retour">←</button><div class="who" id="chatWho"></div><div class="chat-act"><button type="button" id="chatInfoBtn" aria-label="Infos du vendeur" title="Infos">ℹ️</button><button type="button" id="chatVoice" aria-label="Appel vocal" title="Appel vocal">📞</button><button type="button" id="chatVideo" aria-label="Appel vidéo" title="Appel vidéo">🎥</button></div></div><div id="chatInfo" hidden></div>
     <div id="chatMsgs" aria-live="polite"></div>
     <form class="chat-form" id="chatForm"><textarea id="chatText" rows="1" maxlength="1000" placeholder="Écrivez votre message…" aria-label="Votre message"></textarea><button class="btn cta" id="chatSend" type="submit">Envoyer</button></form>
     <p class="msg" id="chatErr" role="status"></p>
@@ -3125,6 +3125,7 @@ fitQHint();
 (function () {
   const TB = 'ann_messages';
   const S = { convs: [], cur: null, tick: 0, busy: false, f: 'all', q: '' };
+  window.bpChatCur = () => S.cur;
   const AVC = ['#0f7a4f','#2f7fe0','#a2501a','#8e44ad','#c0392b','#00838f','#6d4c41','#ad1457'];
   const sameDay = (a, b) => a.toDateString() === b.toDateString();
   const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
@@ -3497,5 +3498,259 @@ $('footHelp').onclick = startGuide;
 })();
 </script>
 
+
+<style>
+/* ===== Messagerie : infos vendeur + appels ===== */
+.chat-top .who{flex:1;min-width:0}
+.chat-act{display:flex;gap:6px;flex:none}
+.chat-act button{width:38px;height:38px;border-radius:50%;border:1.5px solid var(--line);background:#fff;cursor:pointer;font-size:1.05rem;display:grid;place-items:center;padding:0}
+.chat-act button:hover{background:var(--paper)}
+.chat-act button.on{background:#f4ece0}
+#chatInfo{background:#fbf6ee;border:1px solid var(--line);border-radius:14px;padding:12px;margin:8px 0 0;font-size:.9rem;max-height:46%;overflow-y:auto}
+#chatInfo .ih{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+#chatInfo .ih .ia{width:44px;height:44px;border-radius:50%;background:var(--forest);color:#fff;display:grid;place-items:center;font-weight:800;flex:none;overflow:hidden}
+#chatInfo .ih .ia img{width:100%;height:100%;object-fit:cover}
+#chatInfo .ih b{display:block}
+#chatInfo .ih small{color:var(--muted)}
+#chatInfo p{margin:6px 0;color:var(--ink)}
+#chatInfo .il{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+#chatInfo .il a,#chatInfo .il button{border:1.5px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;padding:6px 12px;font:600 .8rem/1.2 inherit;cursor:pointer;text-decoration:none}
+#callUi{position:fixed;inset:0;z-index:3000;display:none;flex-direction:column;background:#1d1209;color:#fff}
+#callUi.open{display:flex}
+#callUi .cbg{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:24px}
+#callRemote{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000}
+#callUi.audio #callRemote{width:1px;height:1px;opacity:0}
+#callLocal{position:absolute;right:14px;top:max(14px,env(safe-area-inset-top));width:104px;height:140px;object-fit:cover;border-radius:14px;border:2px solid rgba(255,255,255,.6);background:#000;z-index:2;transform:scaleX(-1)}
+#callUi.audio #callLocal,#callUi.nolocal #callLocal{display:none}
+#callUi .cav{position:relative;z-index:1;width:104px;height:104px;border-radius:50%;background:var(--forest);display:grid;place-items:center;font:800 2.6rem Arial,sans-serif}
+#callUi .cname{position:relative;z-index:1;font-size:1.35rem;font-weight:700;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+#callUi .cst{position:relative;z-index:1;opacity:.9;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+#callUi.live.video .cav,#callUi.live.video .cname{display:none}
+#callUi.live.video .cst{position:absolute;left:0;right:0;top:max(18px,env(safe-area-inset-top))}
+#callUi .cbar{flex:none;display:flex;justify-content:center;gap:18px;padding:18px 12px calc(22px + env(safe-area-inset-bottom));background:rgba(0,0,0,.35);position:relative;z-index:3}
+#callUi .cbar button{width:60px;height:60px;border-radius:50%;border:0;background:rgba(255,255,255,.18);color:#fff;font-size:1.5rem;cursor:pointer;display:grid;place-items:center}
+#callUi .cbar button.off{background:#fff;color:#1d1209}
+#callUi .cbar .end{background:#d93025}
+#callUi .cbar .ok{background:#1e9e5a}
+#callUi .cbar [hidden]{display:none}
+</style>
+<div id="callUi" role="dialog" aria-modal="true" aria-label="Appel">
+  <div class="cbg">
+    <video id="callRemote" autoplay playsinline></video>
+    <video id="callLocal" autoplay playsinline muted></video>
+    <div class="cav" id="callAv">?</div>
+    <div class="cname" id="callName"></div>
+    <div class="cst" id="callSt" aria-live="polite"></div>
+  </div>
+  <div class="cbar">
+    <button type="button" id="callMute" aria-label="Couper le micro" title="Micro">🎤</button>
+    <button type="button" id="callCam" aria-label="Couper la caméra" title="Caméra">📷</button>
+    <button type="button" class="ok" id="callAccept" aria-label="Répondre" title="Répondre" hidden>📞</button>
+    <button type="button" class="end" id="callEnd" aria-label="Raccrocher" title="Raccrocher">✖</button>
+  </div>
+</div>
+<script>
+/* ===== Infos du vendeur + appels vocaux / vidéo (WebRTC, signalisation via Supabase Realtime) ===== */
+(function () {
+  /* Si des appels ne passent pas entre deux réseaux mobiles, ajouter ici un serveur TURN :
+     { urls: 'turn:ADRESSE:3478', username: '...', credential: '...' } */
+  const TURN_SERVERS = [];
+  const ICE = { iceServers: [{ urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }, ...TURN_SERVERS] };
+  const RING_MS = 45000;
+  let call = null, sigCh = null, sigFor = '', outCh = {}, actx = null, ringT = null, tmrT = null;
+
+  const cur = () => window.bpChatCur && window.bpChatCur();
+  const me = () => user && user.id;
+  const myName = () => { const m = (user && user.user_metadata) || {}; return m.full_name || m.name || 'Utilisateur'; };
+  const say = m => window.bpSay ? window.bpSay(m) : alert(m);
+  const chatErr = t => { const e = $('chatErr'); if (e) e.textContent = t; };
+  const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
+  const initial = n => (String(n || '?').trim().charAt(0) || '?').toUpperCase();
+
+  /* ---------- Infos du vendeur ---------- */
+  let infoFor = '';
+  async function toggleInfo() {
+    const c = cur(), box = $('chatInfo'), btn = $('chatInfoBtn'); if (!c) return;
+    if (!box.hidden && infoFor === c.other) { box.hidden = true; btn.classList.remove('on'); return; }
+    infoFor = c.other; box.hidden = false; btn.classList.add('on'); box.innerHTML = '<p style="color:var(--muted)">Chargement…</p>';
+    let s = {};
+    try { const r = await SB.from('ann_boutiques').select('*').eq('user_id', c.other).maybeSingle(); s = r.data || {}; } catch (e) {}
+    if (infoFor !== c.other) return;
+    const nom = s.nom || c.nom || 'Utilisateur';
+    const tel = String(s.telephone || '').replace(/[^\d+]/g, '');
+    const av = (typeof safeUrl === 'function' && safeUrl(s.avatar_url)) ? `<img src="${esc(s.avatar_url)}" alt="">` : esc(initial(nom));
+    const since = s.cree_le ? new Date(s.cree_le).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }) : '';
+    box.innerHTML = `<div class="ih"><span class="ia">${av}</span><div><b>${esc(nom)}</b><small>${esc(s.ville || 'Madagascar')}${since ? ' · Membre depuis ' + esc(since) : ''}</small></div></div>`
+      + (s.description ? `<p>${esc(s.description)}</p>` : '<p style="color:var(--muted)">Ce vendeur n\'a pas encore rempli sa présentation.</p>')
+      + (tel ? `<p>📞 ${esc(s.telephone)}</p>` : '') + (s.email ? `<p>✉️ ${esc(s.email)}</p>` : '')
+      + `<div class="il">${tel ? `<a href="tel:${esc(tel)}">📱 Appeler (réseau mobile)</a>` : ''}`
+      + `<button type="button" id="ciProfile">👤 Voir le profil</button></div>`;
+    const pb = $('ciProfile');
+    if (pb) pb.onclick = () => { if (typeof openShop === 'function') { close('mMsg'); openShop(c.other); } };
+  }
+  $('chatInfoBtn').onclick = toggleInfo;
+  $('chatBack').addEventListener('click', () => { $('chatInfo').hidden = true; $('chatInfoBtn').classList.remove('on'); infoFor = ''; });
+
+  /* ---------- Sons ---------- */
+  document.addEventListener('click', () => { try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); actx.resume(); } catch (e) {} }, { once: true });
+  function beepLoop(freqs) {
+    stopRing();
+    const play = () => { try {
+      if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); actx.resume();
+      freqs.forEach((f, i) => { const o = actx.createOscillator(), g = actx.createGain(); o.frequency.value = f; o.connect(g); g.connect(actx.destination);
+        const t = actx.currentTime + i * 0.28; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.18, t + 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.24); o.start(t); o.stop(t + 0.26); });
+      if (navigator.vibrate) navigator.vibrate([250, 120, 250]);
+    } catch (e) {} };
+    play(); ringT = setInterval(play, 2200);
+  }
+  function stopRing() { if (ringT) { clearInterval(ringT); ringT = null; } if (navigator.vibrate) navigator.vibrate(0); }
+
+  /* ---------- Signalisation ---------- */
+  function listen() {
+    if (!user || !sbReady || !SB.channel) return;
+    if (sigFor === me()) return;
+    if (sigCh) { try { SB.removeChannel(sigCh); } catch (e) {} }
+    sigFor = me();
+    sigCh = SB.channel('bp-call-' + me()).on('broadcast', { event: 'sig' }, ({ payload }) => onSig(payload)).subscribe();
+  }
+  setInterval(listen, 2000);
+  async function send(to, payload) {
+    try {
+      let o = outCh[to];
+      if (!o) {
+        const ch = SB.channel('bp-call-' + to);
+        o = outCh[to] = { ch, ready: new Promise(res => { ch.subscribe(st => { if (st === 'SUBSCRIBED') res(true); if (st === 'CHANNEL_ERROR' || st === 'TIMED_OUT' || st === 'CLOSED') res(false); }); setTimeout(() => res(false), 8000); }) };
+      }
+      if (!(await o.ready)) { try { SB.removeChannel(o.ch); } catch (e) {} delete outCh[to]; return false; }
+      await o.ch.send({ type: 'broadcast', event: 'sig', payload: Object.assign({ from: me() }, payload) });
+      return true;
+    } catch (e) { return false; }
+  }
+
+  /* ---------- Interface d'appel ---------- */
+  const ui = {
+    show(c) { const u = $('callUi'); u.className = 'open ' + (c.kind === 'video' ? 'video' : 'audio') + (c.kind === 'video' ? '' : ' nolocal');
+      $('callAv').textContent = initial(c.peerName); $('callName').textContent = c.peerName || 'Utilisateur';
+      $('callCam').hidden = c.kind !== 'video'; $('callMute').classList.remove('off'); $('callCam').classList.remove('off'); },
+    st(t) { $('callSt').textContent = t; },
+    hide() { $('callUi').className = ''; $('callRemote').srcObject = null; $('callLocal').srcObject = null; }
+  };
+  const fmt = s => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+  function startTimer() { const t0 = Date.now(); call.t0 = t0; clearInterval(tmrT);
+    tmrT = setInterval(() => ui.st(fmt(Math.floor((Date.now() - t0) / 1000))), 500); }
+
+  async function media(kind) {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error("Votre navigateur ne permet pas les appels. Utilisez Chrome ou Safari à jour.");
+    try { return await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true }, video: kind === 'video' ? { facingMode: 'user' } : false }); }
+    catch (e) {
+      if (e && (e.name === 'NotAllowedError' || e.name === 'SecurityError')) throw new Error("Autorisez le micro" + (kind === 'video' ? " et la caméra" : "") + " dans votre navigateur pour appeler.");
+      if (e && e.name === 'NotFoundError') throw new Error(kind === 'video' ? "Aucune caméra ou micro trouvé." : "Aucun micro trouvé.");
+      throw new Error("Impossible d'accéder au micro" + (kind === 'video' ? " / à la caméra" : "") + ".");
+    }
+  }
+  function makePc() {
+    const pc = new RTCPeerConnection(ICE);
+    pc.onicecandidate = e => { if (e.candidate && call) send(call.peer, { t: 'ice', id: call.id, c: e.candidate.toJSON() }); };
+    pc.ontrack = e => { const v = $('callRemote'); if (v.srcObject !== e.streams[0]) v.srcObject = e.streams[0]; v.play && v.play().catch(() => {}); };
+    pc.onconnectionstatechange = () => {
+      if (!call) return;
+      if (pc.connectionState === 'connected') { stopRing(); $('callUi').classList.add('live'); if (!call.t0) startTimer(); }
+      if (pc.connectionState === 'failed') end('Connexion impossible. Vérifiez votre réseau et réessayez.', true);
+      if (pc.connectionState === 'disconnected') { const id = call.id; setTimeout(() => { if (call && call.id === id && call.pc.connectionState === 'disconnected') end('Connexion perdue.', true); }, 8000); }
+    };
+    return pc;
+  }
+  function attach(stream) { call.stream = stream; $('callLocal').srcObject = stream; stream.getTracks().forEach(t => call.pc.addTrack(t, stream)); }
+
+  async function logCall(c, txt) {      /* trace dans la conversation (écrite par l'appelant uniquement) */
+    try { await SB.from('ann_messages').insert({ de_id: me(), a_id: c.peer, annonce_id: c.annonce_id || null, annonce_titre: c.titre || null,
+      de_nom: myName(), de_role: (accountRole() || null), a_nom: c.peerName || null, texte: txt }); } catch (e) {}
+  }
+  const label = k => k === 'video' ? 'Appel vidéo' : 'Appel vocal';
+
+  async function startCall(kind) {
+    const c = cur(); chatErr('');
+    if (!user) { say('Connectez-vous pour appeler.'); return; }
+    if (!c || !c.other) return;
+    if (call) { chatErr('Un appel est déjà en cours.'); return; }
+    if (!window.RTCPeerConnection) { chatErr("Votre navigateur ne permet pas les appels."); return; }
+    let stream;
+    try { stream = await media(kind); } catch (e) { chatErr(e.message); return; }
+    call = { id: uid(), peer: c.other, peerName: c.nom || 'Utilisateur', kind, role: 'out', annonce_id: c.annonce_id, titre: c.titre, pc: null, stream: null, pend: [], t0: 0, answered: false };
+    call.pc = makePc(); attach(stream); ui.show(call); ui.st('Appel en cours…'); beepLoop([440, 480]);
+    try {
+      const offer = await call.pc.createOffer(); await call.pc.setLocalDescription(offer);
+      const ok = await send(call.peer, { t: 'offer', id: call.id, kind, name: myName(), role: accountRole() || '', sdp: call.pc.localDescription.toJSON ? call.pc.localDescription.toJSON() : { type: offer.type, sdp: offer.sdp }, annonce_id: c.annonce_id, titre: c.titre });
+      if (!ok) { end("Impossible de joindre le serveur d'appel. Vérifiez votre connexion.", false, true); return; }
+    } catch (e) { end('Appel impossible.', false, true); return; }
+    const id = call.id;
+    call.to = setTimeout(() => { if (call && call.id === id && !call.answered) end('Pas de réponse.', false, false, 'missed'); }, RING_MS);
+  }
+
+  function ring(p) {
+    if (call) { send(p.from, { t: 'busy', id: p.id }); return; }
+    call = { id: p.id, peer: p.from, peerName: p.name || 'Utilisateur', kind: p.kind === 'video' ? 'video' : 'audio', role: 'in', annonce_id: p.annonce_id, titre: p.titre, offer: p.sdp, pc: null, stream: null, pend: [], t0: 0, answered: false };
+    ui.show(call); ui.st(call.kind === 'video' ? 'Appel vidéo entrant…' : 'Appel vocal entrant…');
+    $('callAccept').hidden = false; $('callEnd').setAttribute('aria-label', 'Refuser'); beepLoop([523, 659]);
+    const id = call.id; call.to = setTimeout(() => { if (call && call.id === id && !call.answered) end('Appel manqué.', false, true); }, RING_MS + 5000);
+    const old = document.title; document.title = '📞 Appel entrant'; call.restore = () => { document.title = old; };
+  }
+  async function accept() {
+    if (!call || call.role !== 'in' || call.answered) return;
+    call.answered = true; $('callAccept').hidden = true; stopRing(); ui.st('Connexion…');
+    let stream;
+    try { stream = await media(call.kind); } catch (e) { const m = e.message; send(call.peer, { t: 'reject', id: call.id }); end(m, false, true); return; }
+    try {
+      call.pc = makePc(); attach(stream);
+      await call.pc.setRemoteDescription(call.offer);
+      for (const c of call.pend) { try { await call.pc.addIceCandidate(c); } catch (e) {} } call.pend = [];
+      const ans = await call.pc.createAnswer(); await call.pc.setLocalDescription(ans);
+      await send(call.peer, { t: 'answer', id: call.id, sdp: { type: ans.type, sdp: ans.sdp } });
+    } catch (e) { send(call.peer, { t: 'hangup', id: call.id }); end('Connexion impossible.', false, true); }
+  }
+  async function onSig(p) {
+    if (!p || !user) return;
+    if (p.t === 'offer') { ring(p); return; }
+    if (!call || p.id !== call.id || p.from !== call.peer) return;
+    if (p.t === 'answer' && call.role === 'out' && !call.answered) {
+      call.answered = true; clearTimeout(call.to); stopRing(); ui.st('Connexion…');
+      try { await call.pc.setRemoteDescription(p.sdp); for (const c of call.pend) { try { await call.pc.addIceCandidate(c); } catch (e) {} } call.pend = []; } catch (e) {}
+    } else if (p.t === 'ice') {
+      if (call.pc && call.pc.remoteDescription) { try { await call.pc.addIceCandidate(p.c); } catch (e) {} } else call.pend.push(p.c);
+    } else if (p.t === 'hangup') { end(call.answered ? 'Appel terminé.' : 'Appel manqué.', false, true);
+    } else if (p.t === 'reject') { end('Appel refusé.', false, true, 'rejected');
+    } else if (p.t === 'busy') { end('La personne est déjà en appel.', false, true, 'missed'); }
+  }
+
+  /* fin d'appel : notify = prévenir l'autre ; silent = ne pas ré-envoyer ; logKind = trace dans le chat (appelant) */
+  function end(msg, notifyPeer, silent, logKind) {
+    const c = call; if (!c) return; call = null;
+    stopRing(); clearInterval(tmrT); clearTimeout(c.to); if (c.restore) c.restore();
+    if (!silent && !notifyPeer) send(c.peer, { t: 'hangup', id: c.id });
+    if (notifyPeer) send(c.peer, { t: 'hangup', id: c.id });
+    try { c.pc && c.pc.close(); } catch (e) {} try { c.stream && c.stream.getTracks().forEach(t => t.stop()); } catch (e) {}
+    const dur = c.t0 ? Math.floor((Date.now() - c.t0) / 1000) : 0;
+    if (c.role === 'out') {
+      if (dur > 0) logCall(c, (c.kind === 'video' ? '🎥 ' : '📞 ') + label(c.kind) + ' · ' + fmt(dur));
+      else logCall(c, (c.kind === 'video' ? '🎥 ' : '📞 ') + (logKind === 'rejected' ? label(c.kind) + ' refusé' : label(c.kind) + ' manqué'));
+    }
+    ui.st(msg || 'Appel terminé.'); $('callUi').classList.remove('live');
+    setTimeout(() => { if (!call) ui.hide(); }, 1400);
+    $('callAccept').hidden = true; $('callEnd').setAttribute('aria-label', 'Raccrocher');
+  }
+
+  $('chatVoice').onclick = () => startCall('audio');
+  $('chatVideo').onclick = () => startCall('video');
+  $('callAccept').onclick = accept;
+  $('callEnd').onclick = () => { if (!call) { ui.hide(); return; }
+    if (call.role === 'in' && !call.answered) { send(call.peer, { t: 'reject', id: call.id }); end('Appel refusé.', false, true); }
+    else end('Appel terminé.', false, false, call.answered ? '' : 'missed'); };
+  $('callMute').onclick = () => { if (!call || !call.stream) return; const t = call.stream.getAudioTracks()[0]; if (!t) return; t.enabled = !t.enabled;
+    $('callMute').classList.toggle('off', !t.enabled); $('callMute').textContent = t.enabled ? '🎤' : '🔇'; };
+  $('callCam').onclick = () => { if (!call || !call.stream) return; const t = call.stream.getVideoTracks()[0]; if (!t) return; t.enabled = !t.enabled;
+    $('callCam').classList.toggle('off', !t.enabled); $('callCam').textContent = t.enabled ? '📷' : '🚫'; };
+  window.addEventListener('beforeunload', () => { if (call) { try { send(call.peer, { t: 'hangup', id: call.id }); } catch (e) {} } });
+})();
+</script>
 </body>
 </html>
