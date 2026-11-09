@@ -1659,10 +1659,10 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
 </div></div>
 
 <!-- Boutique du vendeur : modifier (mShop) et page publique (mShopView) -->
-<div class="mask" id="mShop"><div class="box" role="dialog" aria-modal="true" aria-label="Ma boutique">
+<div class="mask" id="mShop"><div class="box" role="dialog" aria-modal="true" aria-label="Modifier mon profil">
   <button class="x" data-close aria-label="Fermer">×</button>
-  <h2>Ma boutique</h2>
-  <p style="color:var(--muted);margin-top:0">Une boutique complète est <b>obligatoire pour publier</b> : elle rassure les acheteurs. Ces informations sont visibles par tous.</p>
+  <h2>Mon profil vendeur</h2>
+  <p style="color:var(--muted);margin-top:0">Un profil complet est <b>obligatoire pour publier</b> : il rassure les acheteurs. Ces informations sont visibles par tous.</p>
   <div class="shprog"><div class="pf-bar"><i id="shBar" style="width:0"></i></div><small id="shProgTxt" style="color:var(--muted)"></small></div>
   <form id="shopForm">
     <div class="avedit">
@@ -1674,20 +1674,14 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
         <input type="file" id="shPhoto" accept="image/*" hidden>
       </div>
     </div>
-    <label for="shNom">Titre de ma boutique</label><input id="shNom" maxlength="60" required placeholder="Ex. : Boutique Mialy">
-    <label for="shVend">Ce que je vends</label><input id="shVend" maxlength="100" required placeholder="Ex. : Vêtements, chaussures, accessoires">
-    <label for="shDesc">Description de ma boutique <small style="color:var(--muted)">(20 caractères minimum)</small></label><textarea id="shDesc" maxlength="400" rows="3" required placeholder="Qui êtes-vous ? Où êtes-vous ? À quels horaires êtes-vous disponible ?"></textarea>
-    <label for="shPDesc">Description de mes produits <small style="color:var(--muted)">(10 caractères minimum)</small></label><textarea id="shPDesc" maxlength="500" rows="3" required placeholder="Décrivez vos produits : qualité, tailles, marques, prix moyen…"></textarea>
-    <label>Photos de mes produits <small style="color:var(--muted)">(obligatoire · 1 à 6 photos)</small></label>
-    <div class="shph" id="shPhGrid"></div>
-    <button class="btn alt" type="button" id="shPhAdd">＋ Ajouter des photos</button>
-    <input type="file" id="shPhFile" accept="image/*" multiple hidden>
+    <label for="shNom">Nom ou nom de la boutique</label><input id="shNom" maxlength="60" required placeholder="Ex. : Boutique Mialy">
+    <label for="shDesc">Présentation <small style="color:var(--muted)">(20 caractères minimum)</small></label><textarea id="shDesc" maxlength="400" rows="4" required placeholder="Que vendez-vous ? Où ? À quels horaires ?"></textarea>
     <label for="shVille">Ville</label><input id="shVille" maxlength="60" required placeholder="Ex. : Antananarivo">
-    <label for="shTel">Téléphone / WhatsApp <small style="color:var(--muted)">(numéro réel, toujours joignable par les clients)</small></label><div class="phonebox"><span>🇲🇬 +261</span><input id="shTel" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="34 12 345 67" required></div><p class="phint" id="shTelHint">9 chiffres, commençant par 32, 33, 34, 36, 37 ou 38</p>
+    <label for="shTel">Téléphone / WhatsApp (numéro réel)</label><div class="phonebox"><span>🇲🇬 +261</span><input id="shTel" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="34 12 345 67" required></div><p class="phint" id="shTelHint">9 chiffres, commençant par 32, 33, 34, 36, 37 ou 38</p>
     <label for="shMail">Adresse e-mail</label><input id="shMail" type="email" readonly style="background:var(--paper)">
     <p class="phint" style="margin-top:4px">E-mail de votre compte : les acheteurs peuvent vous écrire dessus.</p>
     <p class="msg" id="shMsg" role="status"></p>
-    <div class="act" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button class="btn cta" id="shGo" type="submit">Enregistrer ma boutique</button><button class="btn" id="shSee" type="button" hidden>Voir ma page publique</button><button class="btn plain" id="shMine" type="button">📦 Voir mes annonces</button></div>
+    <div class="act" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button class="btn cta" id="shGo" type="submit">Enregistrer mon profil</button><button class="btn" id="shSee" type="button" hidden>Voir ma page publique</button></div>
   </form>
 </div></div>
 <div class="mask" id="mShopView"><div class="box wide" role="dialog" aria-modal="true" aria-label="Boutique">
@@ -2834,33 +2828,21 @@ $('roleChip').onclick = () => { if (!user) showRoleGate(); else if (accountRole(
 /* ===== Boutique du vendeur : « Ma boutique » (modifier) + page publique (table ann_boutiques) ===== */
 const shopErr = e => /ann_boutiques|42P01|relation/.test(((e && e.code) || '') + ' ' + ((e && e.message) || '')) ? "La boutique n'est pas encore activée sur le site." : ((e && e.message) || 'Erreur');
 /* --- Photo de profil : réduite à 400 px côté navigateur avant l'envoi (rapide, même en 3G) --- */
-var shBlob = null, shAvatar = '', shRemove = false, myShop = null, shForce = false, shPh = [];
-/* Infos en plus (ce que je vends, description des produits, photos des produits) : rangées dans la colonne « description » existante, sans modifier la base */
-const BPX = '\n<!' + '--bp:', BPEND = '--' + '>';
-function shopSplit(d) {
-  const t = String(d || ''), i = t.indexOf(BPX); if (i < 0) return { text: t.trim(), x: {} };
-  let x = {}; try { x = JSON.parse(t.slice(i + BPX.length).replace(/--\s*>\s*$/, '')) || {}; } catch (e) {}
-  return { text: t.slice(0, i).trim(), x: (x && typeof x === 'object') ? x : {} };
-}
-const shopPack = (text, x) => String(text || '').trim() + BPX + JSON.stringify(x) + BPEND;
+var shBlob = null, shAvatar = '', shRemove = false, myShop = null, shForce = false;
 function initial(n) { return esc(String(n || '?').trim().charAt(0).toUpperCase() || '?'); }
 function avatarHtml(url, nom) { return safeUrl(url) ? `<img src="${esc(url)}" alt="" loading="lazy">` : initial(nom); }
 /* Profil complet = photo + nom + ville + présentation + vrai téléphone malgache + e-mail */
 function shopMissing(d) {
   d = d || {}; const m = [];
-  if (!safeUrl(d.avatar_url)) m.push('photo de profil');
+  if (!safeUrl(d.avatar_url)) m.push('photo');
   if (!String(d.nom || '').trim()) m.push('nom');
   if (!String(d.ville || '').trim()) m.push('ville');
-  const sp = shopSplit(d.description), x = sp.x;
-  if (sp.text.length < 20) m.push('description de la boutique');
-  if (!String(x.vend || '').trim()) m.push('ce que vous vendez');
-  if (String(x.pdesc || '').trim().length < 10) m.push('description des produits');
-  if (!(Array.isArray(x.photos) ? x.photos : []).filter(safeUrl).length) m.push('photos des produits');
+  if (String(d.description || '').trim().length < 20) m.push('présentation');
   if (!mgTel(d.telephone || '')) m.push('téléphone');
   if (!/^\S+@\S+\.\S+$/.test(d.email || '')) m.push('e-mail');
   return m;
 }
-const shopPct = d => Math.round((9 - shopMissing(d).length) / 9 * 100);
+const shopPct = d => Math.round((6 - shopMissing(d).length) / 6 * 100);
 function shrinkImage(file, max = 400, q = .85) {
   return new Promise((ok, ko) => {
     const img = new Image(), u = URL.createObjectURL(file);
@@ -2875,8 +2857,7 @@ function shrinkImage(file, max = 400, q = .85) {
   });
 }
 function shFormData() {
-  return { avatar_url: (shBlob || (shAvatar && !shRemove)) ? (shAvatar || 'https://local/photo') : '', nom: $('shNom').value,
-    description: shopPack($('shDesc').value, { vend: $('shVend').value.trim(), pdesc: $('shPDesc').value.trim(), photos: shPh.map(p => p.blob ? 'https://local/photo' : p.url) }),
+  return { avatar_url: (shBlob || (shAvatar && !shRemove)) ? (shAvatar || 'https://local/photo') : '', nom: $('shNom').value, description: $('shDesc').value,
     ville: $('shVille').value, telephone: $('shTel').value, email: $('shMail').value };
 }
 function shProgress() {
@@ -2900,30 +2881,8 @@ $('shPhoto').onchange = async e => {
   try { shBlob = await shrinkImage(f); shRemove = false; shPreview(); } catch (err) { msg.textContent = err.message; }
 };
 $('shAvDel').onclick = () => { shBlob = null; shRemove = true; shPreview(); };
-function shPhRender() {
-  const g = $('shPhGrid'); g.innerHTML = '';
-  shPh.forEach((p, i) => {
-    const d = document.createElement('div'); d.className = 'shph-i';
-    const im = document.createElement('img'); im.alt = ''; im.src = p.blob ? p.prev : p.url;
-    const b = document.createElement('button'); b.type = 'button'; b.textContent = '×'; b.setAttribute('aria-label', 'Retirer cette photo');
-    b.onclick = () => { if (p.prev) URL.revokeObjectURL(p.prev); shPh.splice(i, 1); shPhRender(); };
-    d.append(im, b); g.appendChild(d);
-  });
-  $('shPhAdd').hidden = shPh.length >= 6; shProgress();
-}
-$('shPhAdd').onclick = () => $('shPhFile').click();
-$('shPhFile').onchange = async e => {
-  const fs = Array.from(e.target.files || []); e.target.value = '';
-  const msg = $('shMsg'); msg.className = 'msg'; msg.textContent = '';
-  for (const f of fs) {
-    if (shPh.length >= 6) { msg.textContent = '6 photos au maximum.'; break; }
-    if (!/^image\//.test(f.type)) { msg.textContent = 'Choisissez des images (JPG ou PNG).'; continue; }
-    try { const blob = await shrinkImage(f, 1200, .85); shPh.push({ blob, prev: URL.createObjectURL(blob) }); } catch (err) { msg.textContent = err.message; }
-  }
-  shPhRender();
-};
 mgPhoneAttach($('shTel'), $('shTelHint'));
-['shNom', 'shDesc', 'shVend', 'shPDesc', 'shVille', 'shTel'].forEach(id => $(id).addEventListener('input', () => { if (id === 'shNom' && !shBlob && !(shAvatar && !shRemove)) shPreview(); else shProgress(); }));
+['shNom', 'shDesc', 'shVille', 'shTel'].forEach(id => $(id).addEventListener('input', () => { if (id === 'shNom' && !shBlob && !(shAvatar && !shRemove)) shPreview(); else shProgress(); }));
 
 /* --- Rond de profil dans l'en-tête (à côté du panier) --- */
 async function loadMyShop() {
@@ -2953,15 +2912,12 @@ $('btnProfile').onclick = () => { if (!user) return; if (accountRole() === 'vend
 
 async function openMyShop(force) {
   shForce = force === true;
-  const msg = $('shMsg'); msg.className = 'msg'; msg.textContent = shForce ? 'Complétez votre boutique pour pouvoir publier une annonce.' : '';
+  const msg = $('shMsg'); msg.className = 'msg'; msg.textContent = shForce ? 'Complétez votre profil pour pouvoir publier une annonce.' : '';
   const { data, error } = await SB.from('ann_boutiques').select('*').eq('user_id', user.id).maybeSingle();
   if (error) msg.textContent = shopErr(error);
   const m = user.user_metadata || {};
   shBlob = null; shRemove = false; shAvatar = (data && data.avatar_url) || '';
-  $('shNom').value = (data && data.nom) || m.full_name || m.name || ''; const sp = shopSplit(data && data.description);
-  $('shDesc').value = sp.text; $('shVend').value = sp.x.vend || ''; $('shPDesc').value = sp.x.pdesc || '';
-  shPh = (Array.isArray(sp.x.photos) ? sp.x.photos : []).filter(safeUrl).slice(0, 6).map(u => ({ url: u }));
-  shPhRender();
+  $('shNom').value = (data && data.nom) || m.full_name || m.name || ''; $('shDesc').value = (data && data.description) || '';
   $('shVille').value = (data && data.ville) || m.region || '';
   $('shTel').value = (data && data.telephone) || m.phone || m.telephone || ''; $('shTel').dispatchEvent(new Event('input'));
   $('shMail').value = user.email || '';
@@ -2971,20 +2927,8 @@ $('shopForm').onsubmit = async e => {
   e.preventDefault(); const msg = $('shMsg'), go = $('shGo'); msg.className = 'msg'; msg.textContent = '';
   const tel = mgTel($('shTel').value);
   if (!tel) { msg.textContent = TEL_ERR; $('shTel').focus(); return; }
-  const vend = $('shVend').value.trim(), pdesc = $('shPDesc').value.trim();
-  if (!vend) { msg.textContent = 'Indiquez ce que vous vendez.'; $('shVend').focus(); return; }
-  if (pdesc.length < 10) { msg.textContent = 'Décrivez vos produits (10 caractères minimum).'; $('shPDesc').focus(); return; }
-  if (!shPh.length) { msg.textContent = 'Ajoutez au moins une photo de vos produits : elle est obligatoire.'; $('shPhAdd').focus(); return; }
   go.disabled = true;
   try {
-    const purls = [];
-    for (let i = 0; i < shPh.length; i++) {
-      const p = shPh[i]; if (!p.blob) { purls.push(p.url); continue; }
-      const bk = SB.storage.from('annonces'), pt = `${user.id}/boutique_${Date.now()}_${i}.jpg`;
-      const up2 = await bk.upload(pt, p.blob, { contentType: 'image/jpeg' });
-      if (up2.error) throw new Error('Photo de produit non envoyée : ' + up2.error.message);
-      purls.push(bk.getPublicUrl(pt).data.publicUrl);
-    }
     let url = shRemove ? '' : shAvatar;
     if (shBlob) {
       const bucket = SB.storage.from('annonces'), path = `${user.id}/profil_${Date.now()}.jpg`;
@@ -2992,15 +2936,15 @@ $('shopForm').onsubmit = async e => {
       if (up.error) throw new Error('Photo non envoyée : ' + up.error.message);
       url = bucket.getPublicUrl(path).data.publicUrl;
     }
-    const row = { user_id: user.id, nom: $('shNom').value.trim(), description: shopPack($('shDesc').value, { vend, pdesc, photos: purls }), ville: $('shVille').value.trim(),
+    const row = { user_id: user.id, nom: $('shNom').value.trim(), description: $('shDesc').value.trim(), ville: $('shVille').value.trim(),
       telephone: tel, email: user.email || '', avatar_url: url || null, maj_le: new Date().toISOString() };
     const { error } = await SB.from('ann_boutiques').upsert(row, { onConflict: 'user_id' });
     if (error) throw error;
-    shAvatar = url; shBlob = null; shRemove = false; shPh = purls.map(u => ({ url: u })); shPhRender(); shPreview(); $('shSee').hidden = false; await loadMyShop();
+    shAvatar = url; shBlob = null; shRemove = false; shPreview(); $('shSee').hidden = false; await loadMyShop();
     const miss = shopMissing(row);
-    if (miss.length) { msg.textContent = 'Boutique enregistrée, mais il manque : ' + miss.join(', ') + '. Vous ne pourrez pas publier avant.'; }
-    else if (shForce) { shForce = false; close('mShop'); window.bpSay && window.bpSay('Boutique complète ✓ Vous pouvez publier'); $('btnPost').click(); }
-    else { msg.className = 'msg ok'; msg.textContent = 'Boutique complète et enregistrée ✓'; }
+    if (miss.length) { msg.textContent = 'Profil enregistré, mais il manque : ' + miss.join(', ') + '. Vous ne pourrez pas publier avant.'; }
+    else if (shForce) { shForce = false; close('mShop'); window.bpSay && window.bpSay('Profil complet ✓ Vous pouvez publier'); $('btnPost').click(); }
+    else { msg.className = 'msg ok'; msg.textContent = 'Profil complet et enregistré ✓'; }
   } catch (err) {
     msg.textContent = /avatar_url|telephone|email|column/i.test((err && err.message) || '') ? "Le profil n'est pas encore activé : exécutez profil-vendeur.sql dans Supabase." : shopErr(err);
   }
@@ -3019,7 +2963,6 @@ async function openShop(uid) {
   const tel = String(shop.telephone || '').replace(/[^\d+]/g, '');
   const since = shop.cree_le ? new Date(shop.cree_le).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }) : '';
   const miss = shopMissing(shop), complete = !miss.length;
-  const sp = shopSplit(shop.description), phs = (Array.isArray(sp.x.photos) ? sp.x.photos : []).filter(safeUrl);
   const badges = [safeUrl(shop.avatar_url) ? '📷 Photo' : '', tel ? '📞 Téléphone' : '', shop.email ? '✉️ E-mail' : '', shop.description ? '📝 Présentation' : '', since ? '🗓️ Membre depuis ' + since : '']
     .filter(Boolean);
   const firstAd = list[0];
@@ -3037,16 +2980,13 @@ async function openShop(uid) {
       <button class="btn plain" id="pfShare" type="button">🔗 Partager</button>
     </div>
     <div id="pfAbt" class="pf-about"><dl>
-      <dt>Ce que je vends</dt><dd>${esc(sp.x.vend || 'Non renseigné')}</dd>
-      <dt>La boutique</dt><dd>${esc(sp.text || 'Non renseignée')}</dd>
-      <dt>Mes produits</dt><dd>${esc(sp.x.pdesc || 'Non renseignés')}</dd>
+      <dt>Présentation</dt><dd>${esc(shop.description || 'Non renseignée')}</dd>
       <dt>Ville</dt><dd>${esc(shop.ville || 'Non renseignée')}</dd>
       <dt>Téléphone</dt><dd>${tel ? `<a href="tel:${esc(tel)}">${esc(shop.telephone)}</a>` : 'Non renseigné'}</dd>
       <dt>E-mail</dt><dd>${shop.email ? `<a href="mailto:${esc(shop.email)}">${esc(shop.email)}</a>` : 'Non renseigné'}</dd>
       <dt>Membre depuis</dt><dd>${esc(since || '—')}</dd></dl>
       ${badges.length ? '<div class="trust">' + badges.map(x => `<span>${esc(x)}</span>`).join('') + '</div>' : ''}</div>
     ${mine && !complete ? `<div class="pf-prog"><b>Profil complété à ${shopPct(shop)} %</b><div class="pf-bar"><i style="width:${shopPct(shop)}%"></i></div>Il manque : ${esc(miss.join(', '))}. Un profil complet est obligatoire pour publier et rassure les acheteurs.</div>` : ''}
-    ${phs.length ? '<h3 class="pf-h">Photos de mes produits</h3><div class="shgal">' + phs.map(u => `<a href="${esc(u)}" target="_blank" rel="noopener"><img src="${esc(u)}" alt="" loading="lazy"></a>`).join('') + '</div>' : ''}
     <h3 class="pf-h">Publications (${list.length})</h3>
     <div id="pfPub" class="shopads">${list.length ? list.map((x, i) => { const p0 = cssUrl(x.photos && x.photos[0]);
       return `<div class="pf-post"><div class="shopad" data-i="${i}" role="button" tabindex="0"><div class="th" ${p0 ? `style="background-image:url('${p0}')"` : ''}>${p0 ? '' : 'Pas de photo'}</div>
@@ -3910,13 +3850,6 @@ body:not(.landing) .brand b{font:700 clamp(1.25rem,5.2vw,1.9rem)/1.1 Georgia,"Ti
 .pwrap:has(.pbtn[hidden]){display:none}
 .rolecap{position:absolute;top:calc(100% + 2px);left:50%;transform:translateX(-50%);font-size:.62rem;font-weight:800;letter-spacing:.03em;color:var(--muted);white-space:nowrap;pointer-events:none;line-height:1}
 .rolecap:empty{display:none}
-.shph,.shgal{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0 10px}
-.shph:empty{display:none}
-.shph-i{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;background:var(--paper)}
-.shph-i img,.shgal img{width:100%;height:100%;object-fit:cover;display:block}
-.shph-i button{position:absolute;top:4px;right:4px;width:26px;height:26px;border:0;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;font-size:18px;line-height:1;cursor:pointer}
-.shgal a{display:block;aspect-ratio:1;border-radius:10px;overflow:hidden;background:var(--paper)}
-@media(min-width:600px){.shgal{grid-template-columns:repeat(4,1fr)}}
 </style>
 <script>
 (function () {
@@ -3939,12 +3872,9 @@ body:not(.landing) .brand b{font:700 clamp(1.25rem,5.2vw,1.9rem)/1.1 Georgia,"Ti
   chip.onclick = () => {
     if (!user) { showRoleGate(); return; }
     if (!mine()) return;
-    if (mine() === 'vendeur') { openMyShop(); return; }   /* « Ma boutique » ouvre le formulaire de la boutique */
     window.bpMode = !window.bpMode; ui(); loadAds();
     window.bpSay && window.bpSay(window.bpMode ? (mine() === 'vendeur' ? 'Ma boutique : vos annonces' : 'Ma commande : votre panier') : 'Toutes les annonces');
   };
-  window.bpShowMine = () => { window.bpMode = true; ui(); loadAds(); window.bpSay && window.bpSay('Ma boutique : vos annonces'); };
-  $('shMine').onclick = () => { close('mShop'); window.bpShowMine(); };
   const ocs = cartSet; window.cartSet = function (v) { ocs.apply(this, arguments); if (window.bpMode && mine() === 'client') loadAds(); };
   ui();
 })();
