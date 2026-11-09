@@ -1301,10 +1301,10 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
    <!-- Menu : 3 barres (comme Dribbble) -->
    <div class="menu-wrap">
     <button class="dots" id="btnMenu" aria-label="Menu" title="Menu" aria-expanded="false">
-     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+     <span class="bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="dotl">MENU</span>
     </button>
    </div>
-   <div class="logo" id="logo" role="button" tabindex="0" title="Retour à l'accueil" aria-label="Accueil"><span id="typed"></span><span class="brand"><b>B</b></span></div>
+   <div class="logo" id="logo" role="button" tabindex="0" title="Retour à l'accueil" aria-label="Accueil"><span id="typed"></span><span class="brand"><b>Bustoplay</b></span></div>
    <div class="links">
    </div>
    <button class="rolechip" id="roleChip" type="button" hidden></button>
@@ -1714,7 +1714,7 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
 
 <div class="ovl" id="menuOv" hidden></div>
 <div class="dd" id="menuList" role="navigation" aria-label="Menu principal" hidden>
-  <div class="ddhead"><span class="ddlogo">B</span><button type="button" id="menuClose" class="ddx" aria-label="Fermer le menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="ddhead"><span class="ddlogo">MENU</span><button type="button" id="menuClose" class="ddx" aria-label="Fermer le menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
       <div class="mgt">Navigation</div>
       <button id="mnHome">🏠 Accueil</button>
       <button id="mnAds">📋 Annonces</button>
@@ -3752,13 +3752,17 @@ $('footHelp').onclick = startGuide;
 
 <style>
 /* ===== Menu en tiroir (blanc, ou sombre en mode sombre) + en-tête B + trois barres ===== */
-.dots svg{width:30px;height:30px}
-body:not(.landing) .dots{width:44px;height:44px}
-body:not(.landing) .dots svg{stroke-width:2.4}
-body:not(.landing) .logo{order:-1;margin-right:0}
-body:not(.landing) .menu-wrap{order:0;margin:0 auto 0 0}
-body:not(.landing) .brand b{font:700 2.2rem/1 Georgia,"Times New Roman",serif;color:var(--ink);letter-spacing:0}
-#menuList .ddlogo{font:700 2.2rem/1 Georgia,"Times New Roman",serif;color:var(--ink);text-shadow:none}
+.dots{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;width:auto;min-width:50px;height:auto;padding:4px 6px}
+.dots .bars{display:flex;flex-direction:column;gap:5px}
+.dots .bars i{display:block;width:34px;height:5px;background:currentColor;border-radius:0}
+.dots .dotl{font-size:.68rem;font-weight:800;letter-spacing:.05em;line-height:1;color:currentColor}
+body.landing .dots{filter:drop-shadow(0 2px 3px rgba(40,15,0,.55))}
+body:not(.landing) .dots{color:var(--ink)}
+body:not(.landing) .menu-wrap{order:-1;margin:0}
+body:not(.landing) .logo{order:0;flex:1 1 0;min-width:0;margin:0;text-align:center}
+body:not(.landing) .brand{overflow:hidden}
+body:not(.landing) .brand b{font:700 clamp(1.25rem,5.2vw,1.9rem)/1.1 Georgia,"Times New Roman",serif;color:var(--forest);letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#menuList .ddlogo{font:800 1rem/1 "Segoe UI",Roboto,Arial,sans-serif;letter-spacing:.06em;color:var(--ink);text-shadow:none}
 #menuList{background:var(--surf,#fff);color:var(--ink);padding:0 0 24px;gap:0;border-radius:0;width:min(330px,88vw)}
 #menuList .ddhead{margin:0;padding:14px 16px;border-bottom:1px solid var(--line);background:none}
 #menuList .mg>[hidden]{display:none!important}
