@@ -1699,7 +1699,7 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
   </div>
   <div id="chatList"></div>
   <div id="chatThread">
-    <div class="chat-top"><button type="button" class="btn alt" id="chatBack" style="padding:6px 12px" aria-label="Retour" title="Retour">←</button><div class="who" id="chatWho"></div><div class="chat-act"><button type="button" id="chatInfoBtn" aria-label="Infos du vendeur" title="Infos">ℹ️</button><button type="button" id="chatVoice" aria-label="Appel vocal" title="Appel vocal">📞</button><button type="button" id="chatVideo" aria-label="Appel vidéo" title="Appel vidéo">🎥</button></div></div><div id="chatInfo" hidden></div>
+    <div class="chat-top"><button type="button" class="btn alt" id="chatBack" style="padding:6px 12px" aria-label="Retour" title="Retour">←</button><div class="who" id="chatWho"></div><div class="chat-act"><button type="button" id="chatVoice" aria-label="Appel vocal" title="Appel vocal">📞</button><button type="button" id="chatVideo" aria-label="Appel vidéo" title="Appel vidéo">🎥</button></div></div>
     <div id="chatMsgs" aria-live="polite"></div>
     <form class="chat-form" id="chatForm"><textarea id="chatText" rows="1" maxlength="1000" placeholder="Écrivez votre message…" aria-label="Votre message"></textarea><button class="btn cta" id="chatSend" type="submit">Envoyer</button></form>
     <p class="msg" id="chatErr" role="status"></p>
@@ -3126,6 +3126,18 @@ fitQHint();
   const TB = 'ann_messages';
   const S = { convs: [], cur: null, tick: 0, busy: false, f: 'all', q: '' };
   window.bpChatCur = () => S.cur;
+  const AVP = {}; window.bpAvUrl = id => AVP[id] || '';
+  const avIn = c => { const u = AVP[c.other]; return u ? `<img src="${esc(u)}" alt="">` : esc((c.nom || '?').trim().charAt(0).toUpperCase()); };
+  async function loadAv() {
+    const ids = [...new Set([...S.convs.map(c => c.other), S.cur && S.cur.other].filter(x => x && !(x in AVP)))];
+    if (!ids.length || !sbReady) return;
+    ids.forEach(id => AVP[id] = '');
+    try {
+      const { data } = await SB.from('ann_boutiques').select('user_id,avatar_url').in('user_id', ids);
+      let got = false; (data || []).forEach(r => { if (r.avatar_url && (typeof safeUrl !== 'function' || safeUrl(r.avatar_url))) { AVP[r.user_id] = r.avatar_url; got = true; } });
+      if (got && isOpen()) { if (S.cur) renderThread(false); else if ($('chatList').style.display !== 'none') renderList(); }
+    } catch (e) {}
+  }
   const AVC = ['#0f7a4f','#2f7fe0','#a2501a','#8e44ad','#c0392b','#00838f','#6d4c41','#ad1457'];
   const sameDay = (a, b) => a.toDateString() === b.toDateString();
   const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
@@ -3176,6 +3188,7 @@ fitQHint();
     S.convs = [...map.values()].map(c => { c.nom = c.nom || c.fb || 'Utilisateur'; return c; })
       .sort((a, b) => new Date(b.msgs[b.msgs.length - 1].cree_le) - new Date(a.msgs[a.msgs.length - 1].cree_le));
     if (S.cur) { const f = S.convs.find(c => c.key === S.cur.key); if (f) S.cur = f; }
+    loadAv();
   }
   function badge() {
     const n = S.convs.reduce((t, c) => t + c.unread, 0), b = $('msgBadge');
@@ -3210,7 +3223,7 @@ fitQHint();
     if (!items.length) { box.innerHTML = '<div class="chat-empty">' + (S.f === 'unread' && !q ? 'Aucun message non lu 🎉' : 'Aucune conversation trouvée.') + '</div>'; return; }
     box.innerHTML = items.map(({ c, i }) => {
       const l = c.msgs[c.msgs.length - 1], mine = l.de_id === me();
-      return `<button type="button" class="cv${c.unread ? ' unread' : ''}" data-i="${i}"><span class="av" style="background:${avc(c.nom)}">${esc((c.nom || '?').trim().charAt(0).toUpperCase())}</span>
+      return `<button type="button" class="cv${c.unread ? ' unread' : ''}" data-i="${i}"><span class="av" style="background:${avc(c.nom)}">${avIn(c)}</span>
         <span class="tx"><span class="r1"><b>${esc(c.nom)}${roleTag(c.role)}</b><time>${esc(listTime(l.cree_le))}</time></span>
         <span class="r2"><span class="pv">${mine ? 'Vous : ' : ''}${esc(l.texte)}</span>${c.unread ? `<span class="un">${c.unread}</span>` : ''}</span>
         ${c.titre ? `<span class="tg">📦 ${esc(c.titre)}</span>` : ''}</span></button>`;
@@ -3221,7 +3234,7 @@ fitQHint();
   function renderThread(scroll) {
     const c = S.cur; if (!c) return;
     showView('thread'); $('chatErr').textContent = '';
-    $('chatWho').innerHTML = `<span class="av sm" style="background:${avc(c.nom)}">${esc((c.nom || '?').trim().charAt(0).toUpperCase())}</span><div><b>${esc(c.nom || 'Annonceur')}${roleTag(c.role)}</b><small>${esc(c.titre || 'Annonce')}</small></div>`;
+    $('chatWho').innerHTML = `<span class="av sm" style="background:${avc(c.nom)}">${avIn(c)}</span><div><b>${esc(c.nom || 'Annonceur')}${roleTag(c.role)}</b><small>${esc(c.titre || 'Annonce')}</small></div>`;
     const box = $('chatMsgs'), atEnd = scroll || box.scrollHeight - box.scrollTop - box.clientHeight < 60;
     let lastDay = '';
     box.innerHTML = c.msgs.length ? c.msgs.map(m => {
@@ -3265,7 +3278,7 @@ fitQHint();
       else { try { const { data } = await SB.from('ann_boutiques').select('nom').eq('user_id', a.user_id).maybeSingle(); c.nom = (data && data.nom) || ''; } catch (e) {} }
       c.nom = c.nom || 'Annonceur';
     }
-    S.cur = c; renderThread(true);
+    S.cur = c; renderThread(true); loadAv();
     if (a.prefill && !c.msgs.length) $('chatText').value = a.prefill;
     $('chatText').focus();
   };
@@ -3501,20 +3514,14 @@ $('footHelp').onclick = startGuide;
 
 <style>
 /* ===== Messagerie : infos vendeur + appels ===== */
-.chat-top .who{flex:1;min-width:0}
+.chat-top{padding-right:44px}
+.chat-top .who{flex:1;min-width:0;cursor:pointer}
+.av img,.av.sm img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
+.cv .av,.chat-top .av.sm{overflow:hidden}
 .chat-act{display:flex;gap:6px;flex:none}
 .chat-act button{width:38px;height:38px;border-radius:50%;border:1.5px solid var(--line);background:#fff;cursor:pointer;font-size:1.05rem;display:grid;place-items:center;padding:0}
 .chat-act button:hover{background:var(--paper)}
 .chat-act button.on{background:#f4ece0}
-#chatInfo{background:#fbf6ee;border:1px solid var(--line);border-radius:14px;padding:12px;margin:8px 0 0;font-size:.9rem;max-height:46%;overflow-y:auto}
-#chatInfo .ih{display:flex;align-items:center;gap:10px;margin-bottom:6px}
-#chatInfo .ih .ia{width:44px;height:44px;border-radius:50%;background:var(--forest);color:#fff;display:grid;place-items:center;font-weight:800;flex:none;overflow:hidden}
-#chatInfo .ih .ia img{width:100%;height:100%;object-fit:cover}
-#chatInfo .ih b{display:block}
-#chatInfo .ih small{color:var(--muted)}
-#chatInfo p{margin:6px 0;color:var(--ink)}
-#chatInfo .il{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-#chatInfo .il a,#chatInfo .il button{border:1.5px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;padding:6px 12px;font:600 .8rem/1.2 inherit;cursor:pointer;text-decoration:none}
 #callUi{position:fixed;inset:0;z-index:3000;display:none;flex-direction:column;background:#1d1209;color:#fff}
 #callUi.open{display:flex}
 #callUi .cbg{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:24px}
@@ -3567,29 +3574,9 @@ $('footHelp').onclick = startGuide;
   const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
   const initial = n => (String(n || '?').trim().charAt(0) || '?').toUpperCase();
 
-  /* ---------- Infos du vendeur ---------- */
-  let infoFor = '';
-  async function toggleInfo() {
-    const c = cur(), box = $('chatInfo'), btn = $('chatInfoBtn'); if (!c) return;
-    if (!box.hidden && infoFor === c.other) { box.hidden = true; btn.classList.remove('on'); return; }
-    infoFor = c.other; box.hidden = false; btn.classList.add('on'); box.innerHTML = '<p style="color:var(--muted)">Chargement…</p>';
-    let s = {};
-    try { const r = await SB.from('ann_boutiques').select('*').eq('user_id', c.other).maybeSingle(); s = r.data || {}; } catch (e) {}
-    if (infoFor !== c.other) return;
-    const nom = s.nom || c.nom || 'Utilisateur';
-    const tel = String(s.telephone || '').replace(/[^\d+]/g, '');
-    const av = (typeof safeUrl === 'function' && safeUrl(s.avatar_url)) ? `<img src="${esc(s.avatar_url)}" alt="">` : esc(initial(nom));
-    const since = s.cree_le ? new Date(s.cree_le).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }) : '';
-    box.innerHTML = `<div class="ih"><span class="ia">${av}</span><div><b>${esc(nom)}</b><small>${esc(s.ville || 'Madagascar')}${since ? ' · Membre depuis ' + esc(since) : ''}</small></div></div>`
-      + (s.description ? `<p>${esc(s.description)}</p>` : '<p style="color:var(--muted)">Ce vendeur n\'a pas encore rempli sa présentation.</p>')
-      + (tel ? `<p>📞 ${esc(s.telephone)}</p>` : '') + (s.email ? `<p>✉️ ${esc(s.email)}</p>` : '')
-      + `<div class="il">${tel ? `<a href="tel:${esc(tel)}">📱 Appeler (réseau mobile)</a>` : ''}`
-      + `<button type="button" id="ciProfile">👤 Voir le profil</button></div>`;
-    const pb = $('ciProfile');
-    if (pb) pb.onclick = () => { if (typeof openShop === 'function') { close('mMsg'); openShop(c.other); } };
-  }
-  $('chatInfoBtn').onclick = toggleInfo;
-  $('chatBack').addEventListener('click', () => { $('chatInfo').hidden = true; $('chatInfoBtn').classList.remove('on'); infoFor = ''; });
+  /* ---------- Profil du vendeur : clic sur la photo / le nom ---------- */
+  $('chatWho').onclick = () => { const c = cur(); if (c && c.other && typeof openShop === 'function') { close('mMsg'); openShop(c.other); } };
+  $('chatWho').title = 'Voir le profil';
 
   /* ---------- Sons ---------- */
   document.addEventListener('click', () => { try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); actx.resume(); } catch (e) {} }, { once: true });
@@ -3630,7 +3617,7 @@ $('footHelp').onclick = startGuide;
   /* ---------- Interface d'appel ---------- */
   const ui = {
     show(c) { const u = $('callUi'); u.className = 'open ' + (c.kind === 'video' ? 'video' : 'audio') + (c.kind === 'video' ? '' : ' nolocal');
-      $('callAv').textContent = initial(c.peerName); $('callName').textContent = c.peerName || 'Utilisateur';
+      { const u = window.bpAvUrl && window.bpAvUrl(c.peer); $('callAv').innerHTML = u ? `<img src="${esc(u)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">` : esc(initial(c.peerName)); $('callAv').style.overflow = 'hidden'; } $('callName').textContent = c.peerName || 'Utilisateur';
       $('callCam').hidden = c.kind !== 'video'; $('callMute').classList.remove('off'); $('callCam').classList.remove('off'); },
     st(t) { $('callSt').textContent = t; },
     hide() { $('callUi').className = ''; $('callRemote').srcObject = null; $('callLocal').srcObject = null; }
