@@ -1139,6 +1139,12 @@ body.landing .hero p{max-width:62ch;margin-bottom:16px}
 .pbtn svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .pbtn.todo::after{content:"";position:absolute;top:2px;right:2px;width:11px;height:11px;border-radius:50%;background:#f28c1b;border:2px solid #fff}
 @media(max-width:560px){.pbtn{width:44px;height:44px}}
+.vendchips{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 2px}
+.vendchips label{margin:0;cursor:pointer}
+.vendchips input{position:absolute;opacity:0;pointer-events:none}
+.vendchips span{display:inline-block;padding:7px 13px;border-radius:999px;border:1.5px solid var(--line);background:#fff;font-weight:600;font-size:.86rem;transition:.15s}
+.vendchips input:checked+span{background:var(--forest);border-color:var(--forest);color:#fff}
+.vendchips input:focus-visible+span{outline:2px solid var(--forest);outline-offset:2px}
 .avedit{display:flex;align-items:center;gap:14px;margin:6px 0 4px}
 .avprev{flex:none;width:84px;height:84px;border-radius:50%;background:var(--forest);color:#fff;display:grid;place-items:center;overflow:hidden;font:700 2rem Georgia,serif;border:3px solid var(--line)}
 .avprev img{width:100%;height:100%;object-fit:cover}
@@ -1670,16 +1676,18 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
       <div>
         <button class="btn alt" type="button" id="shAvPick">Choisir une photo</button>
         <button class="btn plain" type="button" id="shAvDel" hidden>Retirer</button>
-        <small>Photo de vous ou de votre boutique (JPG ou PNG).</small>
+        <small><b>Photo obligatoire</b> : votre boutique, votre logo ou vous (JPG ou PNG).</small>
         <input type="file" id="shPhoto" accept="image/*" hidden>
       </div>
     </div>
-    <label for="shNom">Nom ou nom de la boutique</label><input id="shNom" maxlength="60" required placeholder="Ex. : Boutique Mialy">
-    <label for="shDesc">Présentation <small style="color:var(--muted)">(20 caractères minimum)</small></label><textarea id="shDesc" maxlength="400" rows="4" required placeholder="Que vendez-vous ? Où ? À quels horaires ?"></textarea>
+    <label for="shNom">Titre de votre boutique</label><input id="shNom" maxlength="60" required placeholder="Ex. : Boutique Mialy">
+    <label id="shVendLbl">Que vendez-vous ? <small style="color:var(--muted)">(choisissez au moins une catégorie)</small></label><div class="vendchips" id="shVendBox" role="group" aria-labelledby="shVendLbl"></div>
+    <label for="shVendAutre">Précisez vos produits <small style="color:var(--muted)">(facultatif)</small></label><input id="shVendAutre" maxlength="80" placeholder="Ex. : robes, sacs à main, bijoux">
+    <label for="shDesc">À propos de votre boutique <small style="color:var(--muted)">(20 caractères minimum)</small></label><textarea id="shDesc" maxlength="400" rows="4" required placeholder="Présentez-vous : votre histoire, vos produits, vos horaires, où vous trouver…"></textarea><small id="shDescCnt" style="color:var(--muted);display:block;text-align:right">0 / 400</small>
     <label for="shVille">Ville</label><input id="shVille" maxlength="60" required placeholder="Ex. : Antananarivo">
     <label for="shTel">Téléphone / WhatsApp (numéro réel)</label><div class="phonebox"><span>🇲🇬 +261</span><input id="shTel" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="34 12 345 67" required></div><p class="phint" id="shTelHint">9 chiffres, commençant par 32, 33, 34, 36, 37 ou 38</p>
-    <label for="shMail">Adresse e-mail</label><input id="shMail" type="email" readonly style="background:var(--paper)">
-    <p class="phint" style="margin-top:4px">E-mail de votre compte : les acheteurs peuvent vous écrire dessus.</p>
+    <label for="shMail">Adresse e-mail exacte</label><input id="shMail" type="email" required maxlength="100" autocomplete="email" placeholder="exemple@gmail.com">
+    <p class="phint" style="margin-top:4px">Une adresse réelle que vous consultez : les acheteurs pourront vous écrire dessus.</p>
     <p class="msg" id="shMsg" role="status"></p>
     <div class="act" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button class="btn cta" id="shGo" type="submit">Enregistrer mon profil</button><button class="btn" id="shSee" type="button" hidden>Voir ma page publique</button></div>
   </form>
@@ -2840,9 +2848,10 @@ function shopMissing(d) {
   if (String(d.description || '').trim().length < 20) m.push('présentation');
   if (!mgTel(d.telephone || '')) m.push('téléphone');
   if (!/^\S+@\S+\.\S+$/.test(d.email || '')) m.push('e-mail');
+  if (!String(d.vend || '').trim()) m.push('ce que vous vendez');
   return m;
 }
-const shopPct = d => Math.round((6 - shopMissing(d).length) / 6 * 100);
+const shopPct = d => Math.round((7 - shopMissing(d).length) / 7 * 100);
 function shrinkImage(file, max = 400, q = .85) {
   return new Promise((ok, ko) => {
     const img = new Image(), u = URL.createObjectURL(file);
@@ -2856,9 +2865,28 @@ function shrinkImage(file, max = 400, q = .85) {
     img.src = u;
   });
 }
+/* --- « Que vendez-vous ? » : catégories cochées + précision libre, enregistrées dans ann_boutiques.vend --- */
+function shVendBuild() {
+  $('shVendBox').innerHTML = NEED.map(n => `<label><input type="checkbox" value="${esc(n[0])}"><span>${esc(n[0])}</span></label>`).join('');
+  $('shVendBox').querySelectorAll('input').forEach(i => i.addEventListener('change', shProgress));
+}
+function shVendValue() {
+  const c = [...$('shVendBox').querySelectorAll('input:checked')].map(i => i.value), o = $('shVendAutre').value.trim();
+  return c.concat(o ? [o] : []).join(', ');
+}
+function shVendSet(v) {
+  const parts = String(v || '').split(',').map(x => x.trim()).filter(Boolean), known = NEED.map(n => n[0]), other = [];
+  $('shVendBox').querySelectorAll('input').forEach(i => i.checked = false);
+  parts.forEach(x => { const i = [...$('shVendBox').querySelectorAll('input')].find(e => e.value === x); if (i && known.includes(x)) i.checked = true; else other.push(x); });
+  $('shVendAutre').value = other.join(', ');
+}
+shVendBuild();
+$('shVendAutre').addEventListener('input', shProgress);
+$('shMail').addEventListener('input', shProgress);
+$('shDesc').addEventListener('input', () => { $('shDescCnt').textContent = $('shDesc').value.length + ' / 400'; });
 function shFormData() {
   return { avatar_url: (shBlob || (shAvatar && !shRemove)) ? (shAvatar || 'https://local/photo') : '', nom: $('shNom').value, description: $('shDesc').value,
-    ville: $('shVille').value, telephone: $('shTel').value, email: $('shMail').value };
+    ville: $('shVille').value, telephone: $('shTel').value, email: $('shMail').value.trim(), vend: shVendValue() };
 }
 function shProgress() {
   const d = shFormData(), miss = shopMissing(d), p = shopPct(d);
@@ -2920,13 +2948,19 @@ async function openMyShop(force) {
   $('shNom').value = (data && data.nom) || m.full_name || m.name || ''; $('shDesc').value = (data && data.description) || '';
   $('shVille').value = (data && data.ville) || m.region || '';
   $('shTel').value = (data && data.telephone) || m.phone || m.telephone || ''; $('shTel').dispatchEvent(new Event('input'));
-  $('shMail').value = user.email || '';
+  $('shMail').value = (data && data.email) || user.email || '';
+  shVendSet(data && data.vend); $('shDesc').dispatchEvent(new Event('input'));
   shPreview(); $('shSee').hidden = !data; close('mShopView'); open('mShop');
 }
 $('shopForm').onsubmit = async e => {
   e.preventDefault(); const msg = $('shMsg'), go = $('shGo'); msg.className = 'msg'; msg.textContent = '';
   const tel = mgTel($('shTel').value);
   if (!tel) { msg.textContent = TEL_ERR; $('shTel').focus(); return; }
+  const mail = $('shMail').value.trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(mail)) { msg.textContent = 'Adresse e-mail invalide : écrivez-la exactement (ex. nom@gmail.com).'; $('shMail').focus(); return; }
+  if (!shVendValue()) { msg.textContent = 'Choisissez au moins une catégorie : que vendez-vous ?'; $('shVendBox').scrollIntoView({ block: 'center' }); return; }
+  if (!(shBlob || (shAvatar && !shRemove))) { msg.textContent = 'La photo de la boutique est obligatoire.'; $('shAvPick').focus(); return; }
+  if ($('shDesc').value.trim().length < 20) { msg.textContent = 'Le texte « À propos » doit faire au moins 20 caractères.'; $('shDesc').focus(); return; }
   go.disabled = true;
   try {
     let url = shRemove ? '' : shAvatar;
@@ -2937,7 +2971,7 @@ $('shopForm').onsubmit = async e => {
       url = bucket.getPublicUrl(path).data.publicUrl;
     }
     const row = { user_id: user.id, nom: $('shNom').value.trim(), description: $('shDesc').value.trim(), ville: $('shVille').value.trim(),
-      telephone: tel, email: user.email || '', avatar_url: url || null, maj_le: new Date().toISOString() };
+      telephone: tel, email: mail, vend: shVendValue(), avatar_url: url || null, maj_le: new Date().toISOString() };
     const { error } = await SB.from('ann_boutiques').upsert(row, { onConflict: 'user_id' });
     if (error) throw error;
     shAvatar = url; shBlob = null; shRemove = false; shPreview(); $('shSee').hidden = false; await loadMyShop();
@@ -2946,7 +2980,7 @@ $('shopForm').onsubmit = async e => {
     else if (shForce) { shForce = false; close('mShop'); window.bpSay && window.bpSay('Profil complet ✓ Vous pouvez publier'); $('btnPost').click(); }
     else { msg.className = 'msg ok'; msg.textContent = 'Profil complet et enregistré ✓'; }
   } catch (err) {
-    msg.textContent = /avatar_url|telephone|email|column/i.test((err && err.message) || '') ? "Le profil n'est pas encore activé : exécutez profil-vendeur.sql dans Supabase." : shopErr(err);
+    msg.textContent = /avatar_url|telephone|email|vend|column/i.test((err && err.message) || '') ? "Le profil n'est pas encore activé : exécutez profil-vendeur-v2.sql dans Supabase." : shopErr(err);
   }
   go.disabled = false;
 };
@@ -2980,7 +3014,8 @@ async function openShop(uid) {
       <button class="btn plain" id="pfShare" type="button">🔗 Partager</button>
     </div>
     <div id="pfAbt" class="pf-about"><dl>
-      <dt>Présentation</dt><dd>${esc(shop.description || 'Non renseignée')}</dd>
+      <dt>Ce que je vends</dt><dd>${shop.vend ? esc(shop.vend) : 'Non renseigné'}</dd>
+      <dt>À propos</dt><dd>${esc(shop.description || 'Non renseignée')}</dd>
       <dt>Ville</dt><dd>${esc(shop.ville || 'Non renseignée')}</dd>
       <dt>Téléphone</dt><dd>${tel ? `<a href="tel:${esc(tel)}">${esc(shop.telephone)}</a>` : 'Non renseigné'}</dd>
       <dt>E-mail</dt><dd>${shop.email ? `<a href="mailto:${esc(shop.email)}">${esc(shop.email)}</a>` : 'Non renseigné'}</dd>
