@@ -1254,6 +1254,24 @@ body.landing .hero p{max-width:62ch;margin-bottom:16px}
 :root[data-ac="bleu"]{--forest:#1f6fd1;--forest2:#1856a3}
 :root[data-ac="violet"]{--forest:#7b3fc4;--forest2:#5f2f9a}
 :root[data-ac="rouge"]{--forest:#c8332b;--forest2:#9f2620}
+/* ===== Modifier mon profil : tiroir compact collé au bord droit ===== */
+#mShop{padding:0;justify-content:flex-end;align-items:stretch;overflow:hidden;background:rgba(20,36,31,.35)}
+#mShop .box{margin:0;width:min(340px,92vw);max-width:none;height:100dvh;max-height:none;overflow-x:hidden;overflow-y:auto;border-radius:18px 0 0 18px;box-shadow:-8px 0 30px rgba(40,15,0,.3);padding:14px 14px 18px;font-size:.86rem}
+#mShop.open .box{animation:pfslide .28s ease}
+@media(prefers-reduced-motion:reduce){#mShop.open .box{animation:none}}
+#mShop .box h2{font-size:1.1rem;margin:0 30px 6px 0}
+#mShop .box>p{font-size:.78rem;line-height:1.35;margin-bottom:4px}
+#mShop .box label{margin:8px 0 3px;font-size:.8rem}
+#mShop .box input,#mShop .box textarea{padding:7px 9px;font-size:.86rem}
+#mShop .box textarea{height:70px;resize:vertical}
+#mShop .avedit{gap:10px;margin:4px 0 2px}
+#mShop .avprev{width:58px;height:58px;font-size:1.4rem;border-width:2px}
+#mShop .avedit .btn{padding:5px 10px;font-size:.78rem}
+#mShop .avedit small{font-size:.7rem;margin-top:3px}
+#mShop .phonebox span{padding:0 9px;font-size:.82rem;border-radius:8px}
+#mShop .phint,#mShop .box form small{font-size:.72rem}
+#mShop .shprog{margin:6px 0 0}
+#mShop .act .btn{padding:8px 14px;font-size:.86rem}
 </style>
 <script>
 /* Applique tout de suite les réglages d'apparence enregistrés (avant l'affichage de la page) */
