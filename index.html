@@ -1340,7 +1340,7 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
     <button class="lnk" id="btnSignup">S'inscrire</button>
     <button class="dark" id="btnLogin">Se connecter</button>
    </div>
-   <button class="post" id="btnPost" type="button" aria-label="Déposer une annonce" title="Déposer une annonce"><span aria-hidden="true">+</span></button>
+   <button class="post" id="btnPost" type="button" aria-label="Déposer une annonce" title="Déposer une annonce"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
    <button class="hbtn" id="btnMsg" type="button" aria-label="Messages" title="Messages"><span class="badge" id="msgBadge" hidden>0</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H10l-5 4v-4H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/></svg></button>
    <button class="hbtn" id="btnCart" type="button" aria-label="Panier" title="Panier"><span class="badge" id="cartBadge" hidden>0</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.5l2.2 10.2a1 1 0 0 0 1 .8h8.6a1 1 0 0 0 1-.8L20 8H6.3"/><circle cx="9.5" cy="19" r="1.4"/><circle cx="16.5" cy="19" r="1.4"/></svg></button>
    <button class="pbtn" id="btnProfile" type="button" aria-label="Mon profil" title="Mon profil" hidden></button>
@@ -2232,7 +2232,7 @@ async function loadAds() {
   $('empty').textContent = error ? 'Impossible de charger les annonces. Vérifiez votre connexion et réessayez.' : 'Aucune annonce pour cette recherche. Soyez le premier à en déposer une.';
   if (window.bpMode && user && !error) {
     const rv = accountRole() === 'vendeur';
-    if (!t) $('title').textContent = rv ? 'Ma boutique' : 'Ma commande';
+    if (!t) $('title').textContent = rv ? 'Mes ventes' : 'Ma commande';
     $('empty').textContent = rv ? "Vous n'avez pas encore d'annonce publiée. Touchez + pour en déposer une." : 'Votre commande est vide. Ajoutez des annonces avec le bouton panier 🛒.';
   }
   $('empty').hidden = ads.length > 0;
@@ -3971,6 +3971,10 @@ body:not(.landing) .tick{display:block;flex:1 1 0;min-width:0;height:46px;border
 .tsep{flex:none;width:6px;height:6px;border-radius:50%;background:#e1a65a}
 @media(max-width:900px){body:not(.landing) .logo{margin-right:auto}body:not(.landing) .tick{order:20;flex:1 1 100%;height:38px}.tt{font-size:.84rem}.tp{width:26px;height:26px;border-radius:8px}}
 @media(prefers-reduced-motion:reduce){.tick-track{animation:none}}
+
+/* ===== Bouton « + » : rond blanc, signe gris comme Messages et Panier ===== */
+body:not(.landing) .post{background:#fff;color:var(--forest,#a2501a);border:1.5px solid var(--line,#e6e6e6);box-shadow:0 3px 10px rgba(42,23,11,.15)}
+body:not(.landing) .post svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
 </style>
 <script>
 (function () {
@@ -3985,7 +3989,7 @@ body:not(.landing) .tick{display:block;flex:1 1 0;min-width:0;height:46px;border
     const r = mine();
     if (!r) { window.bpMode = false; chip.classList.remove('toggle', 'on'); chip.removeAttribute('aria-pressed'); cap.textContent = ''; return; }
     chip.classList.add('toggle'); chip.classList.toggle('on', window.bpMode); chip.setAttribute('aria-pressed', String(window.bpMode));
-    chip.dataset.role = r; chip.textContent = r === 'vendeur' ? 'Ma boutique' : 'Ma commande';
+    chip.dataset.role = r; chip.textContent = r === 'vendeur' ? 'Mes ventes' : 'Ma commande';
     chip.title = r === 'vendeur' ? 'Afficher seulement mes annonces' : 'Afficher seulement les annonces de ma commande';
     cap.textContent = ROLES[r];
   }
@@ -3994,7 +3998,7 @@ body:not(.landing) .tick{display:block;flex:1 1 0;min-width:0;height:46px;border
     if (!user) { showRoleGate(); return; }
     if (!mine()) return;
     window.bpMode = !window.bpMode; ui(); loadAds();
-    window.bpSay && window.bpSay(window.bpMode ? (mine() === 'vendeur' ? 'Ma boutique : vos annonces' : 'Ma commande : votre panier') : 'Toutes les annonces');
+    window.bpSay && window.bpSay(window.bpMode ? (mine() === 'vendeur' ? 'Mes ventes : vos annonces' : 'Ma commande : votre panier') : 'Toutes les annonces');
   };
   const ocs = cartSet; window.cartSet = function (v) { ocs.apply(this, arguments); if (window.bpMode && mine() === 'client') loadAds(); };
   ui();
