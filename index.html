@@ -2431,7 +2431,7 @@ cartBadge();
 
 /* « Déposer une annonce » : 1) on choisit Vente / Confie / Musics / Création, 2) on voit les champs adaptés */
 const POST_TYPES = {
-  vente:    { titre: 'Déposer une vente', typeLbl: 'État du produit', types: ['Neuf', 'Occasion', 'Reconditionné'], extraLbl: 'Marque / modèle (facultatif)', prixLbl: 'Prix (Ar)', titrePh: 'Ex. : Casque audio Bluetooth' },
+  vente:    { titre: 'Déposer une vente', typeLbl: 'État du produit', types: ['Neuf', 'Occasion', 'Reconditionné'], extraLbl: 'À propos (facultatif)', prixLbl: 'Prix (Ar)', titrePh: 'Ex. : Casque audio Bluetooth' },
   confie:   { titre: 'Déposer un Confie', typeLbl: 'Type de tâche', types: ['Tâche Excel', 'Tâche développeur web', 'Autre tâche'], extraLbl: 'Délai souhaité (ex. : 3 jours)', prixLbl: 'Budget (Ar)', titrePh: 'Ex. : Tableau de suivi de stock' },
   music:    { titre: 'Déposer une chanson / Musics', typeLbl: 'Ce que vous voulez faire', types: ['Trouver des producteurs', 'Vendre ma production / chanson', 'Organisation complète'], extraLbl: 'Genre musical (hip-hop, afrobeat…)', prixLbl: 'Prix / budget (Ar)', titrePh: 'Ex. : Instrumental afrobeat à vendre' },
   creation: { titre: 'Déposer une création', typeLbl: 'Domaine', types: ['Vidéaste', 'Graphisme', 'Création web', 'Autre création'], extraLbl: 'Lien vers votre travail (facultatif)', prixLbl: 'Tarif (Ar)', titrePh: 'Ex. : Montage vidéo clip' }
@@ -2480,6 +2480,7 @@ function openPostForm(key, titre, typeIdx, mode) {
   $('pType').innerHTML = T.types.map(t => `<option>${t}</option>`).join('');
   if (typeIdx >= 0 && typeIdx < T.types.length) $('pType').selectedIndex = typeIdx;
   $('pExtraLbl').textContent = T.extraLbl; $('pPrixLbl').textContent = T.prixLbl;
+  $('pExtra').placeholder = key === 'vente' ? 'Ex. : fait main, garantie 6 mois' : '';
   $('pTitre').value = titre || '';
   { const c = isClient() && key === 'vente';
     $('pTitreLbl').textContent = c ? 'Ce que je cherche' : 'Titre';
@@ -2622,7 +2623,7 @@ function addItem() {
     <div><label>${isClient() ? 'Budget (Ar)' : 'Prix (Ar)'}<input class="mi-prix" type="text" inputmode="numeric" autocomplete="off" placeholder="Ex. : 12.000"></label></div></div>
     <label>Catégorie<select class="mi-cat">${catOptions(defCat())}</select></label>
     <label>${isClient() ? 'Ce que je cherche' : 'Titre'}<input class="mi-titre" maxlength="90"${isClient() ? ' placeholder="Ex. : une bouteille d\'eau"' : ''}></label>
-    <label${isClient() ? ' style="display:none"' : ''}>Marque / modèle (facultatif)<input class="mi-extra" maxlength="120"></label>
+    <label${isClient() ? ' style="display:none"' : ''}>À propos (facultatif)<input class="mi-extra" maxlength="120" placeholder="Ex. : fait main, garantie 6 mois"></label>
     <label>Description (facultatif)<textarea class="mi-desc" rows="2"></textarea></label>
     <div class="filepick"><label class="fbtn">📷 Select photo<small class="mi-pn">4 maximum</small><input class="mi-photos fhide" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple></label></div>
     <button type="button" class="btn plain mi-rm">Retirer cette pièce</button></div>`;
@@ -2669,7 +2670,7 @@ $('postMulti').onsubmit = async e => {
         if (error) throw new Error('Pièce ' + (k + 1) + ' : photo non envoyée (' + error.message + ')');
         paths.push(path); urls.push(bucket.getPublicUrl(path).data.publicUrl);
       }
-      const lines = ['État du produit : ' + it.etat]; if (it.extra) lines.push('Marque / modèle : ' + it.extra);
+      const lines = ['État du produit : ' + it.etat]; if (it.extra) lines.push('À propos : ' + it.extra);
       rows.push({ category_id: it.cat, titre: it.titre, description: lines.join('\n') + (it.desc ? '\n\n' + it.desc : ''),
         prix: prixNum(it.prix), ville: $('mVille').value.trim(), telephone: telNum, photos: urls });
     }
