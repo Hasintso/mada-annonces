@@ -1312,6 +1312,14 @@ main .head a#seeAll{white-space:nowrap;flex:none}
 .fx-price input{width:96px}
 .fx-reset{margin-left:auto;border:0;background:none;color:var(--forest);font-weight:700;text-decoration:underline;padding:8px 4px}
 @media(max-width:560px){.fx-row{gap:10px 12px}.fx-price input{width:80px}.fx-reset{margin-left:0}}
+/* ===== Remontée du bloc (menu + catégories + « Voir toutes ») et suppression des cadres blancs ===== */
+body:not(.landing) .search{padding-bottom:0}
+body:not(.landing) .shell{padding-top:0}
+body:not(.landing) .shell main .head{margin-bottom:10px}
+/* la barre de catégories (balise nav) n'a plus de fond blanc ni de trait */
+.shell main .head .catbar{background:transparent;border:0;box-shadow:none}
+/* pastilles de catégories sans fond blanc (celle choisie reste colorée) */
+.cb-chip:not(.on){background:transparent}
 </style>
 </head>
 <body class="landing">
