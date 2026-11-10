@@ -1332,6 +1332,7 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
     </button>
    </div>
    <div class="logo" id="logo" role="button" tabindex="0" title="Retour à l'accueil" aria-label="Accueil"><span id="typed"></span><span class="brand"><b>Bustoplay</b></span></div>
+   <div class="tick" id="tick" aria-label="Bustoplay vous propose un grand service pour élargir et booster votre vente"><div class="tick-in"><div class="tick-track" id="tickTrack"></div></div></div>
    <div class="links">
    </div>
    <button class="rolechip" id="roleChip" type="button" hidden></button>
@@ -2206,6 +2207,7 @@ async function loadSellers(list) {
 }
 async function loadAds() {
   if (!user) return;
+  try { tickRefresh(); } catch (e) {}
   const my = ++reqId;
   let r = SB.from('ann_annonces').select('*, ann_categories(nom)').eq('statut', 'valide');
   r = sort === 'recent' ? r.order('cree_le', { ascending: false })
@@ -3124,6 +3126,32 @@ async function openShop(uid) {
     try { await navigator.clipboard.writeText(link); window.bpSay && window.bpSay('Lien du profil copié'); } catch (e) { prompt('Copiez ce lien :', link); }
   };
 }   /* un visiteur peut changer ; un compte garde son profil */
+/* ===== Bandeau d'en-tête : message qui défile + petites photos des dernières annonces publiées (clic = ouvre l'annonce) ===== */
+var tickAt = 0, tickAds = [], tickW = 0;
+function tickRefresh() { if (Date.now() - tickAt < 30000) return; tickAt = Date.now(); loadTicker(); }
+async function loadTicker() {
+  try {
+    const { data } = await SB.from('ann_annonces').select('*, ann_categories(nom)').eq('statut', 'valide').order('cree_le', { ascending: false }).limit(14);
+    tickAds = (data || []).filter(a => a.photos && safeUrl(a.photos[0])).slice(0, 12);
+  } catch (e) { tickAds = []; }
+  tickBuild();
+}
+function tickBuild() {
+  const tr = $('tickTrack'), box = $('tick'); if (!tr || !box) return;
+  const unit = '<div class="tick-u"><span class="tt">Bustoplay vous propose un grand service pour <em>élargir et booster votre vente</em>.</span>'
+    + tickAds.map((a, i) => `<span class="tsep" aria-hidden="true"></span><button type="button" class="tp" data-t="${i}" aria-label="${esc(a.titre)}" title="${esc(a.titre)}"><img src="${esc(a.photos[0])}" alt="" loading="lazy"></button>`).join('')
+    + '<span class="tsep" aria-hidden="true"></span></div>';
+  tr.style.animation = 'none'; tr.innerHTML = unit;
+  const uw = tr.firstElementChild.getBoundingClientRect().width || 600, cw = box.clientWidth || 600;
+  tr.innerHTML = unit.repeat(Math.max(2, Math.ceil(cw / uw) + 1));
+  tr.style.setProperty('--tw', uw + 'px'); tr.style.setProperty('--td', Math.max(14, uw / 45) + 's');
+  tr.style.animation = ''; tickW = box.clientWidth;
+}
+$('tickTrack').addEventListener('click', e => { const b = e.target.closest('.tp'); if (b && tickAds[+b.dataset.t]) showAd(tickAds[+b.dataset.t]); });
+tickBuild();
+try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(tickBuild); } catch (e) {}
+try { let tt; new ResizeObserver(() => { clearTimeout(tt); tt = setTimeout(() => { if (Math.abs($('tick').clientWidth - tickW) > 2) tickBuild(); }, 150); }).observe($('tick')); } catch (e) {}
+
 /* Affichage immédiat pour un nouveau visiteur ; quelqu'un déjà connecté attend la lecture de sa session (pas de clignotement) */
 (() => {
   let hasSession = false;
@@ -3925,6 +3953,24 @@ body:not(.landing) .brand b{font:700 clamp(1.25rem,5.2vw,1.9rem)/1.1 Georgia,"Ti
 .pwrap:has(.pbtn[hidden]){display:none}
 .rolecap{position:absolute;top:calc(100% + 2px);left:50%;transform:translateX(-50%);font-size:.62rem;font-weight:800;letter-spacing:.03em;color:var(--muted);white-space:nowrap;pointer-events:none;line-height:1}
 .rolecap:empty{display:none}
+
+/* ===== Bandeau d'en-tête : message Bustoplay qui défile + miniatures des dernières annonces ===== */
+.tick{display:none}
+body:not(.landing) .logo{flex:0 0 auto;margin:0 6px 0 2px;text-align:left}
+body:not(.landing) .tick{display:block;flex:1 1 0;min-width:0;height:46px;border:1px solid var(--line);border-radius:14px;background:var(--paper);box-shadow:inset 0 1px 0 rgba(255,255,255,.7)}
+.tick-in{height:100%;overflow:hidden;border-radius:13px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 24px,#000 calc(100% - 24px),transparent);mask-image:linear-gradient(90deg,transparent,#000 24px,#000 calc(100% - 24px),transparent)}
+.tick-track{display:flex;align-items:center;height:100%;width:max-content;animation:tickmv var(--td,30s) linear infinite;will-change:transform}
+.tick:hover .tick-track,.tick:focus-within .tick-track{animation-play-state:paused}
+@keyframes tickmv{to{transform:translateX(calc(var(--tw,600px) * -1))}}
+.tick-u{display:flex;align-items:center;gap:12px;padding-right:12px;flex:none}
+.tt{font:600 .92rem "Segoe UI",Roboto,Arial,sans-serif;color:var(--ink);white-space:nowrap}
+.tt em{font-style:normal;color:#c2670f}
+.tp{flex:none;width:32px;height:32px;padding:0;border-radius:9px;overflow:hidden;border:2px solid #fff;box-shadow:0 1px 5px rgba(42,23,11,.28);cursor:pointer;background:var(--paper);transition:transform .15s}
+.tp:hover{transform:scale(1.18)}
+.tp img{width:100%;height:100%;object-fit:cover;display:block}
+.tsep{flex:none;width:6px;height:6px;border-radius:50%;background:#e1a65a}
+@media(max-width:900px){body:not(.landing) .logo{margin-right:auto}body:not(.landing) .tick{order:20;flex:1 1 100%;height:38px}.tt{font-size:.84rem}.tp{width:26px;height:26px;border-radius:8px}}
+@media(prefers-reduced-motion:reduce){.tick-track{animation:none}}
 </style>
 <script>
 (function () {
