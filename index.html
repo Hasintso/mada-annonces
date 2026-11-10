@@ -1636,7 +1636,7 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
   <form id="postForm" hidden>
     <button type="button" class="pback" id="pBack">← Changer de choix</button>
     <label for="pType" id="pTypeLbl">Type</label><select id="pType"></select>
-    <label for="pTitre">Titre</label><input id="pTitre" maxlength="90" required>
+    <label for="pTitre" id="pTitreLbl">Titre</label><input id="pTitre" maxlength="90" required>
     <div id="pCatBox" hidden><label for="pCat">Catégorie</label><select id="pCat" required></select></div>
     <label for="pExtra" id="pExtraLbl">Détail</label><input id="pExtra" maxlength="120">
     <div class="row"><div><label for="pPrix" id="pPrixLbl">Prix (Ar)</label><input id="pPrix" type="text" inputmode="numeric" autocomplete="off" placeholder="Ex. : 12.000"></div><div><label for="pVille">Ville</label><input id="pVille" placeholder="Antananarivo"></div></div>
@@ -2481,7 +2481,12 @@ function openPostForm(key, titre, typeIdx, mode) {
   if (typeIdx >= 0 && typeIdx < T.types.length) $('pType').selectedIndex = typeIdx;
   $('pExtraLbl').textContent = T.extraLbl; $('pPrixLbl').textContent = T.prixLbl;
   $('pTitre').value = titre || '';
-  { const c = isClient() && key === 'vente'; $('postGo').textContent = c ? 'Envoyer ma commande' : 'Publier l\'annonce';
+  { const c = isClient() && key === 'vente';
+    $('pTitreLbl').textContent = c ? 'Ce que je cherche' : 'Titre';
+    $('pExtraLbl').style.display = $('pExtra').style.display = c ? 'none' : '';
+    if (c) $('pExtra').value = '';
+    TITRE_EX.splice(0, TITRE_EX.length, ...(c ? TITRE_EX_CLIENT : TITRE_EX_VENTE));
+    $('postGo').textContent = c ? 'Envoyer ma commande' : 'Publier l\'annonce';
     if (c) { $('pPrixLbl').textContent = 'Budget (Ar)'; $('pTypeLbl').textContent = 'État souhaité'; } }
   $('postMsg').textContent = '';
   $('mPost').classList.remove('pop');
@@ -2502,7 +2507,9 @@ function buildPostMenu() {
   inp.addEventListener('change', upd); $('postForm').addEventListener('reset', () => setTimeout(upd, 0));
 });
 /* Titre : l'exemple s'écrit et s'efface tout seul (« Ex. : ma bouteille d'eau »…) */
-const TITRE_EX = ["ma bouteille d'eau", 'ma chaussure préférée', 'mon casque audio', 'ma veste en cuir'];
+const TITRE_EX_VENTE = ["ma bouteille d'eau", 'ma chaussure préférée', 'mon casque audio', 'ma veste en cuir'];
+const TITRE_EX_CLIENT = ["une bouteille d'eau", 'des chaussures de sport', 'un casque audio', 'une veste en cuir'];
+const TITRE_EX = [...TITRE_EX_VENTE];
 function typePlaceholder(inp, list) {
   const pre = 'Ex. : ';
   if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) { inp.placeholder = pre + list[0]; return; }
@@ -2614,8 +2621,8 @@ function addItem() {
     <div class="row"><div><label>${isClient() ? 'État souhaité' : 'État du produit'}<select class="mi-etat">${POST_TYPES.vente.types.map(t => `<option>${esc(t)}</option>`).join('')}</select></label></div>
     <div><label>${isClient() ? 'Budget (Ar)' : 'Prix (Ar)'}<input class="mi-prix" type="text" inputmode="numeric" autocomplete="off" placeholder="Ex. : 12.000"></label></div></div>
     <label>Catégorie<select class="mi-cat">${catOptions(defCat())}</select></label>
-    <label>Titre<input class="mi-titre" maxlength="90"></label>
-    <label>Marque / modèle (facultatif)<input class="mi-extra" maxlength="120"></label>
+    <label>${isClient() ? 'Ce que je cherche' : 'Titre'}<input class="mi-titre" maxlength="90"${isClient() ? ' placeholder="Ex. : une bouteille d\'eau"' : ''}></label>
+    <label${isClient() ? ' style="display:none"' : ''}>Marque / modèle (facultatif)<input class="mi-extra" maxlength="120"></label>
     <label>Description (facultatif)<textarea class="mi-desc" rows="2"></textarea></label>
     <div class="filepick"><label class="fbtn">📷 Select photo<small class="mi-pn">4 maximum</small><input class="mi-photos fhide" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple></label></div>
     <button type="button" class="btn plain mi-rm">Retirer cette pièce</button></div>`;
