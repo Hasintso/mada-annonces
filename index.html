@@ -1160,6 +1160,10 @@ body.landing .hero p{max-width:62ch;margin-bottom:16px}
 @keyframes pfslide{from{transform:translateX(100%)}to{transform:translateX(0)}}
 @media(prefers-reduced-motion:reduce){#mShopView.open .box{animation:none}}
 #mShopView .x{z-index:3;color:#fff;background:rgba(0,0,0,.28);width:34px;height:34px;border-radius:50%;font-size:1.3rem;display:grid;place-items:center;right:10px;top:10px}
+#mClientView{padding:0;justify-content:flex-end;align-items:stretch;overflow:hidden}
+#mClientView .box{margin:0;width:min(430px,92vw);max-width:none;height:100dvh;max-height:none;padding:0;overflow-x:hidden;overflow-y:auto;border-radius:18px 0 0 18px;box-shadow:-8px 0 30px rgba(40,15,0,.3)}
+#mClientView.open .box{animation:pfslide .28s ease}
+#mClientView .x{z-index:3;color:#fff;background:rgba(0,0,0,.28);width:34px;height:34px;border-radius:50%;font-size:1.3rem;display:grid;place-items:center;right:10px;top:10px}
 .pf-cover{position:relative;height:240px;background:linear-gradient(135deg,var(--forest2),var(--forest) 62%,#c9742e) center/cover no-repeat}
 .pf-covbar{position:absolute;left:10px;top:10px;display:flex;gap:6px;z-index:2}
 .pf-covbtn{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.94);color:var(--ink);border:0;border-radius:999px;padding:6px 12px;font-size:.8rem;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.25);cursor:pointer}
@@ -1763,9 +1767,9 @@ body:not(.landing) .shell main .head{margin-bottom:10px}
     <div class="act" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button class="btn cta" id="shGo" type="submit">Enregistrer mon profil</button><button class="btn" id="shSee" type="button" hidden>Voir ma page publique</button></div>
   </form>
 </div></div>
-<div class="mask" id="mClient"><div class="box" role="dialog" aria-modal="true" aria-label="Mon profil">
+<div class="mask" id="mClient"><div class="box" role="dialog" aria-modal="true" aria-label="Modifier mon profil">
   <button class="x" data-close aria-label="Fermer">×</button>
-  <h2>Mon profil</h2>
+  <h2>Modifier mon profil</h2>
   <p style="color:var(--muted);margin-top:0">Complétez votre profil pour rassurer les vendeurs quand vous commandez ou écrivez.</p>
   <div class="shprog"><div class="pf-bar"><i id="clBar" style="width:0"></i></div><small id="clProgTxt" style="color:var(--muted)"></small></div>
   <form id="clForm">
@@ -1789,6 +1793,12 @@ body:not(.landing) .shell main .head{margin-bottom:10px}
 <div class="mask" id="mShopView"><div class="box wide" role="dialog" aria-modal="true" aria-label="Boutique">
   <button class="x" data-close aria-label="Fermer">×</button>
   <div id="shopView"></div>
+</div></div>
+
+<!-- Profil du client : panneau à droite avec photo de couverture -->
+<div class="mask" id="mClientView"><div class="box wide" role="dialog" aria-modal="true" aria-label="Mon profil">
+  <button class="x" data-close aria-label="Fermer">×</button>
+  <div id="clientView"></div>
 </div></div>
 
 <!-- Panier -->
@@ -3140,7 +3150,7 @@ const CL_TOTAL = 5;
 var clBlob = null, clAvatar = '', clRemove = false;
 function clientData() {
   const m = (user && user.user_metadata) || {};
-  return { avatar_url: m.avatar_url || m.picture || '', full_name: m.full_name || m.name || '', region: m.region || '', phone: m.phone || m.telephone || '', email: (user && user.email) || '' };
+  return { avatar_url: m.avatar_url || m.picture || '', full_name: m.full_name || m.name || '', region: m.region || '', phone: m.phone || m.telephone || '', email: (user && user.email) || '', cover_url: m.cover_url || '' };
 }
 function clientMissing(d) {
   d = d || {}; const m = [];
@@ -3181,14 +3191,73 @@ $('clPhoto').onchange = async e => {
 $('clAvDel').onclick = () => { clBlob = null; clRemove = true; clPreview(); };
 ['clNom', 'clTel'].forEach(id => $(id).addEventListener('input', () => { if (id === 'clNom' && !clBlob && !(clAvatar && !clRemove)) clPreview(); else clProgress(); }));
 $('clRegion').addEventListener('change', clProgress);
-function openClientProfile() {
+function openClientEdit() {
   if (!user) return;
   const d = clientData(); clBlob = null; clRemove = false; clAvatar = d.avatar_url;
   $('clNom').value = d.full_name; $('clRegion').value = MG_REGIONS.includes(d.region) ? d.region : '';
   const n = mgNational(d.phone || ''); $('clTel').value = n ? mgFormat(n) : ''; $('clTel').dispatchEvent(new Event('input'));
   $('clMail').value = d.email; const msg = $('clMsg'); msg.className = 'msg'; msg.textContent = '';
-  clPreview(); open('mClient');
+  clPreview(); close('mClientView'); open('mClient');
 }
+
+/* --- Panneau « Mon profil » du client (comme celui du vendeur) : couverture, photo, à propos --- */
+function renderClientView() {
+  const d = clientData(), nom = d.full_name || 'Client', miss = clientMissing(d), complete = !miss.length;
+  const tel = mgTel(d.phone || ''), telRaw = String(d.phone || '').replace(/[^\d+]/g, '');
+  const since = user && user.created_at ? new Date(user.created_at).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }) : '';
+  const cov = safeUrl(d.cover_url) ? cssUrl(d.cover_url) : '';
+  const badges = [safeUrl(d.avatar_url) ? '📷 Photo' : '', tel ? '📞 Téléphone' : '', d.email ? '✉️ E-mail' : '', MG_REGIONS.includes(d.region) ? '📍 Région' : '', since ? '🗓️ Membre depuis ' + since : ''].filter(Boolean);
+  $('clientView').innerHTML = `<div class="pf-cover" id="cvCover"${cov ? ` style="background-image:url('${cov}')"` : ''}>
+      <div class="pf-covbar"><button class="pf-covbtn" id="cvCov" type="button">📷 <span id="cvCovTxt">${cov ? 'Modifier la couverture' : 'Ajouter une photo de couverture'}</span></button>
+      <button class="pf-covbtn rm" id="cvCovDel" type="button" title="Retirer la couverture" aria-label="Retirer la couverture"${cov ? '' : ' hidden'}>✕</button></div><input type="file" id="cvCovFile" accept="image/*" hidden></div>
+    <div class="pf-body">
+      <div class="pf-top"><div class="shoplogo">${avatarHtml(d.avatar_url, nom)}</div>
+        <div class="pf-id"><h2>${esc(nom)}</h2><div class="meta">${esc(MG_REGIONS.includes(d.region) ? d.region : 'Madagascar')} · Client</div></div></div>
+      ${complete ? '<div class="trust"><span>✅ Profil complet</span></div>' : ''}
+      <div class="pf-act"><button class="btn cta" id="cvEdit" type="button">✏️ Modifier le profil</button></div>
+      <div class="pf-about"><dl>
+        <dt>Nom</dt><dd>${esc(d.full_name || 'Non renseigné')}</dd>
+        <dt>Région</dt><dd>${esc(d.region || 'Non renseigné')}</dd>
+        <dt>Téléphone</dt><dd>${tel ? `<a href="tel:${esc(telRaw)}">${esc(tel)}</a>` : 'Non renseigné'}</dd>
+        <dt>E-mail</dt><dd>${d.email ? `<a href="mailto:${esc(d.email)}">${esc(d.email)}</a>` : 'Non renseigné'}</dd>
+        <dt>Membre depuis</dt><dd>${esc(since || '—')}</dd></dl>
+        ${badges.length ? '<div class="trust">' + badges.map(x => `<span>${esc(x)}</span>`).join('') + '</div>' : ''}</div>
+      ${complete ? '' : `<div class="pf-prog"><b>Profil complété à ${clientPct(d)} %</b><div class="pf-bar"><i style="width:${clientPct(d)}%"></i></div>Il manque : ${esc(miss.join(', '))}. Un profil complet rassure les vendeurs.</div>`}
+    </div>`;
+  $('cvEdit').onclick = () => openClientEdit();
+  /* photo de couverture : réduite à 1600 px, enregistrée avec le compte (cover_url) */
+  const cover = $('cvCover'), txt = $('cvCovTxt'), del = $('cvCovDel'), pcv = $('cvCov'), file = $('cvCovFile');
+  const busy = b => { pcv.disabled = del.disabled = b; };
+  const saveCover = async url => {
+    const { error } = await SB.auth.updateUser({ data: { cover_url: url } });
+    if (error) throw error;
+    user = (await SB.auth.getUser()).data.user || user;
+  };
+  pcv.onclick = () => file.click();
+  file.onchange = async e => {
+    const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+    if (!/^image\//.test(f.type)) { window.bpSay ? window.bpSay('Choisissez une image (JPG ou PNG)') : alert('Choisissez une image (JPG ou PNG).'); return; }
+    busy(true); txt.textContent = 'Envoi…';
+    try {
+      const blob = await shrinkImage(f, 1600, .92), bucket = SB.storage.from('annonces'), path = `${user.id}/couverture_${Date.now()}.jpg`;
+      const up = await bucket.upload(path, blob, { contentType: 'image/jpeg' });
+      if (up.error) throw new Error('Couverture non envoyée : ' + up.error.message);
+      const url = bucket.getPublicUrl(path).data.publicUrl;
+      await saveCover(url);
+      cover.style.backgroundImage = `url('${cssUrl(url)}')`; del.hidden = false; txt.textContent = 'Modifier la couverture';
+      window.bpSay && window.bpSay('Couverture enregistrée ✓');
+    } catch (err) { txt.textContent = cover.style.backgroundImage ? 'Modifier la couverture' : 'Ajouter une photo de couverture'; alert((err && err.message) || 'Enregistrement impossible.'); }
+    busy(false);
+  };
+  del.onclick = async () => {
+    if (!confirm('Retirer la photo de couverture ?')) return;
+    busy(true);
+    try { await saveCover(null); cover.style.backgroundImage = ''; del.hidden = true; txt.textContent = 'Ajouter une photo de couverture'; }
+    catch (err) { alert((err && err.message) || 'Enregistrement impossible.'); }
+    busy(false);
+  };
+}
+function openClientProfile() { if (!user) return; renderClientView(); open('mClientView'); }
 $('clForm').onsubmit = async e => {
   e.preventDefault(); const msg = $('clMsg'), go = $('clGo'); msg.className = 'msg'; msg.textContent = '';
   const name = $('clNom').value.trim().replace(/\s+/g, ' '), region = $('clRegion').value, tel = mgTel($('clTel').value);
@@ -3209,9 +3278,8 @@ $('clForm').onsubmit = async e => {
     if (error) throw error;
     user = (await SB.auth.getUser()).data.user || user;
     clAvatar = url; clBlob = null; clRemove = false; clPreview(); renderProfileBtn();
-    const miss = clientMissing(clientData());
-    if (miss.length) msg.textContent = 'Profil enregistré, mais il manque : ' + miss.join(', ') + '.';
-    else { msg.className = 'msg ok'; msg.textContent = 'Profil complet et enregistré ✓'; }
+    close('mClient'); openClientProfile();
+    window.bpSay && window.bpSay(clientMissing(clientData()).length ? 'Profil enregistré' : 'Profil complet ✓');
   } catch (err) { msg.textContent = (err && err.message) || 'Enregistrement impossible, réessayez.'; }
   go.disabled = false;
 };
