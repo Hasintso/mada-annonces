@@ -1264,6 +1264,10 @@ body.landing .hero p{max-width:62ch;margin-bottom:16px}
 #mShop .box label{margin:8px 0 3px;font-size:.8rem}
 #mShop .box input,#mShop .box textarea{padding:7px 9px;font-size:.86rem}
 #mShop .box textarea{height:70px;resize:vertical}
+#mClient .avedit{gap:10px;margin:4px 0 2px}
+#mClient .avprev{width:58px;height:58px;font-size:1.4rem;border-width:2px}
+#mClient .avedit .btn{padding:5px 10px;font-size:.78rem}
+#mClient .avedit small{font-size:.7rem;margin-top:3px}
 #mShop .avedit{gap:10px;margin:4px 0 2px}
 #mShop .avprev{width:58px;height:58px;font-size:1.4rem;border-width:2px}
 #mShop .avedit .btn{padding:5px 10px;font-size:.78rem}
@@ -1757,6 +1761,29 @@ body:not(.landing) .shell main .head{margin-bottom:10px}
     <p class="phint" id="shPhotosHint"></p>
     <p class="msg" id="shMsg" role="status"></p>
     <div class="act" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button class="btn cta" id="shGo" type="submit">Enregistrer mon profil</button><button class="btn" id="shSee" type="button" hidden>Voir ma page publique</button></div>
+  </form>
+</div></div>
+<div class="mask" id="mClient"><div class="box" role="dialog" aria-modal="true" aria-label="Mon profil">
+  <button class="x" data-close aria-label="Fermer">×</button>
+  <h2>Mon profil</h2>
+  <p style="color:var(--muted);margin-top:0">Complétez votre profil pour rassurer les vendeurs quand vous commandez ou écrivez.</p>
+  <div class="shprog"><div class="pf-bar"><i id="clBar" style="width:0"></i></div><small id="clProgTxt" style="color:var(--muted)"></small></div>
+  <form id="clForm">
+    <div class="avedit">
+      <div class="avprev" id="clAvPrev">?</div>
+      <div>
+        <button class="btn alt" type="button" id="clAvPick">Choisir une photo</button>
+        <button class="btn plain" type="button" id="clAvDel" hidden>Retirer</button>
+        <small>Votre photo (JPG ou PNG).</small>
+        <input type="file" id="clPhoto" accept="image/*" hidden>
+      </div>
+    </div>
+    <label for="clNom">Nom complet</label><input id="clNom" maxlength="60" required autocomplete="name" placeholder="Ex. : Hery Rakoto">
+    <label for="clRegion">Région</label><select id="clRegion" required></select>
+    <label for="clTel">Numéro WhatsApp / téléphone</label><div class="phonebox"><span>🇲🇬 +261</span><input id="clTel" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="34 12 345 67" required></div><p class="phint" id="clTelHint">9 chiffres, commençant par 32, 33, 34, 36, 37 ou 38</p>
+    <label for="clMail">Adresse e-mail</label><input id="clMail" type="email" readonly style="background:var(--paper)">
+    <p class="msg" id="clMsg" role="status"></p>
+    <div class="act" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button class="btn cta" id="clGo" type="submit">Enregistrer mon profil</button></div>
   </form>
 </div></div>
 <div class="mask" id="mShopView"><div class="box wide" role="dialog" aria-modal="true" aria-label="Boutique">
@@ -3098,15 +3125,96 @@ function renderProfileBtn() {
   const isV = !!user && accountRole() === 'vendeur', show = isV || (!!user && accountRole() === 'client');
   b.hidden = !show; if (!show) return;
   const nom = (myShop && myShop.nom) || (user.user_metadata || {}).full_name || (user.user_metadata || {}).name || '';
-  let complete = true; if (isV) { try { complete = !shopMissing(myShop).length; } catch (e) {} }
+  let complete = true; if (isV) { try { complete = !shopMissing(myShop).length; } catch (e) {} } else { try { complete = !clientMissing(clientData()).length; } catch (e) {} }
   const mav = (myShop && myShop.avatar_url) || (isV ? '' : ((user.user_metadata || {}).avatar_url || (user.user_metadata || {}).picture || ''));
   b.classList.toggle('todo', !complete);
-  b.title = !isV ? 'Mon compte' : complete ? 'Mon profil' : 'Complétez votre profil (obligatoire pour publier)';
+  b.title = !isV ? (complete ? 'Mon profil' : 'Complétez votre profil') : complete ? 'Mon profil' : 'Complétez votre profil (obligatoire pour publier)';
   b.innerHTML = safeUrl(mav) ? `<img src="${esc(mav)}" alt="Mon profil">`
     : nom ? initial(nom) : '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>';
 }
 /* Le rond ouvre la page de profil (comme Facebook) ; « Modifier le profil » ouvre le formulaire */
-$('btnProfile').onclick = () => { if (!user) return; if (accountRole() === 'vendeur') openShop(user.id); else if (typeof setMenu === 'function') setMenu(true); };
+$('btnProfile').onclick = () => { if (!user) return; if (accountRole() === 'vendeur') openShop(user.id); else openClientProfile(); };
+
+/* ===== Profil client : photo, nom, région, téléphone, e-mail (enregistrés avec le compte) ===== */
+const CL_TOTAL = 5;
+var clBlob = null, clAvatar = '', clRemove = false;
+function clientData() {
+  const m = (user && user.user_metadata) || {};
+  return { avatar_url: m.avatar_url || m.picture || '', full_name: m.full_name || m.name || '', region: m.region || '', phone: m.phone || m.telephone || '', email: (user && user.email) || '' };
+}
+function clientMissing(d) {
+  d = d || {}; const m = [];
+  if (!safeUrl(d.avatar_url)) m.push('photo de profil');
+  if (String(d.full_name || '').trim().length < 2) m.push('nom');
+  if (!MG_REGIONS.includes(d.region)) m.push('région');
+  if (!mgTel(d.phone || '')) m.push('numéro');
+  if (!/^\S+@\S+\.\S+$/.test(d.email || '')) m.push('e-mail');
+  return m;
+}
+const clientPct = d => Math.round((CL_TOTAL - clientMissing(d).length) / CL_TOTAL * 100);
+function clFormData() {
+  return { avatar_url: (clBlob || (clAvatar && !clRemove)) ? (clAvatar || 'https://local/photo') : '', full_name: $('clNom').value, region: $('clRegion').value,
+    phone: $('clTel').value ? '+261' + mgNational($('clTel').value) : '', email: $('clMail').value };
+}
+function clProgress() {
+  const d = clFormData(), miss = clientMissing(d), p = clientPct(d);
+  $('clBar').style.width = p + '%';
+  $('clProgTxt').textContent = miss.length ? `Profil complété à ${p} % · il manque : ${miss.join(', ')}` : 'Profil complet à 100 % ✓';
+}
+function clPreview() {
+  const box = $('clAvPrev'), nom = $('clNom').value;
+  if (clBlob) { box.innerHTML = '<img alt="">'; box.firstChild.src = URL.createObjectURL(clBlob); }
+  else if (clAvatar && !clRemove) box.innerHTML = avatarHtml(clAvatar, nom);
+  else box.textContent = String(nom || '?').trim().charAt(0).toUpperCase() || '?';
+  $('clAvDel').hidden = !(clBlob || (clAvatar && !clRemove));
+  clProgress();
+}
+$('clRegion').innerHTML = '<option value="">Choisissez votre région</option>' + MG_REGIONS.map(r => `<option value="${esc(r)}">${esc(r)}</option>`).join('');
+mgPhoneAttach($('clTel'), $('clTelHint'));
+$('clAvPick').onclick = () => $('clPhoto').click();
+$('clPhoto').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  const msg = $('clMsg'); msg.className = 'msg'; msg.textContent = '';
+  if (!/^image\//.test(f.type)) { msg.textContent = 'Choisissez une image (JPG ou PNG).'; return; }
+  try { clBlob = await shrinkImage(f); clRemove = false; clPreview(); } catch (err) { msg.textContent = err.message; }
+};
+$('clAvDel').onclick = () => { clBlob = null; clRemove = true; clPreview(); };
+['clNom', 'clTel'].forEach(id => $(id).addEventListener('input', () => { if (id === 'clNom' && !clBlob && !(clAvatar && !clRemove)) clPreview(); else clProgress(); }));
+$('clRegion').addEventListener('change', clProgress);
+function openClientProfile() {
+  if (!user) return;
+  const d = clientData(); clBlob = null; clRemove = false; clAvatar = d.avatar_url;
+  $('clNom').value = d.full_name; $('clRegion').value = MG_REGIONS.includes(d.region) ? d.region : '';
+  const n = mgNational(d.phone || ''); $('clTel').value = n ? mgFormat(n) : ''; $('clTel').dispatchEvent(new Event('input'));
+  $('clMail').value = d.email; const msg = $('clMsg'); msg.className = 'msg'; msg.textContent = '';
+  clPreview(); open('mClient');
+}
+$('clForm').onsubmit = async e => {
+  e.preventDefault(); const msg = $('clMsg'), go = $('clGo'); msg.className = 'msg'; msg.textContent = '';
+  const name = $('clNom').value.trim().replace(/\s+/g, ' '), region = $('clRegion').value, tel = mgTel($('clTel').value);
+  if (name.length < 2) { msg.textContent = 'Entrez votre nom complet.'; $('clNom').focus(); return; }
+  if (!MG_REGIONS.includes(region)) { msg.textContent = 'Choisissez votre région dans la liste.'; $('clRegion').focus(); return; }
+  if (!tel) { msg.textContent = TEL_ERR; $('clTel').focus(); return; }
+  if (!sbReady) { msg.textContent = 'Connexion indisponible, réessayez dans un instant.'; return; }
+  go.disabled = true;
+  try {
+    let url = clRemove ? '' : clAvatar;
+    if (clBlob) {
+      const bucket = SB.storage.from('annonces'), path = `${user.id}/profil_${Date.now()}.jpg`;
+      const up = await bucket.upload(path, clBlob, { contentType: 'image/jpeg' });
+      if (up.error) throw new Error('Photo non envoyée : ' + up.error.message);
+      url = bucket.getPublicUrl(path).data.publicUrl;
+    }
+    const { error } = await SB.auth.updateUser({ data: { full_name: name, region, phone: '+261' + mgNational($('clTel').value), avatar_url: url || null } });
+    if (error) throw error;
+    user = (await SB.auth.getUser()).data.user || user;
+    clAvatar = url; clBlob = null; clRemove = false; clPreview(); renderProfileBtn();
+    const miss = clientMissing(clientData());
+    if (miss.length) msg.textContent = 'Profil enregistré, mais il manque : ' + miss.join(', ') + '.';
+    else { msg.className = 'msg ok'; msg.textContent = 'Profil complet et enregistré ✓'; }
+  } catch (err) { msg.textContent = (err && err.message) || 'Enregistrement impossible, réessayez.'; }
+  go.disabled = false;
+};
 
 async function openMyShop(force) {
   shForce = force === true;
@@ -3677,7 +3785,7 @@ async function checkVideos(files) {
 function menuSync() {
   const li = !!user, v = li && accountRole() === 'vendeur';
   ['mgAcc', 'mnPost', 'mnMsg', 'mnCart', 'mnSecurity'].forEach(i => $(i).hidden = !li);
-  ['mnProfile', 'mnEdit'].forEach(i => $(i).hidden = !v);
+  $('mnProfile').hidden = !li; $('mnEdit').hidden = !v;
 }
 $('btnMenu').addEventListener('click', menuSync);
 $('mnProfile').onclick = () => $('btnProfile').click();
