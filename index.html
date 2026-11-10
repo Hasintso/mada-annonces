@@ -2443,7 +2443,9 @@ let postKey = null, postCatKey = null;
 /* Profil Client : « Commander sakafo » — Vendeur / autres : « Vendre sakafo » */
 const isClient = () => (accountRole() || roleGet()) === 'client';
 const saleLbl = key => (isClient() ? 'Commander ' : 'Vendre ') + NEED.find(n => n[1] === key)[0].toLowerCase();
-const saleTitle = () => postCatKey ? saleLbl(postCatKey) : (isClient() ? 'Déposer une commande' : 'Déposer une vente');
+const saleTitle = () => postCatKey
+  ? (isClient() ? 'Je vais commander ' + NEED.find(n => n[1] === postCatKey)[0].toLowerCase() : saleLbl(postCatKey))
+  : (isClient() ? 'Déposer une commande' : 'Déposer une vente');
 const postAskTxt = () => isClient() ? 'Que voulez-vous commander ?' : 'Que voulez-vous vendre ?';
 const postModeTxt = () => isClient() ? 'Combien de pièces voulez-vous commander ?' : 'Combien de pièces voulez-vous vendre ?';
 const defCat = () => postCatKey ? needId(postCatKey) : (needKey ? needId(needKey) : 0);
@@ -2479,6 +2481,8 @@ function openPostForm(key, titre, typeIdx, mode) {
   if (typeIdx >= 0 && typeIdx < T.types.length) $('pType').selectedIndex = typeIdx;
   $('pExtraLbl').textContent = T.extraLbl; $('pPrixLbl').textContent = T.prixLbl;
   $('pTitre').value = titre || '';
+  { const c = isClient() && key === 'vente'; $('postGo').textContent = c ? 'Envoyer ma commande' : 'Publier l\'annonce';
+    if (c) { $('pPrixLbl').textContent = 'Budget (Ar)'; $('pTypeLbl').textContent = 'État souhaité'; } }
   $('postMsg').textContent = '';
   $('mPost').classList.remove('pop');
   $('postChoice').hidden = true; $('postForm').hidden = false;
@@ -2572,6 +2576,9 @@ const MAX_ITEMS = 10;
 function showSaleMode(titre, typeIdx) {
   pendingPost = { titre: titre || '', typeIdx: typeIdx == null ? -1 : typeIdx };
   postKey = null; $('postTitle').textContent = saleTitle(); $('postModeAsk').textContent = postModeTxt();
+  { const c = isClient(), o = document.querySelector('#postMode [data-sm="one"] div'), m = document.querySelector('#postMode [data-sm="many"] div');
+    o.innerHTML = c ? 'Commander une seule pièce<small>Une commande pour un produit</small>' : 'Déposer une seule pièce<small>Une annonce pour un produit</small>';
+    m.innerHTML = c ? 'Commander plusieurs pièces<small>Ajoutez vos pièces, tout est envoyé d\'un coup</small>' : 'Déposer plusieurs pièces<small>Ajoutez vos pièces, tout est publié d\'un coup</small>'; }
   $('mPost').classList.remove('pop');
   $('postChoice').hidden = true; $('postForm').hidden = true; $('postMulti').hidden = true; $('postMode').hidden = false;
 }
@@ -2583,7 +2590,7 @@ function openMultiForm() {
   postKey = 'vente';
   $('postMulti').reset(); $('mItems').innerHTML = ''; $('multiMsg').textContent = '';
   addItem();
-  $('mPost').classList.remove('pop'); $('postTitle').textContent = 'Déposer plusieurs pièces';
+  $('mPost').classList.remove('pop'); $('postTitle').textContent = isClient() ? 'Commander plusieurs pièces' : 'Déposer plusieurs pièces';
   $('postChoice').hidden = true; $('postForm').hidden = true; $('postMode').hidden = true; $('postMulti').hidden = false;
   $('mVille').focus();
 }
@@ -2597,15 +2604,15 @@ function refreshItems() {
   });
   $('mAdd').disabled = n >= MAX_ITEMS;
   $('mAdd').textContent = n >= MAX_ITEMS ? 'Maximum ' + MAX_ITEMS + ' pièces' : '+ Ajouter une pièce';
-  $('multiGo').textContent = n > 1 ? 'Publier les ' + n + ' pièces' : 'Publier la pièce';
+  $('multiGo').textContent = isClient() ? (n > 1 ? 'Envoyer les ' + n + ' pièces' : 'Envoyer la pièce') : (n > 1 ? 'Publier les ' + n + ' pièces' : 'Publier la pièce');
 }
 function addItem() {
   const box = $('mItems'); if (box.children.length >= MAX_ITEMS) return;
   box.querySelectorAll('details').forEach(x => x.open = false);
   const d = document.createElement('details'); d.className = 'mitem'; d.open = true;
   d.innerHTML = `<summary><span class="mi-n"></span><span class="mi-sum"></span></summary><div class="mi-body">
-    <div class="row"><div><label>État du produit<select class="mi-etat">${POST_TYPES.vente.types.map(t => `<option>${esc(t)}</option>`).join('')}</select></label></div>
-    <div><label>Prix (Ar)<input class="mi-prix" type="text" inputmode="numeric" autocomplete="off" placeholder="Ex. : 12.000"></label></div></div>
+    <div class="row"><div><label>${isClient() ? 'État souhaité' : 'État du produit'}<select class="mi-etat">${POST_TYPES.vente.types.map(t => `<option>${esc(t)}</option>`).join('')}</select></label></div>
+    <div><label>${isClient() ? 'Budget (Ar)' : 'Prix (Ar)'}<input class="mi-prix" type="text" inputmode="numeric" autocomplete="off" placeholder="Ex. : 12.000"></label></div></div>
     <label>Catégorie<select class="mi-cat">${catOptions(defCat())}</select></label>
     <label>Titre<input class="mi-titre" maxlength="90"></label>
     <label>Marque / modèle (facultatif)<input class="mi-extra" maxlength="120"></label>
@@ -2668,7 +2675,7 @@ $('postMulti').onsubmit = async e => {
   go.disabled = false;
   $('postMulti').reset(); close('mPost'); cat = null; q = ''; $('q').value = ''; $('qCat').value = '';
   markCat(); loadAds(); loadCounts();
-  window.bpSay && window.bpSay(items.length + (items.length > 1 ? ' pièces publiées' : ' pièce publiée'));
+  window.bpSay && window.bpSay(items.length + (isClient() ? (items.length > 1 ? ' pièces commandées' : ' pièce commandée') : (items.length > 1 ? ' pièces publiées' : ' pièce publiée')));
 };
 
 const menu = $('menuList'), mb = $('btnMenu'), ov = $('menuOv');
