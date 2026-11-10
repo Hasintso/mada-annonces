@@ -1287,6 +1287,32 @@ body.landing .hero p{max-width:62ch;margin-bottom:16px}
 try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = document.documentElement;
   if (t.th) h.dataset.th = t.th; if (t.ff) h.dataset.ff = t.ff; if (t.fs) h.dataset.fs = t.fs; if (t.ac) h.dataset.ac = t.ac; if (t.bg) h.style.setProperty('--paper', t.bg); } catch (e) {}
 </script>
+<style id="fxCss">
+/* Barre de catégories dans la ligne « Voir toutes les annonces » + filtres de la catégorie choisie */
+main .head{align-items:center;gap:14px}
+main .head a#seeAll{white-space:nowrap;flex:none}
+.catbar{position:relative;flex:1 1 320px;min-width:0;display:flex;gap:8px;overflow-x:auto;padding:4px 2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.catbar::-webkit-scrollbar{display:none}
+.cb-chip{flex:none;display:inline-flex;align-items:center;gap:7px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:8px 15px;font-weight:700;font-size:.9rem;white-space:nowrap;transition:background .15s,border-color .15s,color .15s}
+.cb-chip:hover{border-color:var(--forest);color:var(--forest)}
+.cb-chip.on{background:var(--forest);border-color:var(--forest);color:#fff}
+.cb-n{font-size:.74rem;font-weight:700;opacity:.6}
+.cb-chip.on .cb-n{opacity:.9}
+.fx{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:-4px 0 18px;display:flex;flex-direction:column;gap:12px}
+.fx[hidden],.fx-subs[hidden]{display:none}
+.fx-subs{display:flex;flex-wrap:wrap;gap:8px}
+.fx-sub{border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:6px 13px;font-size:.85rem;font-weight:600}
+.fx-sub:hover{border-color:var(--forest);color:var(--forest)}
+.fx-sub.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.fx-row{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:flex-end}
+.fx-row label{display:flex;flex-direction:column;gap:4px;font-size:.76rem;font-weight:700;color:var(--muted)}
+.fx-row select,.fx-row input{border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:var(--paper);color:var(--ink);font-size:.9rem;min-width:0}
+.fx-price{display:flex;align-items:center;gap:6px;font-style:normal}
+.fx-price i{font-style:normal;color:var(--muted)}
+.fx-price input{width:96px}
+.fx-reset{margin-left:auto;border:0;background:none;color:var(--forest);font-weight:700;text-decoration:underline;padding:8px 4px}
+@media(max-width:560px){.fx-row{gap:10px 12px}.fx-price input{width:80px}.fx-reset{margin-left:0}}
+</style>
 </head>
 <body class="landing">
 
@@ -1539,7 +1565,16 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
   </div>
 </aside>
 <main>
-  <div class="head"><h1 id="title">Dernières annonces</h1><a href="#" id="seeAll">Voir toutes les annonces →</a></div>
+  <div class="head"><h1 id="title">Dernières annonces</h1><nav class="catbar" id="catBar" aria-label="Catégories"></nav><a href="#" id="seeAll">Voir toutes les annonces →</a></div>
+  <div class="fx" id="catFilters" hidden>
+    <div class="fx-subs" id="fxSubs"></div>
+    <div class="fx-row">
+      <label>État<select id="fxEtat"><option value="">Tous</option><option>Neuf</option><option>Occasion</option><option>Reconditionné</option></select></label>
+      <label>Prix (Ar)<span class="fx-price"><input id="fxMin" type="text" inputmode="numeric" autocomplete="off" placeholder="Min" aria-label="Prix minimum"><i>–</i><input id="fxMax" type="text" inputmode="numeric" autocomplete="off" placeholder="Max" aria-label="Prix maximum"></span></label>
+      <label>Trier par<select id="fxSort"><option value="recent">Plus récentes</option><option value="asc">Prix croissant</option><option value="desc">Prix décroissant</option></select></label>
+      <button type="button" class="fx-reset" id="fxReset">Réinitialiser</button>
+    </div>
+  </div>
   <div class="grid" id="list"></div>
   <p class="empty" id="empty" hidden>Aucune annonce pour cette recherche. Soyez le premier à en déposer une.</p>
 </main>
@@ -1933,11 +1968,12 @@ $('mnHome').onclick = showWelcome;
 $('mnAds').onclick = closeWelcome;
 
 const markCat = keep => {
-  if (!keep) { maxPrix = null; needKey = null; }
+  if (!keep) { maxPrix = null; needKey = null; if (typeof fxReset === 'function') fxReset(); }
   const box = $('cats');
   box.querySelectorAll('button[data-key]').forEach(x => x.classList.toggle('on', x.dataset.key === needKey));
   box.querySelectorAll('.subs').forEach(s => s.hidden = s.dataset.key !== needKey);
   box.querySelectorAll('button[data-key]').forEach(x => x.classList.toggle('open', x.dataset.key === needKey));
+  if (typeof renderCatBar === 'function') renderCatBar();
 };
 
 /* Un clic sur une case de catégorie ouvre directement cette catégorie (recherche tolérante aux accents et à « & ») */
@@ -2181,6 +2217,7 @@ function renderNeed() {
     sort = val; syncTabs(); maxPrix = type === 'petit' ? PETIT_PRIX : null;
     needKey = key; markCat(true); loadAds();
   }));
+  buildCatBar();
   markCat(true);
 }
 const toggle = (btn, box) => { box.hidden = !box.hidden; btn.classList.toggle('open', !box.hidden); };
@@ -2192,7 +2229,7 @@ async function loadCounts() {
   const { data } = await SB.from('ann_annonces').select('category_id').eq('statut', 'valide').limit(5000);
   const c = { all: 0 };
   (data || []).forEach(a => { c.all++; c[a.category_id] = (c[a.category_id] || 0) + 1; });
-  document.querySelectorAll('#cats [data-n]').forEach(el => el.textContent = c[el.dataset.n] || 0);
+  document.querySelectorAll('#cats [data-n], #catBar [data-n]').forEach(el => el.textContent = c[el.dataset.n] || 0);
 }
 
 var sellerMap = {};
@@ -2220,6 +2257,7 @@ async function loadAds() {
     else if (accountRole() === 'client') { const ids = cartGet().map(x => x.id); if (ids.length) r = r.in('id', ids); else modeEmpty = true; }
   }
   if (maxPrix) r = r.lte('prix', maxPrix);
+  if (typeof fxApply === 'function') r = fxApply(r);
   const v = clean($('qVille').value);
   if (v) r = r.ilike('ville', `%${v}%`);
   const t = clean(q);
@@ -2288,6 +2326,74 @@ $('seeAll').onclick = e => {
   $('q').value = ''; $('qVille').value = ''; $('qCat').value = '';
   markCat(); loadAds();
 };
+
+/* ===== Barre de catégories (au-dessus des annonces) + filtres propres à chaque catégorie ===== */
+function fxS() { return window.__fx || (window.__fx = { sub: null, etat: '', pmin: null, pmax: null }); }
+function fxReset() {
+  window.__fx = null;
+  const e = $('fxEtat'); if (e) { e.value = ''; $('fxMin').value = ''; $('fxMax').value = ''; }
+}
+/* Sous-filtres par catégorie : [libellé, mots cherchés dans le titre et la description] */
+function fxSubs(key) {
+  return ({
+    sakafo:     [['Plats', ['plat', 'riz', 'vary', 'romazava', 'ravitoto']], ['Pâtisserie', ['gâteau', 'gateau', 'pâtisserie', 'patisserie', 'mofo', 'beignet']], ['Boissons', ['boisson', 'jus', 'café', 'cafe', 'rhum', 'bière']], ['Fruits & légumes', ['fruit', 'légume', 'legume', 'mangue', 'banane', 'tomate']], ['Épices & miel', ['épice', 'epice', 'miel', 'vanille', 'poivre']]],
+    cuisine:    [['Ustensiles', ['ustensile', 'couteau', 'cuillère', 'cuillere', 'louche', 'spatule']], ['Casseroles & poêles', ['casserole', 'marmite', 'poêle', 'poele', 'faitout']], ['Électroménager', ['mixeur', 'blender', 'cuisinière', 'cuisiniere', 'réfrigérateur', 'refrigerateur', 'bouilloire', 'micro-onde']], ['Vaisselle', ['assiette', 'verre', 'tasse', 'couvert', 'plateau']]],
+    maison:     [['Meubles', ['meuble', 'table', 'chaise', 'armoire', 'canapé', 'canape']], ['Décoration', ['déco', 'deco', 'tableau', 'vase', 'rideau', 'tapis']], ['Literie', ['matelas', 'drap', 'couverture', 'oreiller']], ['Matériaux', ['brique', 'ciment', 'tôle', 'tole', 'peinture', 'carrelage', 'planche']]],
+    vetement:   [['Homme', ['homme', 'chemise', 'pantalon', 'costume']], ['Femme', ['femme', 'robe', 'jupe', 'blouse']], ['Enfant', ['enfant', 'bébé', 'bebe', 'garçon', 'garcon', 'fille']], ['Traditionnel', ['lamba', 'traditionnel', 'salovana', 'tissu']]],
+    chaussure:  [['Homme', ['homme', 'mocassin', 'derby']], ['Femme', ['femme', 'talon', 'sandale', 'escarpin']], ['Enfant', ['enfant', 'bébé', 'bebe']], ['Sport', ['sport', 'basket', 'running', 'crampon', 'sneaker']]],
+    auto:       [['Voitures', ['voiture', '4x4', 'pick-up', 'camion', 'minibus']], ['Motos', ['moto', 'scooter', 'quad']], ['Pièces', ['pièce', 'piece', 'pneu', 'batterie', 'moteur', 'frein']], ['Accessoires', ['casque', 'accessoire', 'housse', 'antivol']]],
+    technologie:[['Téléphones', ['téléphone', 'telephone', 'smartphone', 'iphone', 'samsung', 'tecno', 'infinix']], ['Ordinateurs', ['ordinateur', 'laptop', 'macbook', 'tablette']], ['Audio', ['casque', 'écouteur', 'ecouteur', 'enceinte', 'airpods']], ['Accessoires', ['chargeur', 'câble', 'cable', 'powerbank', 'clavier', 'souris']]],
+    creation:   [['Livres', ['livre', 'roman', 'manuel', 'magazine']], ['Musique', ['musique', 'chanson', 'instrumental', 'beat', 'album']], ['Vidéo', ['vidéo', 'video', 'montage', 'clip', 'film']], ['Graphisme & web', ['logo', 'graphisme', 'affiche', 'flyer', 'design']]]
+  })[key] || [];
+}
+/* Ajoute les filtres choisis à la requête des annonces */
+function fxApply(r) {
+  if (!needKey) return r;
+  const s = fxS(), sub = fxSubs(needKey)[s.sub];
+  if (sub) r = r.or(sub[1].map(t => `titre.ilike.%${t}%,description.ilike.%${t}%`).join(','));
+  if (s.etat) r = r.ilike('description', `%État du produit : ${s.etat}%`);
+  if (s.pmin != null) r = r.gte('prix', s.pmin);
+  if (s.pmax != null) r = r.lte('prix', s.pmax);
+  return r;
+}
+function buildCatBar() {
+  const bar = $('catBar'); if (!bar) return;
+  bar.innerHTML = `<button type="button" class="cb-chip" data-key="">Toutes<span class="cb-n" data-n="all"></span></button>` +
+    NEED.map(([label, key]) => `<button type="button" class="cb-chip" data-key="${key}">${esc(label)}<span class="cb-n" data-n="${needId(key)}"></span></button>`).join('');
+  bar.querySelectorAll('.cb-chip').forEach(b => b.onclick = () => {
+    const key = b.dataset.key;
+    if (!key || key === needKey) { $('seeAll').click(); return; }      /* « Toutes » ou 2e clic : retour à toutes les annonces */
+    const side = $('cats').querySelector(`button[data-key="${key}"]`); if (side) side.click();
+  });
+}
+function renderCatBar() {
+  const bar = $('catBar'); if (!bar || !bar.children.length) return;
+  let act = null;
+  bar.querySelectorAll('.cb-chip').forEach(b => { const on = (b.dataset.key || '') === (needKey || ''); b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); if (on) act = b; });
+  if (act && needKey && bar.dataset.act !== needKey) bar.scrollTo({ left: Math.max(0, act.offsetLeft - 40), behavior: 'smooth' });
+  bar.dataset.act = needKey || '';
+  const box = $('catFilters'); box.hidden = !needKey;
+  if (!needKey) return;
+  const subs = fxSubs(needKey), s = fxS();
+  $('fxSubs').hidden = !subs.length;
+  $('fxSubs').innerHTML = subs.map(([l], i) => `<button type="button" class="fx-sub${s.sub === i ? ' on' : ''}" data-i="${i}" aria-pressed="${s.sub === i}">${esc(l)}</button>`).join('');
+  $('fxEtat').value = s.etat; $('fxSort').value = sort;
+}
+$('fxSubs').onclick = e => {
+  const b = e.target.closest('.fx-sub'); if (!b) return;
+  const s = fxS(), i = +b.dataset.i; s.sub = s.sub === i ? null : i;
+  renderCatBar(); loadAds();
+};
+$('fxEtat').onchange = e => { fxS().etat = e.target.value; loadAds(); };
+$('fxSort').onchange = e => { sort = e.target.value; loadAds(); };
+{
+  let t; const go = () => { clearTimeout(t); t = setTimeout(loadAds, 350); };
+  [['fxMin', 'pmin'], ['fxMax', 'pmax']].forEach(([id, k]) => $(id).addEventListener('input', e => {
+    const v = prixNum(e.target.value); e.target.value = v === null ? '' : prixDots(v); fxS()[k] = v; go();
+  }));
+}
+$('fxReset').onclick = () => { fxReset(); sort = 'recent'; renderCatBar(); loadAds(); };
+
 function showAd(a) {
   const mine = !!(user && user.id === a.user_id);
   const tel = String(a.telephone || '').replace(/[^\d+]/g, '');
