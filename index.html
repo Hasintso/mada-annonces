@@ -1272,6 +1272,15 @@ body.landing .hero p{max-width:62ch;margin-bottom:16px}
 #mShop .phint,#mShop .box form small{font-size:.72rem}
 #mShop .shprog{margin:6px 0 0}
 #mShop .act .btn{padding:8px 14px;font-size:.86rem}
+#mShop .shphotos{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:2px}
+.shp,.shpadd{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden}
+.shp img{width:100%;height:100%;object-fit:cover;display:block}
+.shpx{position:absolute;top:3px;right:3px;width:22px;height:22px;padding:0;border:0;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-size:1rem;line-height:1;display:grid;place-items:center;cursor:pointer}
+.shpadd{border:1.5px dashed var(--forest);background:var(--paper);color:var(--forest);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;font-size:.7rem;font-weight:700;padding:0}
+.shpadd b{font-size:1.3rem;line-height:1}
+.pf-gal{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0 4px}
+.pf-gal a{display:block;aspect-ratio:1;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+.pf-gal img{width:100%;height:100%;object-fit:cover;display:block}
 </style>
 <script>
 /* Applique tout de suite les réglages d'apparence enregistrés (avant l'affichage de la page) */
@@ -1692,12 +1701,16 @@ try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = do
         <input type="file" id="shPhoto" accept="image/*" hidden>
       </div>
     </div>
-    <label for="shNom">Nom ou nom de la boutique</label><input id="shNom" maxlength="60" required placeholder="Ex. : Boutique Mialy">
-    <label for="shDesc">Présentation <small style="color:var(--muted)">(20 caractères minimum)</small></label><textarea id="shDesc" maxlength="400" rows="4" required placeholder="Que vendez-vous ? Où ? À quels horaires ?"></textarea>
-    <label for="shVille">Ville</label><input id="shVille" maxlength="60" required placeholder="Ex. : Antananarivo">
-    <label for="shTel">Téléphone / WhatsApp (numéro réel)</label><div class="phonebox"><span>🇲🇬 +261</span><input id="shTel" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="34 12 345 67" required></div><p class="phint" id="shTelHint">9 chiffres, commençant par 32, 33, 34, 36, 37 ou 38</p>
+    <label for="shNom">Titre de ma boutique</label><input id="shNom" maxlength="60" required placeholder="Ex. : Boutique Mialy">
+    <label for="shVille">Lieu exact</label><input id="shVille" maxlength="60" required placeholder="Ex. : Analakely, près du marché">
+    <label for="shVend">Je vais vendre</label><input id="shVend" maxlength="120" required placeholder="Ex. : vêtements, chaussures, pièces auto-moto">
+    <label for="shDesc">Description et à propos <small style="color:var(--muted)">(20 caractères minimum)</small></label><textarea id="shDesc" maxlength="400" rows="4" required placeholder="Présentez votre boutique : produits, horaires, livraison…"></textarea>
+    <label for="shTel">Numéro WhatsApp / téléphone (numéro réel)</label><div class="phonebox"><span>🇲🇬 +261</span><input id="shTel" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="34 12 345 67" required></div><p class="phint" id="shTelHint">9 chiffres, commençant par 32, 33, 34, 36, 37 ou 38</p>
     <label for="shMail">Adresse e-mail</label><input id="shMail" type="email" readonly style="background:var(--paper)">
     <p class="phint" style="margin-top:4px">E-mail de votre compte : les acheteurs peuvent vous écrire dessus.</p>
+    <label>Photos de ma boutique <small style="color:var(--muted)">(3 minimum, obligatoire)</small></label>
+    <div class="shphotos" id="shPhotos"></div><input type="file" id="shPhotoMulti" accept="image/*" multiple hidden>
+    <p class="phint" id="shPhotosHint"></p>
     <p class="msg" id="shMsg" role="status"></p>
     <div class="act" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button class="btn cta" id="shGo" type="submit">Enregistrer mon profil</button><button class="btn" id="shSee" type="button" hidden>Voir ma page publique</button></div>
   </form>
@@ -2839,21 +2852,24 @@ $('roleChip').onclick = () => { if (!user) showRoleGate(); else if (accountRole(
 /* ===== Boutique du vendeur : « Ma boutique » (modifier) + page publique (table ann_boutiques) ===== */
 const shopErr = e => /ann_boutiques|42P01|relation/.test(((e && e.code) || '') + ' ' + ((e && e.message) || '')) ? "La boutique n'est pas encore activée sur le site." : ((e && e.message) || 'Erreur');
 /* --- Photo de profil : réduite à 400 px côté navigateur avant l'envoi (rapide, même en 3G) --- */
-var shBlob = null, shAvatar = '', shRemove = false, myShop = null, shForce = false;
+var shBlob = null, shAvatar = '', shRemove = false, myShop = null, shForce = false, shPhotos = [];
 function initial(n) { return esc(String(n || '?').trim().charAt(0).toUpperCase() || '?'); }
 function avatarHtml(url, nom) { return safeUrl(url) ? `<img src="${esc(url)}" alt="" loading="lazy">` : initial(nom); }
-/* Profil complet = photo + nom + ville + présentation + vrai téléphone malgache + e-mail */
+/* Profil complet = photo de profil + titre + lieu exact + « je vais vendre » + description + vrai téléphone malgache + e-mail + 3 photos de la boutique minimum */
+const SH_TOTAL = 8, SH_MINP = 3, SH_MAXP = 6;
 function shopMissing(d) {
   d = d || {}; const m = [];
-  if (!safeUrl(d.avatar_url)) m.push('photo');
-  if (!String(d.nom || '').trim()) m.push('nom');
-  if (!String(d.ville || '').trim()) m.push('ville');
-  if (String(d.description || '').trim().length < 20) m.push('présentation');
-  if (!mgTel(d.telephone || '')) m.push('téléphone');
+  if (!safeUrl(d.avatar_url)) m.push('photo de profil');
+  if (!String(d.nom || '').trim()) m.push('titre de la boutique');
+  if (!String(d.ville || '').trim()) m.push('lieu exact');
+  if (String(d.vend || '').trim().length < 3) m.push('ce que vous vendez');
+  if (String(d.description || '').trim().length < 20) m.push('description');
+  if (!mgTel(d.telephone || '')) m.push('numéro');
   if (!/^\S+@\S+\.\S+$/.test(d.email || '')) m.push('e-mail');
+  if ((Array.isArray(d.photos) ? d.photos.filter(safeUrl).length : 0) < SH_MINP) m.push('3 photos de la boutique');
   return m;
 }
-const shopPct = d => Math.round((6 - shopMissing(d).length) / 6 * 100);
+const shopPct = d => Math.round((SH_TOTAL - shopMissing(d).length) / SH_TOTAL * 100);
 function shrinkImage(file, max = 400, q = .85) {
   return new Promise((ok, ko) => {
     const img = new Image(), u = URL.createObjectURL(file);
@@ -2869,7 +2885,8 @@ function shrinkImage(file, max = 400, q = .85) {
 }
 function shFormData() {
   return { avatar_url: (shBlob || (shAvatar && !shRemove)) ? (shAvatar || 'https://local/photo') : '', nom: $('shNom').value, description: $('shDesc').value,
-    ville: $('shVille').value, telephone: $('shTel').value, email: $('shMail').value };
+    ville: $('shVille').value, vend: $('shVend').value, telephone: $('shTel').value, email: $('shMail').value,
+    photos: shPhotos.map(p => p.url || 'https://local/photo') };
 }
 function shProgress() {
   const d = shFormData(), miss = shopMissing(d), p = shopPct(d);
@@ -2893,7 +2910,37 @@ $('shPhoto').onchange = async e => {
 };
 $('shAvDel').onclick = () => { shBlob = null; shRemove = true; shPreview(); };
 mgPhoneAttach($('shTel'), $('shTelHint'));
-['shNom', 'shDesc', 'shVille', 'shTel'].forEach(id => $(id).addEventListener('input', () => { if (id === 'shNom' && !shBlob && !(shAvatar && !shRemove)) shPreview(); else shProgress(); }));
+/* --- 3 photos de la boutique minimum (6 maximum), réduites à 1000 px avant l'envoi --- */
+function shPhotosRender() {
+  const box = $('shPhotos'); box.innerHTML = '';
+  shPhotos.forEach((p, i) => {
+    const d = document.createElement('div'); d.className = 'shp';
+    const im = document.createElement('img'); im.alt = ''; im.src = p.local || p.url; d.appendChild(im);
+    const x = document.createElement('button'); x.type = 'button'; x.className = 'shpx'; x.setAttribute('aria-label', 'Retirer cette photo'); x.textContent = '×';
+    x.onclick = () => { if (p.local) URL.revokeObjectURL(p.local); shPhotos.splice(i, 1); shPhotosRender(); };
+    d.appendChild(x); box.appendChild(d);
+  });
+  const n = shPhotos.length, slots = n < SH_MINP ? SH_MINP - n : (n < SH_MAXP ? 1 : 0);
+  for (let k = 0; k < slots; k++) {
+    const a = document.createElement('button'); a.type = 'button'; a.className = 'shpadd'; a.innerHTML = '<b>+</b><span>Photo</span>';
+    a.onclick = () => $('shPhotoMulti').click(); box.appendChild(a);
+  }
+  const h = $('shPhotosHint');
+  h.textContent = n >= SH_MINP ? `${n} photo${n > 1 ? 's' : ''} ✓` : `${n}/${SH_MINP} : il manque ${SH_MINP - n} photo${SH_MINP - n > 1 ? 's' : ''} (obligatoire)`;
+  h.className = 'phint ' + (n >= SH_MINP ? 'ok' : 'err');
+  shProgress();
+}
+$('shPhotoMulti').onchange = async e => {
+  const files = Array.from(e.target.files || []); e.target.value = ''; if (!files.length) return;
+  const msg = $('shMsg'); msg.className = 'msg'; msg.textContent = '';
+  for (const f of files) {
+    if (shPhotos.length >= SH_MAXP) { msg.textContent = SH_MAXP + ' photos au maximum.'; break; }
+    if (!/^image\//.test(f.type)) { msg.textContent = 'Choisissez des images (JPG ou PNG).'; continue; }
+    try { const b = await shrinkImage(f, 1000, .85); shPhotos.push({ blob: b, local: URL.createObjectURL(b) }); } catch (err) { msg.textContent = err.message; }
+  }
+  shPhotosRender();
+};
+['shNom', 'shDesc', 'shVille', 'shVend', 'shTel'].forEach(id => $(id).addEventListener('input', () => { if (id === 'shNom' && !shBlob && !(shAvatar && !shRemove)) shPreview(); else shProgress(); }));
 
 /* --- Rond de profil dans l'en-tête (à côté du panier) --- */
 async function loadMyShop() {
@@ -2929,7 +2976,10 @@ async function openMyShop(force) {
   const m = user.user_metadata || {};
   shBlob = null; shRemove = false; shAvatar = (data && data.avatar_url) || '';
   $('shNom').value = (data && data.nom) || m.full_name || m.name || ''; $('shDesc').value = (data && data.description) || '';
-  $('shVille').value = (data && data.ville) || m.region || '';
+  $('shVille').value = (data && data.ville) || m.region || ''; $('shVend').value = (data && data.vend) || '';
+  shPhotos.forEach(p => { if (p.local) URL.revokeObjectURL(p.local); });
+  shPhotos = ((data && Array.isArray(data.photos)) ? data.photos : []).filter(safeUrl).map(url => ({ url }));
+  shPhotosRender();
   $('shTel').value = (data && data.telephone) || m.phone || m.telephone || ''; $('shTel').dispatchEvent(new Event('input'));
   $('shMail').value = user.email || '';
   shPreview(); $('shSee').hidden = !data; close('mShopView'); open('mShop');
@@ -2947,17 +2997,29 @@ $('shopForm').onsubmit = async e => {
       if (up.error) throw new Error('Photo non envoyée : ' + up.error.message);
       url = bucket.getPublicUrl(path).data.publicUrl;
     }
+    const purls = [], pb = SB.storage.from('annonces'); let pk = 0;
+    if (shPhotos.some(p => p.blob)) { msg.textContent = 'Envoi des photos…'; }
+    for (const p of shPhotos) {
+      if (p.url) { purls.push(p.url); continue; }
+      const pth = `${user.id}/boutique_${Date.now()}_${pk++}.jpg`;
+      const pu = await pb.upload(pth, p.blob, { contentType: 'image/jpeg' });
+      if (pu.error) throw new Error('Photo non envoyée : ' + pu.error.message);
+      purls.push(pb.getPublicUrl(pth).data.publicUrl);
+    }
+    msg.textContent = '';
     const row = { user_id: user.id, nom: $('shNom').value.trim(), description: $('shDesc').value.trim(), ville: $('shVille').value.trim(),
-      telephone: tel, email: user.email || '', avatar_url: url || null, maj_le: new Date().toISOString() };
+      vend: $('shVend').value.trim(), photos: purls, telephone: tel, email: user.email || '', avatar_url: url || null, maj_le: new Date().toISOString() };
     const { error } = await SB.from('ann_boutiques').upsert(row, { onConflict: 'user_id' });
     if (error) throw error;
-    shAvatar = url; shBlob = null; shRemove = false; shPreview(); $('shSee').hidden = false; await loadMyShop();
+    shAvatar = url; shBlob = null; shRemove = false;
+    shPhotos.forEach(p => { if (p.local) URL.revokeObjectURL(p.local); }); shPhotos = purls.map(u => ({ url: u })); shPhotosRender();
+    shPreview(); $('shSee').hidden = false; await loadMyShop();
     const miss = shopMissing(row);
     if (miss.length) { msg.textContent = 'Profil enregistré, mais il manque : ' + miss.join(', ') + '. Vous ne pourrez pas publier avant.'; }
     else if (shForce) { shForce = false; close('mShop'); window.bpSay && window.bpSay('Profil complet ✓ Vous pouvez publier'); $('btnPost').click(); }
     else { msg.className = 'msg ok'; msg.textContent = 'Profil complet et enregistré ✓'; }
   } catch (err) {
-    msg.textContent = /avatar_url|telephone|email|column/i.test((err && err.message) || '') ? "Le profil n'est pas encore activé : exécutez profil-vendeur.sql dans Supabase." : shopErr(err);
+    msg.textContent = /avatar_url|telephone|email|vend|photos|column/i.test((err && err.message) || '') ? "Le profil n'est pas encore activé : exécutez profil-vendeur-2.sql dans Supabase (SQL Editor)." : shopErr(err);
   }
   go.disabled = false;
 };
@@ -2973,8 +3035,8 @@ async function openShop(uid) {
   const shop = s.data || {}, list = a.data || [], nom = shop.nom || 'Vendeur', mine = !!(user && user.id === uid);
   const tel = String(shop.telephone || '').replace(/[^\d+]/g, '');
   const since = shop.cree_le ? new Date(shop.cree_le).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }) : '';
-  const miss = shopMissing(shop), complete = !miss.length;
-  const badges = [safeUrl(shop.avatar_url) ? '📷 Photo' : '', tel ? '📞 Téléphone' : '', shop.email ? '✉️ E-mail' : '', shop.description ? '📝 Présentation' : '', since ? '🗓️ Membre depuis ' + since : '']
+  const miss = shopMissing(shop), complete = !miss.length, gal = Array.isArray(shop.photos) ? shop.photos.filter(safeUrl) : [];
+  const badges = [safeUrl(shop.avatar_url) ? '📷 Photo' : '', tel ? '📞 Téléphone' : '', shop.email ? '✉️ E-mail' : '', shop.description ? '📝 À propos' : '', gal.length >= SH_MINP ? '📸 ' + gal.length + ' photos' : '', since ? '🗓️ Membre depuis ' + since : '']
     .filter(Boolean);
   const firstAd = list[0];
   const cov = safeUrl(shop.cover_url) ? cssUrl(shop.cover_url) : '';
@@ -2991,12 +3053,14 @@ async function openShop(uid) {
       <button class="btn plain" id="pfShare" type="button">🔗 Partager</button>
     </div>
     <div id="pfAbt" class="pf-about"><dl>
-      <dt>Présentation</dt><dd>${esc(shop.description || 'Non renseignée')}</dd>
-      <dt>Ville</dt><dd>${esc(shop.ville || 'Non renseignée')}</dd>
+      <dt>À propos</dt><dd>${esc(shop.description || 'Non renseigné')}</dd>
+      <dt>Je vends</dt><dd>${esc(shop.vend || 'Non renseigné')}</dd>
+      <dt>Lieu exact</dt><dd>${esc(shop.ville || 'Non renseigné')}</dd>
       <dt>Téléphone</dt><dd>${tel ? `<a href="tel:${esc(tel)}">${esc(shop.telephone)}</a>` : 'Non renseigné'}</dd>
       <dt>E-mail</dt><dd>${shop.email ? `<a href="mailto:${esc(shop.email)}">${esc(shop.email)}</a>` : 'Non renseigné'}</dd>
       <dt>Membre depuis</dt><dd>${esc(since || '—')}</dd></dl>
       ${badges.length ? '<div class="trust">' + badges.map(x => `<span>${esc(x)}</span>`).join('') + '</div>' : ''}</div>
+    ${gal.length ? `<h3 class="pf-h">Photos de la boutique</h3><div class="pf-gal">${gal.map(u => `<a href="${esc(u)}" target="_blank" rel="noopener"><img src="${esc(u)}" alt="" loading="lazy"></a>`).join('')}</div>` : ''}
     ${mine && !complete ? `<div class="pf-prog"><b>Profil complété à ${shopPct(shop)} %</b><div class="pf-bar"><i style="width:${shopPct(shop)}%"></i></div>Il manque : ${esc(miss.join(', '))}. Un profil complet est obligatoire pour publier et rassure les acheteurs.</div>` : ''}
     <h3 class="pf-h">Publications (${list.length})</h3>
     <div id="pfPub" class="shopads">${list.length ? list.map((x, i) => { const p0 = cssUrl(x.photos && x.photos[0]);
