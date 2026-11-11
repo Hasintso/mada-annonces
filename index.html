@@ -2878,14 +2878,16 @@ function refreshItems() {
   const items = [...$('mItems').children], n = items.length;
   items.forEach((d, i) => {
     d.querySelector('.mi-n').textContent = 'Pièce ' + (i + 1);
-    const t = d.querySelector('.mi-titre').value.trim(), p = d.querySelector('.mi-prix').value;
-    d.querySelector('.mi-sum').textContent = [t, prixNum(p) !== null ? prixDots(prixNum(p)) + ' Ar' : ''].filter(Boolean).join(' · ');
+    const t = d.querySelector('.mi-titre').value.trim(), p = d.querySelector('.mi-prix').value, qn = qtyNum(d.querySelector('.mi-qty').value);
+    d.querySelector('.mi-sum').textContent = [t, qn ? '× ' + prixDots(qn) : '', prixNum(p) !== null ? prixDots(prixNum(p)) + ' Ar' : ''].filter(Boolean).join(' · ');
     d.querySelector('.mi-rm').hidden = n < 2;
   });
   $('mAdd').disabled = n >= MAX_ITEMS;
   $('mAdd').textContent = n >= MAX_ITEMS ? 'Maximum ' + MAX_ITEMS + ' pièces' : '+ Ajouter une pièce';
   $('multiGo').textContent = isClient() ? (n > 1 ? 'Envoyer les ' + n + ' pièces' : 'Envoyer la pièce') : (n > 1 ? 'Publier les ' + n + ' pièces' : 'Publier la pièce');
 }
+/* nombre de pièces : entier positif (espaces et points ignorés) */
+const qtyNum = v => { const n = parseInt(String(v || '').replace(/\D/g, ''), 10); return n > 0 ? n : 0; };
 function addItem() {
   const box = $('mItems'); if (box.children.length >= MAX_ITEMS) return;
   box.querySelectorAll('details').forEach(x => x.open = false);
@@ -2893,7 +2895,8 @@ function addItem() {
   d.innerHTML = `<summary><span class="mi-n"></span><span class="mi-sum"></span></summary><div class="mi-body">
     <div class="row"><div><label>${isClient() ? 'État souhaité' : 'État du produit'}<select class="mi-etat">${POST_TYPES.vente.types.map(t => `<option>${esc(t)}</option>`).join('')}</select></label></div>
     <div><label>${isClient() ? 'Budget (Ar)' : 'Prix (Ar)'}<input class="mi-prix" type="text" inputmode="numeric" autocomplete="off" placeholder="Ex. : 12.000"></label></div></div>
-    <label>Catégorie<select class="mi-cat">${catOptions(defCat())}</select></label>
+    <div class="row"><div><label>Catégorie<select class="mi-cat">${catOptions(defCat())}</select></label></div>
+    <div><label>Nombre de pièces<input class="mi-qty" type="text" inputmode="numeric" autocomplete="off" maxlength="7" placeholder="Ex. : 100"></label></div></div>
     <label>${isClient() ? 'Ce que je cherche' : 'Titre'}<input class="mi-titre" maxlength="90"${isClient() ? ' placeholder="Ex. : une bouteille d\'eau"' : ''}></label>
     <label${isClient() ? ' style="display:none"' : ''}>À propos (facultatif)<input class="mi-extra" maxlength="120" placeholder="Ex. : fait main, garantie 6 mois"></label>
     <label>Description (facultatif)<textarea class="mi-desc" rows="2"></textarea></label>
@@ -2921,10 +2924,11 @@ $('postMulti').onsubmit = async e => {
   const items = [...$('mItems').children].map(el => ({
     el, etat: el.querySelector('.mi-etat').value, cat: +el.querySelector('.mi-cat').value, titre: el.querySelector('.mi-titre').value.trim(),
     extra: el.querySelector('.mi-extra').value.trim(), desc: el.querySelector('.mi-desc').value.trim(),
-    prix: el.querySelector('.mi-prix').value, files: [...el.querySelector('.mi-photos').files].slice(0, 4)
+    prix: el.querySelector('.mi-prix').value, qty: qtyNum(el.querySelector('.mi-qty').value), files: [...el.querySelector('.mi-photos').files].slice(0, 4)
   }));
   for (const [i, it] of items.entries()) {
     const err = !it.titre ? 'le titre est obligatoire.'
+      : !it.qty ? 'indiquez le nombre de pièces.'
       : !(it.cat > 0) ? 'choisissez une catégorie.'
       : it.files.some(f => !/^image\/(jpeg|png|webp|gif)$/.test(f.type)) ? 'formats acceptés : JPG, PNG, WebP, GIF.'
       : it.files.some(f => f.size > 5 * 1024 * 1024) ? 'chaque photo doit faire moins de 5 Mo.' : '';
@@ -2942,7 +2946,7 @@ $('postMulti').onsubmit = async e => {
         if (error) throw new Error('Pièce ' + (k + 1) + ' : photo non envoyée (' + error.message + ')');
         paths.push(path); urls.push(bucket.getPublicUrl(path).data.publicUrl);
       }
-      const lines = ['État du produit : ' + it.etat]; if (it.extra) lines.push('À propos : ' + it.extra);
+      const lines = ['État du produit : ' + it.etat, 'Quantité : ' + prixDots(it.qty) + (it.qty > 1 ? ' pièces' : ' pièce')]; if (it.extra) lines.push('À propos : ' + it.extra);
       rows.push({ category_id: it.cat, titre: it.titre, description: lines.join('\n') + (it.desc ? '\n\n' + it.desc : ''),
         prix: prixNum(it.prix), ville: $('mVille').value.trim(), telephone: telNum, photos: urls });
     }
