@@ -1335,6 +1335,19 @@ body:not(.landing) .shell main .head{margin-bottom:10px}
 .sl-card:hover,.sl-card:focus-visible{border-color:#a5541a;box-shadow:0 4px 14px rgba(42,23,11,.14);outline:none}
 .sl-av{width:72px;height:72px;border-radius:50%;overflow:hidden;background:#fbeedd;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.6rem;color:#a5541a;border:2px solid #f2d3b0}
 .sl-av.cl{color:#a5541a}
+/* ===== Écran partagé : une ligne par catégorie ===== */
+.crows{margin-top:22px;padding-top:6px;border-top:2px solid var(--line)}
+.crow{margin:6px 0 10px}
+.crow-h{display:flex;align-items:baseline;gap:10px;width:100%;background:none;border:0;padding:10px 2px 6px;cursor:pointer;text-align:left;color:var(--ink)}
+.crow-t{font:700 1.3rem/1.2 inherit;font-family:inherit;color:var(--forest)}
+.crow-n{font-size:.8rem;font-weight:700;color:var(--muted)}
+.crow-h::after{content:"";margin-left:auto;width:9px;height:9px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);rotate:45deg;transition:rotate .2s;align-self:center}
+.crow.shut .crow-h::after{rotate:-45deg}
+.crow-l{display:flex;flex-wrap:nowrap;gap:14px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;padding:4px 2px 14px;-webkit-overflow-scrolling:touch}
+.crow.shut .crow-l{display:none}
+.crow-l>.ad{flex:0 0 230px;width:230px;scroll-snap-align:start}
+@media(max-width:560px){.crow-l>.ad{flex-basis:180px;width:180px}}
+
 /* liste de gauche (profils Client / Vendeur) : « Vendeurs » / « Clients » au-dessus, la catégorie en dessous, tout aligné à gauche */
 #cats .pl{display:flex;flex-direction:column;align-items:flex-start;gap:1px;line-height:1.15;min-width:0;text-align:left}
 #cats .pl small{font-size:.78rem;font-weight:600;opacity:.8}
@@ -1612,6 +1625,7 @@ body:not(.landing) .shell main .head{margin-bottom:10px}
   </div>
   <div class="grid" id="list"></div>
   <p class="empty" id="empty" hidden>Aucune annonce pour cette recherche. Soyez le premier à en déposer une.</p>
+  <section class="crows" id="catRows" aria-label="Publications par catégorie" hidden></section>
 </main>
 </div>
 
@@ -1932,6 +1946,7 @@ const $ = id => document.getElementById(id);
 let maxPrix = null, needKey = null;
 let sellerKey = null, needMode = '', peerSub = 'all';   /* peerSub : all | mono (une seule pièce) | multi (en vrac) */   /* profil Client : liste des vendeurs */
 let user = null, cats = [], cat = null, q = '', signup = false, ads = [], reqId = 0, sort = 'recent';
+let rowAds = [], _rowsData = null, _rowsT = 0, _rowsOpen = {};      /* lignes par catégorie (écran partagé) */
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 /* Prix en Ariary : points de milliers (12000 → 12.000) */
@@ -2341,7 +2356,7 @@ async function showPeers(key, sub) {
   const id = needId(key), label = (NEED.find(n => n[1] === key) || [])[0] || '';
   const subLbl = sub === 'all' ? '' : ' · ' + (sub === 'mono' ? 'une seule pièce' : 'en vrac');
   $('title').textContent = (wantSellers ? 'Vendeurs · ' : 'Clients · ') + label + subLbl; $('catFilters').hidden = true;
-  $('empty').hidden = true; $('list').innerHTML = '<p class="sl-info">Chargement…</p>';
+  $('empty').hidden = true; $('catRows').hidden = true; $('list').innerHTML = '<p class="sl-info">Chargement…</p>';
   let rows = [];
   try {
     let r = SB.from('ann_annonces').select('*, ann_categories(nom)').eq('statut', 'valide').order('cree_le', { ascending: false }).limit(2000);
@@ -2412,12 +2427,65 @@ async function loadSellers(list) {
   if (!ids.length) return;
   try {
     const { data } = await SB.from('ann_boutiques').select('user_id,nom,avatar_url').in('user_id', ids);
-    sellerMap = {}; (data || []).forEach(r => { sellerMap[r.user_id] = r; });
-  } catch (e) { sellerMap = {}; }
+    (data || []).forEach(r => { sellerMap[r.user_id] = r; });
+  } catch (e) {}
   try {
     const { data } = await SB.from('ann_clients').select('user_id,nom,avatar_url').in('user_id', ids);
-    clientMap = {}; (data || []).forEach(r => { clientMap[r.user_id] = r; });
-  } catch (e) { clientMap = {}; }
+    (data || []).forEach(r => { clientMap[r.user_id] = r; });
+  } catch (e) {}
+}
+/* Carte d'une annonce (liste principale et lignes par catégorie) */
+function adCardHtml(a, i) {
+    const p0 = cssUrl(a.photos && a.photos[0]);
+    const rl = adRole(a), sh = sellerMap[a.user_id] || clientMap[a.user_id], sn = (sh && sh.nom) || (rl === 'client' ? 'Client' : 'Vendeur');
+    const sav = `<button type="button" class="sav" data-u="${esc(a.user_id)}" aria-label="Voir le profil de ${esc(sn)}" title="${esc(sn)}">${sh ? avatarHtml(sh.avatar_url, sh.nom) : '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>'}</button>`;
+    return `
+    <article class="ad" data-i="${i}" role="button" tabindex="0">
+      <div class="ph" ${p0 ? `style="background-image:url('${p0}')"` : ''}>${p0 ? '' : 'Pas de photo'}<span class="tag">${esc(a.ann_categories ? a.ann_categories.nom : '')}</span></div>
+      <div class="b hasav">${sav}<span class="arl ${rl}">${rl === 'client' ? 'Client' : 'Vendeur'}</span><div class="price">${money(a.prix)}</div><h3>${esc(a.titre)}</h3>
+      <div class="meta">${esc(a.ville || 'Madagascar')} · ${ago(a.cree_le)}</div></div>
+      <div class="cact">${cardActions(a, i)}</div>
+    </article>`;
+}
+function bindAdCards(box, list) {
+  box.querySelectorAll('.ad').forEach(b => {
+    const go = () => showAd(list[+b.dataset.i]);
+    b.onclick = go;
+    b.onkeydown = e => { if (e.target !== b) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } };
+  });
+  box.querySelectorAll('.cb').forEach(el => el.addEventListener('click', e => e.stopPropagation()));
+  box.querySelectorAll('.sav').forEach(el => el.addEventListener('click', e => { e.stopPropagation(); openShop(el.dataset.u); }));
+  box.querySelectorAll('.cb.msgb').forEach(el => el.addEventListener('click', () => openChat(list[+el.dataset.i])));
+  box.querySelectorAll('.cb.cartb').forEach(el => el.addEventListener('click', () => cartToggle(list[+el.dataset.i])));
+  box.querySelectorAll('.cb.nonum').forEach(el => el.addEventListener('click', () => window.bpSay && window.bpSay("Cette annonce n'a pas de numéro")));
+}
+
+/* ===== Écran partagé : sous la liste, une ligne par catégorie (le nom, puis ses publications sur UNE seule ligne) ===== */
+async function loadCatRows(force) {
+  const box = $('catRows'); if (!box) return;
+  if (!user || window.bpMode || sellerKey) { box.hidden = true; return; }
+  try {
+    if (force || !_rowsData || Date.now() - _rowsT > 20000) {
+      const { data, error } = await SB.from('ann_annonces').select('*, ann_categories(nom)').eq('statut', 'valide').order('cree_le', { ascending: false }).limit(400);
+      if (error) throw error; _rowsData = data || []; _rowsT = Date.now();
+    }
+  } catch (e) { box.hidden = true; return; }
+  const by = {}; _rowsData.forEach(a => { (by[a.category_id] = by[a.category_id] || []).push(a); });
+  const groups = NEED.map(([label, key]) => ({ label, key, list: (by[needId(key)] || []).slice(0, 12) })).filter(g => g.list.length);
+  if (!groups.length || sellerKey || window.bpMode) { box.hidden = true; return; }
+  rowAds = groups.flatMap(g => g.list);
+  await loadSellers(rowAds);
+  if (sellerKey || window.bpMode) { box.hidden = true; return; }
+  let n = 0;
+  box.innerHTML = groups.map(g => { const open = _rowsOpen[g.key] !== false;
+    return `<div class="crow${open ? '' : ' shut'}" data-k="${esc(g.key)}">
+      <button type="button" class="crow-h" aria-expanded="${open}"><span class="crow-t">${esc(g.label)}</span><span class="crow-n">${g.list.length}</span></button>
+      <div class="crow-l">${g.list.map(a => adCardHtml(a, n++)).join('')}</div></div>`; }).join('');
+  bindAdCards(box, rowAds);
+  box.querySelectorAll('.crow-h').forEach(h => h.onclick = () => {      /* clic sur le nom : replier / déplier sa ligne */
+    const r = h.parentElement, shut = r.classList.toggle('shut'); h.setAttribute('aria-expanded', String(!shut)); _rowsOpen[r.dataset.k] = !shut;
+  });
+  box.hidden = false; cartSync();
 }
 async function loadAds() {
   if (!user) return;
@@ -2454,29 +2522,10 @@ async function loadAds() {
   $('empty').hidden = ads.length > 0;
   await loadSellers(ads);
   if (my !== reqId) return;
-  $('list').innerHTML = ads.map((a, i) => {
-    const p0 = cssUrl(a.photos && a.photos[0]);
-    const rl = adRole(a), sh = sellerMap[a.user_id] || clientMap[a.user_id], sn = (sh && sh.nom) || (rl === 'client' ? 'Client' : 'Vendeur');
-    const sav = `<button type="button" class="sav" data-u="${esc(a.user_id)}" aria-label="Voir le profil de ${esc(sn)}" title="${esc(sn)}">${sh ? avatarHtml(sh.avatar_url, sh.nom) : '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>'}</button>`;
-    return `
-    <article class="ad" data-i="${i}" role="button" tabindex="0">
-      <div class="ph" ${p0 ? `style="background-image:url('${p0}')"` : ''}>${p0 ? '' : 'Pas de photo'}<span class="tag">${esc(a.ann_categories ? a.ann_categories.nom : '')}</span></div>
-      <div class="b hasav">${sav}<span class="arl ${rl}">${rl === 'client' ? 'Client' : 'Vendeur'}</span><div class="price">${money(a.prix)}</div><h3>${esc(a.titre)}</h3>
-      <div class="meta">${esc(a.ville || 'Madagascar')} · ${ago(a.cree_le)}</div></div>
-      <div class="cact">${cardActions(a, i)}</div>
-    </article>`;
-  }).join('');
-  $('list').querySelectorAll('.ad').forEach(b => {
-    const go = () => showAd(ads[+b.dataset.i]);
-    b.onclick = go;
-    b.onkeydown = e => { if (e.target !== b) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } };
-  });
-  $('list').querySelectorAll('.cb').forEach(el => el.addEventListener('click', e => e.stopPropagation()));
-  $('list').querySelectorAll('.sav').forEach(el => el.addEventListener('click', e => { e.stopPropagation(); openShop(el.dataset.u); }));
-  $('list').querySelectorAll('.cb.msgb').forEach(el => el.addEventListener('click', () => openChat(ads[+el.dataset.i])));
-  $('list').querySelectorAll('.cb.cartb').forEach(el => el.addEventListener('click', () => cartToggle(ads[+el.dataset.i])));
-  $('list').querySelectorAll('.cb.nonum').forEach(el => el.addEventListener('click', () => window.bpSay && window.bpSay("Cette annonce n'a pas de numéro")));
+  $('list').innerHTML = ads.map((a, i) => adCardHtml(a, i)).join('');
+  bindAdCards($('list'), ads);
   cartSync();
+  loadCatRows();
 }
 $('searchForm').onsubmit = e => {
   e.preventDefault(); q = $('q').value;
@@ -2649,10 +2698,10 @@ function cartToggle(a) {
   return !was;
 }
 function cartSync() {
-  document.querySelectorAll('#list .cb.cartb').forEach(el => {
-    const a = ads[+el.dataset.i], on = !!a && cartHas(a.id);
+  [['#list', ads], ['#catRows', rowAds]].forEach(([sel, arr]) => document.querySelectorAll(sel + ' .cb.cartb').forEach(el => {
+    const a = arr[+el.dataset.i], on = !!a && cartHas(a.id);
     el.classList.toggle('on', on); el.setAttribute('aria-pressed', String(on));
-  });
+  }));
 }
 const telOf = a => String(a.telephone || '').replace(/[^\d+]/g, '');
 const smsHref = (a, order) => {
