@@ -2278,6 +2278,21 @@ async function loadCounts() {
 }
 
 var sellerMap = {};
+/* Profil de l'auteur d'une annonce : mémorisé à la publication ; sinon déduit (un vendeur a toujours une boutique) */
+function adRole(a) {
+  if (a && (a.role === 'client' || a.role === 'vendeur')) return a.role;
+  return a && sellerMap[a.user_id] ? 'vendeur' : 'client';
+}
+/* Publie une ou plusieurs annonces en y inscrivant le profil de l'auteur (si la colonne « role » n'existe pas encore, on publie sans) */
+async function insertAnnonces(payload) {
+  const r = accountRole();
+  if (r) {
+    const withRole = Array.isArray(payload) ? payload.map(x => ({ ...x, role: r })) : { ...payload, role: r };
+    const res = await SB.from('ann_annonces').insert(withRole);
+    if (!res.error || !/role/i.test(res.error.message || '')) return res;
+  }
+  return SB.from('ann_annonces').insert(payload);
+}
 /* Une seule requête pour récupérer photo + nom de tous les vendeurs affichés */
 async function loadSellers(list) {
   const ids = [...new Set((list || []).map(a => a.user_id).filter(Boolean))];
@@ -2323,12 +2338,12 @@ async function loadAds() {
   if (my !== reqId) return;
   $('list').innerHTML = ads.map((a, i) => {
     const p0 = cssUrl(a.photos && a.photos[0]);
-    const sh = sellerMap[a.user_id], sn = (sh && sh.nom) || 'Vendeur';
+    const sh = sellerMap[a.user_id], sn = (sh && sh.nom) || 'Vendeur', rl = adRole(a);
     const sav = `<button type="button" class="sav" data-u="${esc(a.user_id)}" aria-label="Voir le profil de ${esc(sn)}" title="${esc(sn)}">${sh ? avatarHtml(sh.avatar_url, sh.nom) : '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>'}</button>`;
     return `
     <article class="ad" data-i="${i}" role="button" tabindex="0">
       <div class="ph" ${p0 ? `style="background-image:url('${p0}')"` : ''}>${p0 ? '' : 'Pas de photo'}<span class="tag">${esc(a.ann_categories ? a.ann_categories.nom : '')}</span></div>
-      <div class="b hasav">${sav}<div class="price">${money(a.prix)}</div><h3>${esc(a.titre)}</h3>
+      <div class="b hasav">${sav}<span class="arl ${rl}">${rl === 'client' ? 'Client' : 'Vendeur'}</span><div class="price">${money(a.prix)}</div><h3>${esc(a.titre)}</h3>
       <div class="meta">${esc(a.ville || 'Madagascar')} · ${ago(a.cree_le)}</div></div>
       <div class="cact">${cardActions(a, i)}</div>
     </article>`;
@@ -2513,7 +2528,9 @@ function cartSync() {
 const telOf = a => String(a.telephone || '').replace(/[^\d+]/g, '');
 const smsHref = (a, order) => {
   const t = telOf(a);
-  const txt = order
+  const txt = order && adRole(a) === 'client'
+    ? 'Bonjour, je possède ce que vous recherchez : ' + a.titre + '. Souhaitez-vous que nous en parlions ? Merci.'
+    : order
     ? 'Bonjour, je souhaite commander : ' + a.titre + (a.prix != null && a.prix !== '' ? ' (' + money(a.prix) + ')' : '') + '. Est-ce toujours disponible ? Merci de me confirmer le prix final et la livraison.'
     : 'Bonjour, je suis intéressé(e) par votre annonce : ' + a.titre;
   return 'sms:' + t + '?body=' + encodeURIComponent(txt);
@@ -2523,11 +2540,11 @@ const IC_MSG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16a1 1
 const IC_CART = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.5l2.2 10.2a1 1 0 0 0 1 .8h8.6a1 1 0 0 0 1-.8L20 8H6.3"/><circle cx="9.5" cy="19" r="1.4"/><circle cx="16.5" cy="19" r="1.4"/></svg>';
 /* Boutons directement sur la publication : Appeler · Message · Panier · Commander */
 function cardActions(a, i) {
-  const t = telOf(a);
+  const t = telOf(a), own = adRole(a) === 'client';
   return (t ? `<a class="cb call" href="tel:${esc(t)}" title="Appeler ${esc(a.telephone)}">${IC_PHONE}<span>${esc(a.telephone)}</span></a>` : '')
     + `<button type="button" class="cb ic msgb" data-i="${i}" aria-label="Envoyer un message" title="Envoyer un message">${IC_MSG}</button>`
     + `<button type="button" class="cb ic cartb" data-i="${i}" aria-label="Mettre dans le panier" title="Mettre dans le panier" aria-pressed="false">${IC_CART}</button>`
-    + (t ? `<a class="cb order" href="${smsHref(a, true)}">Commander</a>` : `<button type="button" class="cb order nonum">Commander</button>`);
+    + (t ? `<a class="cb order${own ? ' own' : ''}" href="${smsHref(a, true)}">${own ? 'Je possède' : 'Commander'}</a>` : `<button type="button" class="cb order nonum${own ? ' own' : ''}">${own ? 'Je possède' : 'Commander'}</button>`);
 }
 function cartBadge() { const n = cartGet().length + cartNotifN, b = $('cartBadge'); if (b) { b.textContent = n; b.hidden = !n; } }
 function renderCart() {
@@ -2712,7 +2729,7 @@ $('postForm').onsubmit = async e => {
       if (error) throw new Error('Vidéo non envoyée : ' + error.message);
       paths.push(path); vurls.push(bucket.getPublicUrl(path).data.publicUrl);
     }
-    const { error } = await SB.from('ann_annonces').insert({
+    const { error } = await insertAnnonces({
       ...(vurls.length ? { videos: vurls } : {}),
       category_id: +$('pCat').value, titre: $('pTitre').value.trim(), description: buildDesc(),
       prix: prixNum($('pPrix').value), ville: $('pVille').value.trim(),
@@ -2825,7 +2842,7 @@ $('postMulti').onsubmit = async e => {
       rows.push({ category_id: it.cat, titre: it.titre, description: lines.join('\n') + (it.desc ? '\n\n' + it.desc : ''),
         prix: prixNum(it.prix), ville: $('mVille').value.trim(), telephone: telNum, photos: urls });
     }
-    const { error } = await SB.from('ann_annonces').insert(rows);          /* un seul envoi : tout est publié, ou rien */
+    const { error } = await insertAnnonces(rows);          /* un seul envoi : tout est publié, ou rien */
     if (error) throw new Error('Publication impossible : ' + error.message);
   } catch (err) {
     if (paths.length) bucket.remove(paths);
@@ -4420,6 +4437,13 @@ footer{padding-bottom:max(0px,env(safe-area-inset-bottom))}
 body:not(.landing) .shell main .head{position:sticky;top:var(--hh,76px);z-index:40;
   background:var(--paper);margin-bottom:10px;padding-top:8px;padding-bottom:8px;
   box-shadow:0 8px 8px -8px rgba(42,23,11,.18)}
+
+/* --- Profil de l'auteur sous le petit rond : Vendeur / Client --- */
+.ad .b .arl{position:absolute;top:54px;right:5px;width:56px;text-align:center;font:800 .62rem/1 "Segoe UI",Roboto,Arial,sans-serif;
+  letter-spacing:.02em;color:var(--forest);pointer-events:none}
+.ad .b .arl.client{color:#2f7fe0}
+@media(max-width:560px){.ad .b .arl{top:46px;right:-3px}}
+.cb.order.own{background:#2f7fe0;border-color:#2f7fe0;color:#fff}
 </style>
 <script>
 /* Mesure la hauteur réelle de l'en-tête (elle change selon l'écran) pour y accrocher la ligne des catégories */
