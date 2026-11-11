@@ -1924,7 +1924,7 @@ let SB = {
 let sbReady = false;
 const $ = id => document.getElementById(id);
 let maxPrix = null, needKey = null;
-let sellerKey = null, needMode = '';   /* profil Client : liste des vendeurs */
+let sellerKey = null, needMode = '', peerSub = 'all';   /* peerSub : all | mono (une seule pièce) | multi (en vrac) */   /* profil Client : liste des vendeurs */
 let user = null, cats = [], cat = null, q = '', signup = false, ads = [], reqId = 0, sort = 'recent';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -2031,8 +2031,9 @@ const markCat = keep => {
   const box = $('cats');
   const sideKey = needMode ? sellerKey : needKey;      /* profil Client : la liste de gauche suit la liste des vendeurs */
   box.querySelectorAll('button[data-key]').forEach(x => x.classList.toggle('on', x.dataset.key === sideKey));
-  box.querySelectorAll('.subs').forEach(s => s.hidden = s.dataset.key !== needKey);
-  box.querySelectorAll('button[data-key]').forEach(x => x.classList.toggle('open', !needMode && x.dataset.key === needKey));
+  box.querySelectorAll('.subs:not(.pm)').forEach(s => s.hidden = s.dataset.key !== needKey);
+  box.querySelectorAll('.pm').forEach(x => { x.hidden = !(needMode && sellerKey === x.dataset.key); x.querySelectorAll('.sb').forEach(b => b.classList.toggle('on', peerSub === b.dataset.m)); });
+  box.querySelectorAll('button[data-key]').forEach(x => x.classList.toggle('open', needMode ? x.dataset.key === sellerKey : x.dataset.key === needKey));
   if (typeof renderCatBar === 'function') renderCatBar();
 };
 
@@ -2258,8 +2259,8 @@ function renderNeed() {
   needMode = peerRole();
   $('cats').classList.toggle('sellers', needMode);
   $('cats').innerHTML = NEED.map(([label, key, subs]) => { const id = needId(key); return `<div class="grp">
-    <button data-c="${id}" data-key="${key}"${subs.length ? '' : ' class="leaf"'}><span>${needMode === 'vendeur' ? 'Vendeurs ' : needMode === 'client' ? 'Clients ' : ''}${label}</span><span class="n" data-n="${id}"></span></button>
-    ${subs.length ? `<div class="subs" data-key="${key}" hidden>${subs.map((s, i) => `<button class="sb" data-i="${i}">${s[0]}</button>`).join('')}</div>` : ''}</div>`; }).join('');
+    <button data-c="${id}" data-key="${key}"${(needMode || subs.length) ? '' : ' class="leaf"'}><span>${needMode === 'vendeur' ? 'Vendeurs ' : needMode === 'client' ? 'Clients ' : ''}${label}</span><span class="n" data-n="${id}"></span></button>
+    ${needMode ? `<div class="subs pm" data-key="${key}" hidden>${['mono', 'multi'].map(m => `<button class="sb" data-m="${m}"><span>Le ${m}-${needMode === 'vendeur' ? 'vendeurs' : 'clients'}</span><span class="n" data-nm="${id}:${m}"></span></button>`).join('')}</div>` : subs.length ? `<div class="subs" data-key="${key}" hidden>${subs.map((s, i) => `<button class="sb" data-i="${i}">${s[0]}</button>`).join('')}</div>` : ''}</div>`; }).join('');
   $('cats').querySelectorAll('button[data-key]').forEach(b => b.onclick = () => {
     if (needMode) { showPeers(b.dataset.key); return; }
     /* 2e clic sur la catégorie déjà ouverte : on replie / on rouvre ses sous-entrées, sans recharger la liste */
@@ -2271,7 +2272,8 @@ function renderNeed() {
     $('qCat').value = qCatVal(b.dataset.key);
     markCat(); needKey = b.dataset.key; markCat(true); loadAds();
   });
-  $('cats').querySelectorAll('.subs').forEach(box => box.querySelectorAll('.sb').forEach(sb => sb.onclick = () => {
+  $('cats').querySelectorAll('.pm').forEach(box => box.querySelectorAll('.sb').forEach(sb => sb.onclick = () => showPeers(box.dataset.key, sb.dataset.m)));
+  $('cats').querySelectorAll('.subs:not(.pm)').forEach(box => box.querySelectorAll('.sb').forEach(sb => sb.onclick = () => {
     const key = box.dataset.key, [, type, val] = NEED.find(n => n[1] === key)[2][+sb.dataset.i];
     box.querySelectorAll('.sb').forEach(x => x.classList.toggle('on', x === sb));
     if (type === 'post') {
@@ -2296,16 +2298,23 @@ $('mCat').onclick = () => toggle($('mCat'), $('cats'));
 async function loadCounts() {
   if (peerRole() !== needMode && cats.length) renderNeed();
   let data = null;
-  { const r1 = await SB.from('ann_annonces').select('category_id,user_id,role').eq('statut', 'valide').limit(5000);
-    data = r1.error ? (await SB.from('ann_annonces').select('category_id,user_id').eq('statut', 'valide').limit(5000)).data : r1.data; }
+  { const r1 = await SB.from('ann_annonces').select('id,category_id,user_id,role').eq('statut', 'valide').limit(5000);
+    data = r1.error ? (await SB.from('ann_annonces').select('id,category_id,user_id').eq('statut', 'valide').limit(5000)).data : r1.data; }
   const c = { all: 0 };
   (data || []).forEach(a => { c.all++; c[a.category_id] = (c[a.category_id] || 0) + 1; });
   document.querySelectorAll('#catBar [data-n]').forEach(el => el.textContent = c[el.dataset.n] || 0);      /* en-têtes : annonces (inchangé) */
   if (!needMode) { document.querySelectorAll('#cats [data-n]').forEach(el => el.textContent = c[el.dataset.n] || 0); return; }
   /* Nombre de VENDEURS (profil Client) ou de CLIENTS (profil Vendeur) par catégorie */
-  const sh = await sellerIds(), sc = {};
-  (data || []).forEach(a => { if (!a.user_id || isPeerAd(a, sh) === false) return; (sc[a.category_id] = sc[a.category_id] || new Set()).add(a.user_id); });
+  const sh = await sellerIds(), bulk = await bulkIds(), sc = {}, mc = {};
+  (data || []).forEach(a => { if (!a.user_id || isPeerAd(a, sh) === false) return;
+    (sc[a.category_id] = sc[a.category_id] || new Set()).add(a.user_id);
+    const k = a.category_id + ':' + (bulk.has(a.id) ? 'multi' : 'mono'); (mc[k] = mc[k] || new Set()).add(a.user_id); });
   document.querySelectorAll('#cats [data-n]').forEach(el => el.textContent = sc[el.dataset.n] ? sc[el.dataset.n].size : 0);
+  document.querySelectorAll('#cats [data-nm]').forEach(el => el.textContent = mc[el.dataset.nm] ? mc[el.dataset.nm].size : 0);
+}
+/* Annonces déposées « en vrac » (la ligne « Quantité : » est ajoutée par le formulaire en vrac) */
+async function bulkIds() {
+  try { const { data } = await SB.from('ann_annonces').select('id').eq('statut', 'valide').ilike('description', '%Quantité : %').limit(5000); return new Set((data || []).map(x => x.id)); } catch (e) { return new Set(); }
 }
 /* Ensemble des comptes qui ont une boutique (= vendeurs) */
 async function sellerIds() {
@@ -2316,11 +2325,16 @@ const isSellerAd = (a, sh) => a.role === 'vendeur' || (a.role !== 'client' && sh
 const isPeerAd = (a, sh) => needMode === 'vendeur' ? isSellerAd(a, sh) : !isSellerAd(a, sh);
 /* Liste des vendeurs (profil Client) ou des clients (profil Vendeur) d'une catégorie : remplace la liste des publications,
    sans toucher à la recherche ni à la barre des catégories */
-async function showPeers(key) {
-  if (sellerKey === key) { sellerKey = null; markCat(true); $('seeAll').click(); return; }     /* 2e clic : retour aux annonces */
-  sellerKey = key; markCat(true); const my = ++reqId, mode = needMode, wantSellers = mode === 'vendeur';
+async function showPeers(key, sub) {
+  sub = sub || 'all';
+  if (sellerKey === key) {
+    if (sub === 'all' && peerSub === 'all') { sellerKey = null; peerSub = 'all'; markCat(true); $('seeAll').click(); return; }     /* 2e clic sur la catégorie : retour aux annonces */
+    if (sub !== 'all' && peerSub === sub) sub = 'all';                                                                         /* re-clic sur la sous-option : tous */
+  }
+  sellerKey = key; peerSub = sub; markCat(true); const my = ++reqId, mode = needMode, wantSellers = mode === 'vendeur';
   const id = needId(key), label = (NEED.find(n => n[1] === key) || [])[0] || '';
-  $('title').textContent = (wantSellers ? 'Vendeurs · ' : 'Clients · ') + label; $('catFilters').hidden = true;
+  const subLbl = sub === 'all' ? '' : ' · ' + (sub === 'mono' ? 'une seule pièce' : 'en vrac');
+  $('title').textContent = (wantSellers ? 'Vendeurs · ' : 'Clients · ') + label + subLbl; $('catFilters').hidden = true;
   $('empty').hidden = true; $('list').innerHTML = '<p class="sl-info">Chargement…</p>';
   let rows = [];
   try {
@@ -2329,13 +2343,15 @@ async function showPeers(key) {
     rows = (await r).data || [];
   } catch (e) {}
   const sh = await sellerIds(), map = new Map();
-  rows.forEach(a => { if (!a.user_id || !isPeerAd(a, sh)) return; const m = map.get(a.user_id) || { uid: a.user_id, n: 0, last: a }; m.n++; map.set(a.user_id, m); });
+  rows.forEach(a => { if (!a.user_id || !isPeerAd(a, sh)) return;
+    const bulk = /Quantité : /.test(a.description || ''); if ((sub === 'mono' && bulk) || (sub === 'multi' && !bulk)) return;
+    const m = map.get(a.user_id) || { uid: a.user_id, n: 0, last: a }; m.n++; map.set(a.user_id, m); });
   const ids = [...map.keys()]; let prof = {};
   if (!wantSellers && ids.length) { try { const { data } = await SB.from('ann_clients').select('user_id,nom,avatar_url,region').in('user_id', ids); (data || []).forEach(x => prof[x.user_id] = x); } catch (e) {} }
   if (wantSellers && ids.length) { try { const { data } = await SB.from('ann_boutiques').select('user_id,nom,avatar_url,ville,vend').in('user_id', ids); (data || []).forEach(x => prof[x.user_id] = x); } catch (e) {} }
-  if (my !== reqId || sellerKey !== key) return;
+  if (my !== reqId || sellerKey !== key || peerSub !== sub) return;
   const list = [...map.values()];
-  if (!list.length) { $('list').innerHTML = ''; $('empty').textContent = wantSellers ? 'Aucun vendeur dans cette catégorie pour le moment.' : 'Aucun client dans cette catégorie pour le moment.'; $('empty').hidden = false; return; }
+  if (!list.length) { $('list').innerHTML = ''; $('empty').textContent = (wantSellers ? 'Aucun vendeur' : 'Aucun client') + (sub === 'all' ? ' dans cette catégorie' : sub === 'mono' ? ' (une seule pièce) dans cette catégorie' : ' (en vrac) dans cette catégorie') + ' pour le moment.'; $('empty').hidden = false; return; }
   const person = '<svg viewBox="0 0 24 24" aria-hidden="true" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>';
   $('list').innerHTML = list.map((m, i) => {
     if (wantSellers) { const p = prof[m.uid] || {}, nom = p.nom || 'Vendeur';
@@ -2399,7 +2415,7 @@ async function loadSellers(list) {
 }
 async function loadAds() {
   if (!user) return;
-  if (sellerKey) { sellerKey = null; markCat(true); }     /* retour à la liste des publications */
+  if (sellerKey) { sellerKey = null; peerSub = 'all'; markCat(true); }     /* retour à la liste des publications */
   try { tickRefresh(); } catch (e) {}
   const my = ++reqId;
   let r = SB.from('ann_annonces').select('*, ann_categories(nom)').eq('statut', 'valide');
