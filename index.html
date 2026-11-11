@@ -1605,7 +1605,7 @@ body:not(.landing) .shell main .head{margin-bottom:10px}
     <div class="fx-row">
       <label>État<select id="fxEtat"><option value="">Tous</option><option>Neuf</option><option>Occasion</option><option>Reconditionné</option></select></label>
       <label>Prix (Ar)<span class="fx-price"><input id="fxMin" type="text" inputmode="numeric" autocomplete="off" placeholder="Min" aria-label="Prix minimum"><i>–</i><input id="fxMax" type="text" inputmode="numeric" autocomplete="off" placeholder="Max" aria-label="Prix maximum"></span></label>
-      <label>Multi<select id="fxMulti"><option value="">Tous</option><option value="multi">Multi (en vrac)</option><option value="mono">Mono (une pièce)</option></select></label>
+      <label>Multi<select id="fxMulti"><option value="">Tous</option><option value="multi">Multi</option><option value="mono">Mono</option></select></label>
       <label>Trier par<select id="fxSort"><option value="recent">Plus récentes</option><option value="asc">Prix croissant</option><option value="desc">Prix décroissant</option></select></label>
       <button type="button" class="fx-reset" id="fxReset">Réinitialiser</button>
     </div>
@@ -2923,7 +2923,7 @@ function addItem() {
     <div class="row"><div><label>Catégorie<select class="mi-cat">${catOptions(defCat())}</select></label></div>
     <div><label>Nombre de pièces<input class="mi-qty" type="text" inputmode="numeric" autocomplete="off" maxlength="7" placeholder="Ex. : 100"></label></div></div>
     <label>${isClient() ? 'Ce que je cherche' : 'Titre'}<input class="mi-titre" maxlength="90"${isClient() ? ' placeholder="Ex. : une bouteille d\'eau"' : ''}></label>
-    <label${isClient() ? ' style="display:none"' : ''}>À propos (facultatif)<input class="mi-extra" maxlength="120" placeholder="Ex. : fait main, garantie 6 mois"></label>
+    <label${isClient() ? ' style="display:none"' : ''}>À propos (facultatif)<select class="mi-extra"><option value="">Choisir</option><option>Neuf</option><option>Occasion</option><option>Reconditionné</option></select></label>
     <label>Description (facultatif)<textarea class="mi-desc" rows="2"></textarea></label>
     <div class="filepick"><label class="fbtn">📷 Select photo<small class="mi-pn">4 maximum</small><input class="mi-photos fhide" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple></label></div>
     <button type="button" class="btn plain mi-rm">Retirer cette pièce</button></div>`;
