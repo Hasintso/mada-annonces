@@ -1694,7 +1694,7 @@ body:not(.landing) .shell main .head{margin-bottom:10px}
     <p id="postModeAsk">Combien de pièces voulez-vous vendre ?</p>
     <div class="pchoices">
       <button type="button" class="pchoice" data-sm="one"><div>Déposer une seule pièce<small>Une annonce pour un produit</small></div></button>
-      <button type="button" class="pchoice" data-sm="many"><div>Déposer plusieurs pièces<small>Ajoutez vos pièces, tout est publié d'un coup</small></div></button>
+      <button type="button" class="pchoice" data-sm="many"><div>Déposer en vrac<small>Grande quantité : ajoutez vos pièces, tout est publié d'un coup</small></div></button>
     </div>
   </div>
   <form id="postForm" hidden>
@@ -2858,7 +2858,7 @@ function showSaleMode(titre, typeIdx) {
   postKey = null; $('postTitle').textContent = saleTitle(); $('postModeAsk').textContent = postModeTxt();
   { const c = isClient(), o = document.querySelector('#postMode [data-sm="one"] div'), m = document.querySelector('#postMode [data-sm="many"] div');
     o.innerHTML = c ? 'Commander une seule pièce<small>Une commande pour un produit</small>' : 'Déposer une seule pièce<small>Une annonce pour un produit</small>';
-    m.innerHTML = c ? 'Commander plusieurs pièces<small>Ajoutez vos pièces, tout est envoyé d\'un coup</small>' : 'Déposer plusieurs pièces<small>Ajoutez vos pièces, tout est publié d\'un coup</small>'; }
+    m.innerHTML = c ? 'Commander en vrac<small>Grande quantité : ajoutez vos pièces, tout est envoyé d\'un coup</small>' : 'Déposer en vrac<small>Grande quantité : ajoutez vos pièces, tout est publié d\'un coup</small>'; }
   $('mPost').classList.remove('pop');
   $('postChoice').hidden = true; $('postForm').hidden = true; $('postMulti').hidden = true; $('postMode').hidden = false;
 }
@@ -2870,7 +2870,7 @@ function openMultiForm() {
   postKey = 'vente';
   $('postMulti').reset(); $('mItems').innerHTML = ''; $('multiMsg').textContent = '';
   addItem();
-  $('mPost').classList.remove('pop'); $('postTitle').textContent = isClient() ? 'Commander plusieurs pièces' : 'Déposer plusieurs pièces';
+  $('mPost').classList.remove('pop'); $('postTitle').textContent = isClient() ? 'Commander en vrac' : 'Déposer en vrac';
   $('postChoice').hidden = true; $('postForm').hidden = true; $('postMode').hidden = true; $('postMulti').hidden = false;
   $('mVille').focus();
 }
