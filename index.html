@@ -2486,8 +2486,16 @@ function buildCatBar() {
   bar.querySelectorAll('.cb-chip').forEach(b => b.onclick = () => {
     const key = b.dataset.key;
     if (!key || key === needKey) { $('seeAll').click(); return; }      /* « Toutes » ou 2e clic : retour à toutes les annonces */
+    if (needMode) { openCatAds(key); return; }      /* profil Client : le haut montre les PUBLICATIONS, la liste de gauche montre les vendeurs */
     const side = $('cats').querySelector(`button[data-key="${key}"]`); if (side) side.click();
   });
+}
+/* Affiche les publications d'une catégorie (utilisé par la barre du haut en profil Client) */
+function openCatAds(key) {
+  sellerKey = null;
+  cat = needId(key); q = ''; $('q').value = ''; sort = 'recent'; syncTabs();
+  $('qCat').value = qCatVal(key);
+  markCat(); needKey = key; markCat(true); loadAds();
 }
 function renderCatBar() {
   const bar = $('catBar'); if (!bar || !bar.children.length) return;
