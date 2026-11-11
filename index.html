@@ -1335,6 +1335,11 @@ body:not(.landing) .shell main .head{margin-bottom:10px}
 .sl-card:hover,.sl-card:focus-visible{border-color:#a5541a;box-shadow:0 4px 14px rgba(42,23,11,.14);outline:none}
 .sl-av{width:72px;height:72px;border-radius:50%;overflow:hidden;background:#fbeedd;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.6rem;color:#a5541a;border:2px solid #f2d3b0}
 .sl-av.cl{color:#a5541a}
+/* liste de gauche (profils Client / Vendeur) : « Vendeurs » / « Clients » au-dessus, la catégorie en dessous, tout aligné à gauche */
+#cats .pl{display:flex;flex-direction:column;align-items:flex-start;gap:1px;line-height:1.15;min-width:0;text-align:left}
+#cats .pl small{font-size:.78rem;font-weight:600;opacity:.8}
+#cats .pl b{font-weight:700}
+#cats button:has(.pl){align-items:center}
 .sl-av img{width:100%;height:100%;object-fit:cover;display:block}
 .sl-nm{font-weight:800;font-size:1.05rem;color:var(--ink)}
 .sl-sell{font-size:.85rem;color:var(--muted)}
@@ -2259,7 +2264,7 @@ function renderNeed() {
   needMode = peerRole();
   $('cats').classList.toggle('sellers', needMode);
   $('cats').innerHTML = NEED.map(([label, key, subs]) => { const id = needId(key); return `<div class="grp">
-    <button data-c="${id}" data-key="${key}"${(needMode || subs.length) ? '' : ' class="leaf"'}><span>${needMode === 'vendeur' ? 'Vendeurs ' : needMode === 'client' ? 'Clients ' : ''}${label}</span><span class="n" data-n="${id}"></span></button>
+    <button data-c="${id}" data-key="${key}"${(needMode || subs.length) ? '' : ' class="leaf"'}><span${needMode ? ' class="pl"' : ''}>${needMode ? `<small>${needMode === 'vendeur' ? 'Vendeurs' : 'Clients'}</small><b>${label}</b>` : label}</span><span class="n" data-n="${id}"></span></button>
     ${needMode ? `<div class="subs pm" data-key="${key}" hidden>${['mono', 'multi'].map(m => `<button class="sb" data-m="${m}"><span>Le ${m}-${needMode === 'vendeur' ? 'vendeurs' : 'clients'}</span><span class="n" data-nm="${id}:${m}"></span></button>`).join('')}</div>` : subs.length ? `<div class="subs" data-key="${key}" hidden>${subs.map((s, i) => `<button class="sb" data-i="${i}">${s[0]}</button>`).join('')}</div>` : ''}</div>`; }).join('');
   $('cats').querySelectorAll('button[data-key]').forEach(b => b.onclick = () => {
     if (needMode) { showPeers(b.dataset.key); return; }
