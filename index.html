@@ -2784,6 +2784,8 @@ function openPostForm(key, titre, typeIdx, mode) {
     $('pExtraLbl').style.display = $('pExtra').style.display = c ? 'none' : '';
     if (c) $('pExtra').value = '';
     TITRE_EX.splice(0, TITRE_EX.length, ...(c ? TITRE_EX_CLIENT : TITRE_EX_VENTE));
+    DESC_EX.splice(0, DESC_EX.length, ...(key !== 'vente' ? [] : c ? DESC_EX_CLIENT : DESC_EX_VENTE));
+    APROPOS_EX.splice(0, APROPOS_EX.length, ...(key === 'vente' && !c ? APROPOS_EX_VENTE : []));
     $('postGo').textContent = c ? 'Envoyer ma commande' : 'Publier l\'annonce';
     if (c) { $('pPrixLbl').textContent = 'Budget (Ar)'; $('pTypeLbl').textContent = 'État souhaité'; } }
   $('postMsg').textContent = '';
@@ -2808,13 +2810,19 @@ function buildPostMenu() {
 const TITRE_EX_VENTE = ["ma bouteille d'eau", 'ma chaussure préférée', 'mon casque audio', 'ma veste en cuir'];
 const TITRE_EX_CLIENT = ["une bouteille d'eau", 'des chaussures de sport', 'un casque audio', 'une veste en cuir'];
 const TITRE_EX = [...TITRE_EX_VENTE];
+/* Exemples qui s'écrivent puis s'effacent tout seuls : « Description » et « À propos » */
+const DESC_EX_VENTE = ['je suis un vendeur de ...', 'je suis un fournisseur depuis ...'];
+const DESC_EX_CLIENT = ['je suis un client qui cherche ...', 'je cherche des produits comme cela ...'];
+const APROPOS_EX_VENTE = ['lait de Madagascar ...', 'tennis fait en Europe ...'];
+const DESC_EX = [], APROPOS_EX = [];          /* formulaire « une seule pièce » : remplis à l'ouverture selon le profil */
 function typePlaceholder(inp, list) {
   const pre = 'Ex. : ';
   if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) { inp.placeholder = pre + list[0]; return; }
   let i = 0, j = 0, del = false;
   (function tick() {
     if (!inp.isConnected) return;
-    if (document.hidden || !inp.offsetParent || inp.value) { setTimeout(tick, 600); return; }
+    if (document.hidden || !inp.offsetParent || inp.value || !list.length) { setTimeout(tick, 600); return; }
+    if (i >= list.length) { i = 0; j = 0; del = false; }
     const w = list[i]; let wait = del ? 35 : 75;
     if (!del) { j++; if (j >= w.length) { del = true; wait = 1500; } }
     else { j--; if (j <= 0) { del = false; i = (i + 1) % list.length; wait = 350; } }
@@ -2823,6 +2831,8 @@ function typePlaceholder(inp, list) {
   })();
 }
 typePlaceholder($('pTitre'), TITRE_EX);
+typePlaceholder($('pDesc'), DESC_EX);
+typePlaceholder($('pExtra'), APROPOS_EX);
 $('pBack').onclick = () => postKey === 'vente' ? showSaleMode(pendingPost.titre, pendingPost.typeIdx) : showPostChoice();
 function buildDesc() {
   const T = POST_TYPES[postKey], lines = [];
@@ -2929,6 +2939,8 @@ function addItem() {
     <button type="button" class="btn plain mi-rm">Retirer cette pièce</button></div>`;
   d.querySelector('.mi-rm').onclick = () => { d.remove(); refreshItems(); };
   box.appendChild(d); refreshItems(); typePlaceholder(d.querySelector('.mi-titre'), TITRE_EX);
+  typePlaceholder(d.querySelector('.mi-desc'), isClient() ? DESC_EX_CLIENT : DESC_EX_VENTE);
+  typePlaceholder(d.querySelector('.mi-extra'), APROPOS_EX_VENTE);
   if (box.children.length > 1) { d.scrollIntoView({ block: 'nearest' }); d.querySelector('.mi-titre').focus(); }
 }
 $('mAdd').onclick = addItem;
