@@ -2064,6 +2064,7 @@ function leaveApp() {
   showWelcome();
 }
 function renderAuthBtn() {
+  try { syncClientPublic(); } catch (e) {}
   try { if (typeof cats !== 'undefined' && cats.length && peerRole() !== needMode) { sellerKey = null; renderNeed(); loadCounts(); } } catch (e) {}
   $('btnAuth').textContent = user ? 'Se déconnecter' : 'Se connecter';
   $('btnLogin').textContent = user ? 'Se déconnecter' : 'Se connecter';
@@ -2330,6 +2331,7 @@ async function showPeers(key) {
   const sh = await sellerIds(), map = new Map();
   rows.forEach(a => { if (!a.user_id || !isPeerAd(a, sh)) return; const m = map.get(a.user_id) || { uid: a.user_id, n: 0, last: a }; m.n++; map.set(a.user_id, m); });
   const ids = [...map.keys()]; let prof = {};
+  if (!wantSellers && ids.length) { try { const { data } = await SB.from('ann_clients').select('user_id,nom,avatar_url,region').in('user_id', ids); (data || []).forEach(x => prof[x.user_id] = x); } catch (e) {} }
   if (wantSellers && ids.length) { try { const { data } = await SB.from('ann_boutiques').select('user_id,nom,avatar_url,ville,vend').in('user_id', ids); (data || []).forEach(x => prof[x.user_id] = x); } catch (e) {} }
   if (my !== reqId || sellerKey !== key) return;
   const list = [...map.values()];
@@ -2343,11 +2345,11 @@ async function showPeers(key) {
         <div class="meta">${esc(p.ville || 'Madagascar')}</div>
         ${p.vend ? `<div class="sl-sell">${esc(String(p.vend).slice(0, 70))}</div>` : ''}
         <div class="sl-n">${m.n} publication${m.n > 1 ? 's' : ''} · ${esc(label)}</div></article>`; }
-    const a = m.last;
-    return `<article class="sl-card" data-i="${i}" role="button" tabindex="0" aria-label="Voir la commande de ce client">
-      <div class="sl-av cl">${person}</div>
-      <div class="sl-nm">Client</div><span class="arl client">Client</span>
-      <div class="meta">${esc(a.ville || 'Madagascar')}</div>
+    const a = m.last, p = prof[m.uid] || {}, nom = p.nom || 'Client';
+    return `<article class="sl-card" data-i="${i}" role="button" tabindex="0" aria-label="Voir la commande de ${esc(nom)}">
+      <div class="sl-av cl">${safeUrl(p.avatar_url) ? avatarHtml(p.avatar_url, nom) : person}</div>
+      <div class="sl-nm">${esc(nom)}</div><span class="arl client">Client</span>
+      <div class="meta">${esc(p.region || a.ville || 'Madagascar')}</div>
       <div class="sl-sell">${esc(String(a.titre || '').slice(0, 70))}</div>
       <div class="sl-n">${m.n} commande${m.n > 1 ? 's' : ''} · ${esc(label)}</div></article>`; }).join('');
   $('list').querySelectorAll('.sl-card').forEach(b => { const m = list[+b.dataset.i];
@@ -2355,7 +2357,7 @@ async function showPeers(key) {
     b.onclick = go; b.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } }; });
 }
 
-var sellerMap = {};
+var sellerMap = {}, clientMap = {};
 /* Profil de l'auteur d'une annonce : mémorisé à la publication ; sinon déduit (un vendeur a toujours une boutique) */
 function adRole(a) {
   if (a && (a.role === 'client' || a.role === 'vendeur')) return a.role;
@@ -2372,6 +2374,17 @@ async function insertAnnonces(payload) {
   return SB.from('ann_annonces').insert(payload);
 }
 /* Une seule requête pour récupérer photo + nom de tous les vendeurs affichés */
+/* Profil public du client (nom + photo + région) : copie du compte dans la table ann_clients pour que les autres le voient */
+let _clSig = '';
+async function syncClientPublic() {
+  try {
+    if (!user || accountRole() !== 'client') return;
+    const d = clientData(), row = { user_id: user.id, nom: d.full_name || null, avatar_url: safeUrl(d.avatar_url) ? d.avatar_url : null, region: d.region || null };
+    const sig = JSON.stringify(row); if (sig === _clSig) return;
+    const { error } = await SB.from('ann_clients').upsert(row, { onConflict: 'user_id' });
+    if (!error) _clSig = sig;
+  } catch (e) {}
+}
 async function loadSellers(list) {
   const ids = [...new Set((list || []).map(a => a.user_id).filter(Boolean))];
   if (!ids.length) return;
@@ -2379,6 +2392,10 @@ async function loadSellers(list) {
     const { data } = await SB.from('ann_boutiques').select('user_id,nom,avatar_url').in('user_id', ids);
     sellerMap = {}; (data || []).forEach(r => { sellerMap[r.user_id] = r; });
   } catch (e) { sellerMap = {}; }
+  try {
+    const { data } = await SB.from('ann_clients').select('user_id,nom,avatar_url').in('user_id', ids);
+    clientMap = {}; (data || []).forEach(r => { clientMap[r.user_id] = r; });
+  } catch (e) { clientMap = {}; }
 }
 async function loadAds() {
   if (!user) return;
@@ -2417,7 +2434,7 @@ async function loadAds() {
   if (my !== reqId) return;
   $('list').innerHTML = ads.map((a, i) => {
     const p0 = cssUrl(a.photos && a.photos[0]);
-    const sh = sellerMap[a.user_id], sn = (sh && sh.nom) || 'Vendeur', rl = adRole(a);
+    const rl = adRole(a), sh = sellerMap[a.user_id] || clientMap[a.user_id], sn = (sh && sh.nom) || (rl === 'client' ? 'Client' : 'Vendeur');
     const sav = `<button type="button" class="sav" data-u="${esc(a.user_id)}" aria-label="Voir le profil de ${esc(sn)}" title="${esc(sn)}">${sh ? avatarHtml(sh.avatar_url, sh.nom) : '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>'}</button>`;
     return `
     <article class="ad" data-i="${i}" role="button" tabindex="0">
@@ -3381,7 +3398,7 @@ $('clForm').onsubmit = async e => {
     const { error } = await SB.auth.updateUser({ data: { full_name: name, region, phone: '+261' + mgNational($('clTel').value), avatar_url: url || null } });
     if (error) throw error;
     user = (await SB.auth.getUser()).data.user || user;
-    clAvatar = url; clBlob = null; clRemove = false; clPreview(); renderProfileBtn();
+    clAvatar = url; clBlob = null; clRemove = false; clPreview(); renderProfileBtn(); syncClientPublic();
     close('mClient'); openClientProfile();
     window.bpSay && window.bpSay(clientMissing(clientData()).length ? 'Profil enregistré' : 'Profil complet ✓');
   } catch (err) { msg.textContent = (err && err.message) || 'Enregistrement impossible, réessayez.'; }
@@ -3674,6 +3691,9 @@ fitQHint();
     try {
       const { data } = await SB.from('ann_boutiques').select('user_id,avatar_url').in('user_id', ids);
       let got = false; (data || []).forEach(r => { if (r.avatar_url && (typeof safeUrl !== 'function' || safeUrl(r.avatar_url))) { AVP[r.user_id] = r.avatar_url; got = true; } });
+      const miss = ids.filter(id => !AVP[id]);
+      if (miss.length) { const r2 = await SB.from('ann_clients').select('user_id,avatar_url').in('user_id', miss);
+        (r2.data || []).forEach(r => { if (r.avatar_url && (typeof safeUrl !== 'function' || safeUrl(r.avatar_url))) { AVP[r.user_id] = r.avatar_url; got = true; } }); }
       if (got && isOpen()) { if (S.cur) renderThread(false); else if ($('chatList').style.display !== 'none') renderList(); }
     } catch (e) {}
   }
