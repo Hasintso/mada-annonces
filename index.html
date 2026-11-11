@@ -4415,6 +4415,20 @@ footer{padding-bottom:max(0px,env(safe-area-inset-bottom))}
   .box{max-height:calc(100dvh - 12px)}
   body.landing #welcome{padding-top:64px}
 }
+
+/* --- Ligne des catégories figée sous l'en-tête pendant le défilement --- */
+body:not(.landing) .shell main .head{position:sticky;top:var(--hh,76px);z-index:40;
+  background:var(--paper);margin-bottom:10px;padding-top:8px;padding-bottom:8px;
+  box-shadow:0 8px 8px -8px rgba(42,23,11,.18)}
 </style>
+<script>
+/* Mesure la hauteur réelle de l'en-tête (elle change selon l'écran) pour y accrocher la ligne des catégories */
+(function(){
+  var h=document.querySelector('header');
+  function set(){ if(h) document.documentElement.style.setProperty('--hh', h.offsetHeight+'px'); }
+  set(); addEventListener('resize',set); addEventListener('load',set);
+  if(window.ResizeObserver&&h) new ResizeObserver(set).observe(h);
+})();
+</script>
 </body>
 </html>
