@@ -1335,6 +1335,14 @@ body:not(.landing) .shell main .head{margin-bottom:10px}
 .sl-card:hover,.sl-card:focus-visible{border-color:#a5541a;box-shadow:0 4px 14px rgba(42,23,11,.14);outline:none}
 .sl-av{width:72px;height:72px;border-radius:50%;overflow:hidden;background:#fbeedd;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.6rem;color:#a5541a;border:2px solid #f2d3b0}
 .sl-av.cl{color:#a5541a}
+/* « À propos » en 3 choix directs (sans liste déroulante) */
+.mi-ap{margin:12px 0 4px}
+.mi-aplbl{display:block;font-weight:600;font-size:.92rem;margin-bottom:6px}
+.mi-extra{display:flex;flex-wrap:wrap;gap:8px}
+.mi-chip{border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:7px 14px;font:inherit;font-size:.9rem;font-weight:600;cursor:pointer;transition:background .15s,border-color .15s,color .15s}
+.mi-chip:hover{border-color:#a5541a}
+.mi-chip.on{background:#a5541a;border-color:#a5541a;color:#fff}
+.mi-chip:focus-visible{outline:2px solid #f0b400;outline-offset:2px}
 /* liste de gauche (profils Client / Vendeur) : « Vendeurs » / « Clients » au-dessus, la catégorie en dessous, tout aligné à gauche */
 #cats .pl{display:flex;flex-direction:column;align-items:flex-start;gap:1px;line-height:1.15;min-width:0;text-align:left}
 #cats .pl small{font-size:.78rem;font-weight:600;opacity:.8}
@@ -2923,8 +2931,8 @@ function addItem() {
     <div class="row"><div><label>Catégorie<select class="mi-cat">${catOptions(defCat())}</select></label></div>
     <div><label>Nombre de pièces<input class="mi-qty" type="text" inputmode="numeric" autocomplete="off" maxlength="7" placeholder="Ex. : 100"></label></div></div>
     <label>${isClient() ? 'Ce que je cherche' : 'Titre'}<input class="mi-titre" maxlength="90"${isClient() ? ' placeholder="Ex. : une bouteille d\'eau"' : ''}></label>
-    <label${isClient() ? ' style="display:none"' : ''}>À propos (facultatif)<select class="mi-extra"><option value="">Choisir</option><option>Neuf</option><option>Occasion</option><option>Reconditionné</option></select></label>
-    <label>Description (facultatif)<textarea class="mi-desc" rows="2"></textarea></label>
+    <div class="mi-ap"${isClient() ? ' style="display:none"' : ''}><span class="mi-aplbl">À propos</span><div class="mi-extra" role="group" aria-label="À propos">${['Neuf', 'Occasion', 'Reconditionné'].map(v => `<button type="button" class="mi-chip" aria-pressed="false">${v}</button>`).join('')}</div></div>
+    <label>Description<textarea class="mi-desc" rows="2"></textarea></label>
     <div class="filepick"><label class="fbtn">📷 Select photo<small class="mi-pn">4 maximum</small><input class="mi-photos fhide" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple></label></div>
     <button type="button" class="btn plain mi-rm">Retirer cette pièce</button></div>`;
   d.querySelector('.mi-rm').onclick = () => { d.remove(); refreshItems(); };
@@ -2937,6 +2945,12 @@ $('mItems').addEventListener('change', e => {           /* « Select photo » : 
   const c = inp.files.length, out = inp.parentElement.querySelector('.mi-pn');
   out.textContent = c ? Math.min(c, 4) + ' photo' + (c > 1 ? 's' : '') + ' choisie' + (c > 1 ? 's' : '') + (c > 4 ? ' (4 max)' : '') : '4 maximum';
 });
+$('mItems').addEventListener('click', e => {           /* « À propos » : Neuf / Occasion / Reconditionné (un seul choix, 2e clic = retirer) */
+  const b = e.target.closest('.mi-chip'); if (!b) return;
+  const was = b.classList.contains('on');
+  b.parentElement.querySelectorAll('.mi-chip').forEach(x => { x.classList.remove('on'); x.setAttribute('aria-pressed', 'false'); });
+  if (!was) { b.classList.add('on'); b.setAttribute('aria-pressed', 'true'); }
+});
 $('mItems').addEventListener('input', refreshItems);
 
 $('postMulti').onsubmit = async e => {
@@ -2948,7 +2962,7 @@ $('postMulti').onsubmit = async e => {
   if (!telNum) { msg.textContent = TEL_ERR; $('mTel').focus(); return; }
   const items = [...$('mItems').children].map(el => ({
     el, etat: el.querySelector('.mi-etat').value, cat: +el.querySelector('.mi-cat').value, titre: el.querySelector('.mi-titre').value.trim(),
-    extra: el.querySelector('.mi-extra').value.trim(), desc: el.querySelector('.mi-desc').value.trim(),
+    extra: ((el.querySelector('.mi-extra .on') || {}).textContent || '').trim(), desc: el.querySelector('.mi-desc').value.trim(),
     prix: el.querySelector('.mi-prix').value, qty: qtyNum(el.querySelector('.mi-qty').value), files: [...el.querySelector('.mi-photos').files].slice(0, 4)
   }));
   for (const [i, it] of items.entries()) {
