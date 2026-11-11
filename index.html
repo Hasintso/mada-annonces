@@ -1605,6 +1605,7 @@ body:not(.landing) .shell main .head{margin-bottom:10px}
     <div class="fx-row">
       <label>État<select id="fxEtat"><option value="">Tous</option><option>Neuf</option><option>Occasion</option><option>Reconditionné</option></select></label>
       <label>Prix (Ar)<span class="fx-price"><input id="fxMin" type="text" inputmode="numeric" autocomplete="off" placeholder="Min" aria-label="Prix minimum"><i>–</i><input id="fxMax" type="text" inputmode="numeric" autocomplete="off" placeholder="Max" aria-label="Prix maximum"></span></label>
+      <label>Multi<select id="fxMulti"><option value="">Tous</option><option value="multi">Multi (en vrac)</option><option value="mono">Mono (une pièce)</option></select></label>
       <label>Trier par<select id="fxSort"><option value="recent">Plus récentes</option><option value="asc">Prix croissant</option><option value="desc">Prix décroissant</option></select></label>
       <button type="button" class="fx-reset" id="fxReset">Réinitialiser</button>
     </div>
@@ -2505,10 +2506,10 @@ $('seeAll').onclick = e => {
 };
 
 /* ===== Barre de catégories (au-dessus des annonces) + filtres propres à chaque catégorie ===== */
-function fxS() { return window.__fx || (window.__fx = { sub: null, etat: '', pmin: null, pmax: null }); }
+function fxS() { return window.__fx || (window.__fx = { sub: null, etat: '', multi: '', pmin: null, pmax: null }); }
 function fxReset() {
   window.__fx = null;
-  const e = $('fxEtat'); if (e) { e.value = ''; $('fxMin').value = ''; $('fxMax').value = ''; }
+  const e = $('fxEtat'); if (e) { e.value = ''; $('fxMin').value = ''; $('fxMax').value = ''; if ($('fxMulti')) $('fxMulti').value = ''; }
 }
 /* Sous-filtres par catégorie : [libellé, mots cherchés dans le titre et la description] */
 function fxSubs(key) {
@@ -2529,6 +2530,8 @@ function fxApply(r) {
   const s = fxS(), sub = fxSubs(needKey)[s.sub];
   if (sub) r = r.or(sub[1].map(t => `titre.ilike.%${t}%,description.ilike.%${t}%`).join(','));
   if (s.etat) r = r.ilike('description', `%État du produit : ${s.etat}%`);
+  if (s.multi === 'multi') r = r.ilike('description', '%Quantité : %');          /* en vrac : la ligne « Quantité : » existe */
+  if (s.multi === 'mono') r = r.not('description', 'ilike', '%Quantité : %');     /* une seule pièce */
   if (s.pmin != null) r = r.gte('prix', s.pmin);
   if (s.pmax != null) r = r.lte('prix', s.pmax);
   return r;
@@ -2562,7 +2565,7 @@ function renderCatBar() {
   const subs = fxSubs(needKey), s = fxS();
   $('fxSubs').hidden = !subs.length;
   $('fxSubs').innerHTML = subs.map(([l], i) => `<button type="button" class="fx-sub${s.sub === i ? ' on' : ''}" data-i="${i}" aria-pressed="${s.sub === i}">${esc(l)}</button>`).join('');
-  $('fxEtat').value = s.etat; $('fxSort').value = sort;
+  $('fxEtat').value = s.etat; $('fxMulti').value = s.multi || ''; $('fxSort').value = sort;
 }
 $('fxSubs').onclick = e => {
   const b = e.target.closest('.fx-sub'); if (!b) return;
@@ -2570,6 +2573,7 @@ $('fxSubs').onclick = e => {
   renderCatBar(); loadAds();
 };
 $('fxEtat').onchange = e => { fxS().etat = e.target.value; loadAds(); };
+$('fxMulti').onchange = e => { fxS().multi = e.target.value; loadAds(); };
 $('fxSort').onchange = e => { sort = e.target.value; loadAds(); };
 {
   let t; const go = () => { clearTimeout(t); t = setTimeout(loadAds, 350); };
