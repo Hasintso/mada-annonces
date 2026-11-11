@@ -1334,6 +1334,7 @@ body:not(.landing) .shell main .head{margin-bottom:10px}
 .sl-card{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:18px 12px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 3px rgba(42,23,11,.06);cursor:pointer;transition:box-shadow .15s,border-color .15s}
 .sl-card:hover,.sl-card:focus-visible{border-color:#a5541a;box-shadow:0 4px 14px rgba(42,23,11,.14);outline:none}
 .sl-av{width:72px;height:72px;border-radius:50%;overflow:hidden;background:#fbeedd;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.6rem;color:#a5541a;border:2px solid #f2d3b0}
+.sl-av.cl{color:#a5541a}
 .sl-av img{width:100%;height:100%;object-fit:cover;display:block}
 .sl-nm{font-weight:800;font-size:1.05rem;color:var(--ink)}
 .sl-sell{font-size:.85rem;color:var(--muted)}
@@ -1923,7 +1924,7 @@ let SB = {
 let sbReady = false;
 const $ = id => document.getElementById(id);
 let maxPrix = null, needKey = null;
-let sellerKey = null, needMode = null;   /* profil Client : liste des vendeurs */
+let sellerKey = null, needMode = '';   /* profil Client : liste des vendeurs */
 let user = null, cats = [], cat = null, q = '', signup = false, ads = [], reqId = 0, sort = 'recent';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -2063,7 +2064,7 @@ function leaveApp() {
   showWelcome();
 }
 function renderAuthBtn() {
-  try { if (typeof cats !== 'undefined' && cats.length && isClientMode() !== needMode) { sellerKey = null; renderNeed(); loadCounts(); } } catch (e) {}
+  try { if (typeof cats !== 'undefined' && cats.length && peerRole() !== needMode) { sellerKey = null; renderNeed(); loadCounts(); } } catch (e) {}
   $('btnAuth').textContent = user ? 'Se déconnecter' : 'Se connecter';
   $('btnLogin').textContent = user ? 'Se déconnecter' : 'Se connecter';
   $('btnLogin').hidden = !!user;   // connecté : « Se déconnecter » se trouve dans le menu (3 barres)
@@ -2250,15 +2251,16 @@ const qCatVal = key => needId(key) > 0 ? needId(key) : 'k:' + key;
 const needId = key => { const c = cats.find(x => norm(x.nom).includes(key)); return c ? c.id : -1; };
 const syncTabs = () => document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x.dataset.s === sort));
 /* ===== Profil Client : la liste « Ici votre besoin » devient la liste des VENDEURS par catégorie ===== */
-const isClientMode = () => !!user && accountRole() === 'client';
+/* Profil Client -> liste des VENDEURS ; profil Vendeur -> liste des CLIENTS ; sinon liste d'origine */
+const peerRole = () => { const r = user ? accountRole() : ''; return r === 'client' ? 'vendeur' : r === 'vendeur' ? 'client' : ''; };
 function renderNeed() {
-  needMode = isClientMode();
+  needMode = peerRole();
   $('cats').classList.toggle('sellers', needMode);
   $('cats').innerHTML = NEED.map(([label, key, subs]) => { const id = needId(key); return `<div class="grp">
-    <button data-c="${id}" data-key="${key}"${subs.length ? '' : ' class="leaf"'}><span>${needMode ? 'Vendeurs ' : ''}${label}</span><span class="n" data-n="${id}"></span></button>
+    <button data-c="${id}" data-key="${key}"${subs.length ? '' : ' class="leaf"'}><span>${needMode === 'vendeur' ? 'Vendeurs ' : needMode === 'client' ? 'Clients ' : ''}${label}</span><span class="n" data-n="${id}"></span></button>
     ${subs.length ? `<div class="subs" data-key="${key}" hidden>${subs.map((s, i) => `<button class="sb" data-i="${i}">${s[0]}</button>`).join('')}</div>` : ''}</div>`; }).join('');
   $('cats').querySelectorAll('button[data-key]').forEach(b => b.onclick = () => {
-    if (needMode) { showSellers(b.dataset.key); return; }
+    if (needMode) { showPeers(b.dataset.key); return; }
     /* 2e clic sur la catégorie déjà ouverte : on replie / on rouvre ses sous-entrées, sans recharger la liste */
     if (needKey === b.dataset.key) {
       const subs = $('cats').querySelector(`.subs[data-key="${b.dataset.key}"]`);
@@ -2291,7 +2293,7 @@ $('mCat').onclick = () => toggle($('mCat'), $('cats'));
 
 /* Nombre d'annonces par catégorie (affiché à droite de chaque catégorie) */
 async function loadCounts() {
-  if (isClientMode() !== needMode && cats.length) renderNeed();
+  if (peerRole() !== needMode && cats.length) renderNeed();
   let data = null;
   { const r1 = await SB.from('ann_annonces').select('category_id,user_id,role').eq('statut', 'valide').limit(5000);
     data = r1.error ? (await SB.from('ann_annonces').select('category_id,user_id').eq('statut', 'valide').limit(5000)).data : r1.data; }
@@ -2299,44 +2301,58 @@ async function loadCounts() {
   (data || []).forEach(a => { c.all++; c[a.category_id] = (c[a.category_id] || 0) + 1; });
   document.querySelectorAll('#catBar [data-n]').forEach(el => el.textContent = c[el.dataset.n] || 0);      /* en-têtes : annonces (inchangé) */
   if (!needMode) { document.querySelectorAll('#cats [data-n]').forEach(el => el.textContent = c[el.dataset.n] || 0); return; }
-  /* Profil Client : nombre de VENDEURS (personnes) par catégorie */
+  /* Nombre de VENDEURS (profil Client) ou de CLIENTS (profil Vendeur) par catégorie */
   const sh = await sellerIds(), sc = {};
-  (data || []).forEach(a => { if (!a.user_id || !(a.role === 'vendeur' || sh.has(a.user_id))) return; (sc[a.category_id] = sc[a.category_id] || new Set()).add(a.user_id); });
+  (data || []).forEach(a => { if (!a.user_id || isPeerAd(a, sh) === false) return; (sc[a.category_id] = sc[a.category_id] || new Set()).add(a.user_id); });
   document.querySelectorAll('#cats [data-n]').forEach(el => el.textContent = sc[el.dataset.n] ? sc[el.dataset.n].size : 0);
 }
 /* Ensemble des comptes qui ont une boutique (= vendeurs) */
 async function sellerIds() {
   try { const { data } = await SB.from('ann_boutiques').select('user_id').limit(5000); return new Set((data || []).map(x => x.user_id)); } catch (e) { return new Set(); }
 }
-/* Liste des vendeurs d'une catégorie (remplace la liste des publications, sans toucher à la recherche ni à la barre des catégories) */
-async function showSellers(key) {
+/* Une annonce est-elle écrite par la personne recherchée (vendeur ou client selon le profil connecté) ? */
+const isSellerAd = (a, sh) => a.role === 'vendeur' || (a.role !== 'client' && sh.has(a.user_id));
+const isPeerAd = (a, sh) => needMode === 'vendeur' ? isSellerAd(a, sh) : !isSellerAd(a, sh);
+/* Liste des vendeurs (profil Client) ou des clients (profil Vendeur) d'une catégorie : remplace la liste des publications,
+   sans toucher à la recherche ni à la barre des catégories */
+async function showPeers(key) {
   if (sellerKey === key) { sellerKey = null; markCat(true); $('seeAll').click(); return; }     /* 2e clic : retour aux annonces */
-  sellerKey = key; markCat(true); const my = ++reqId;
+  sellerKey = key; markCat(true); const my = ++reqId, mode = needMode, wantSellers = mode === 'vendeur';
   const id = needId(key), label = (NEED.find(n => n[1] === key) || [])[0] || '';
-  $('title').textContent = 'Vendeurs · ' + label; $('catFilters').hidden = true;
-  $('empty').hidden = true; $('list').innerHTML = '<p class="sl-info">Chargement des vendeurs…</p>';
+  $('title').textContent = (wantSellers ? 'Vendeurs · ' : 'Clients · ') + label; $('catFilters').hidden = true;
+  $('empty').hidden = true; $('list').innerHTML = '<p class="sl-info">Chargement…</p>';
   let rows = [];
   try {
-    let r = SB.from('ann_annonces').select('user_id,role,cree_le').eq('statut', 'valide').order('cree_le', { ascending: false }).limit(2000);
+    let r = SB.from('ann_annonces').select('*, ann_categories(nom)').eq('statut', 'valide').order('cree_le', { ascending: false }).limit(2000);
     if (id > 0) r = r.eq('category_id', id);
-    let res = await r; if (res.error) { let r2 = SB.from('ann_annonces').select('user_id,cree_le').eq('statut', 'valide').order('cree_le', { ascending: false }).limit(2000); if (id > 0) r2 = r2.eq('category_id', id); res = await r2; }
-    rows = res.data || [];
+    rows = (await r).data || [];
   } catch (e) {}
   const sh = await sellerIds(), map = new Map();
-  rows.forEach(a => { if (!a.user_id || !(a.role === 'vendeur' || sh.has(a.user_id))) return; const m = map.get(a.user_id) || { uid: a.user_id, n: 0 }; m.n++; map.set(a.user_id, m); });
+  rows.forEach(a => { if (!a.user_id || !isPeerAd(a, sh)) return; const m = map.get(a.user_id) || { uid: a.user_id, n: 0, last: a }; m.n++; map.set(a.user_id, m); });
   const ids = [...map.keys()]; let prof = {};
-  if (ids.length) { try { const { data } = await SB.from('ann_boutiques').select('user_id,nom,avatar_url,ville,vend').in('user_id', ids); (data || []).forEach(x => prof[x.user_id] = x); } catch (e) {} }
+  if (wantSellers && ids.length) { try { const { data } = await SB.from('ann_boutiques').select('user_id,nom,avatar_url,ville,vend').in('user_id', ids); (data || []).forEach(x => prof[x.user_id] = x); } catch (e) {} }
   if (my !== reqId || sellerKey !== key) return;
   const list = [...map.values()];
-  if (!list.length) { $('list').innerHTML = ''; $('empty').textContent = 'Aucun vendeur dans cette catégorie pour le moment.'; $('empty').hidden = false; return; }
-  $('list').innerHTML = list.map(m => { const p = prof[m.uid] || {}, nom = p.nom || 'Vendeur';
-    return `<article class="sl-card" data-u="${esc(m.uid)}" role="button" tabindex="0" aria-label="Voir le profil de ${esc(nom)}">
-      <div class="sl-av">${avatarHtml(p.avatar_url, nom)}</div>
-      <div class="sl-nm">${esc(nom)}</div><span class="arl vendeur">Vendeur</span>
-      <div class="meta">${esc(p.ville || 'Madagascar')}</div>
-      ${p.vend ? `<div class="sl-sell">${esc(String(p.vend).slice(0, 70))}</div>` : ''}
-      <div class="sl-n">${m.n} publication${m.n > 1 ? 's' : ''} · ${esc(label)}</div></article>`; }).join('');
-  $('list').querySelectorAll('.sl-card').forEach(b => { const go = () => openShop(b.dataset.u); b.onclick = go; b.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } }; });
+  if (!list.length) { $('list').innerHTML = ''; $('empty').textContent = wantSellers ? 'Aucun vendeur dans cette catégorie pour le moment.' : 'Aucun client dans cette catégorie pour le moment.'; $('empty').hidden = false; return; }
+  const person = '<svg viewBox="0 0 24 24" aria-hidden="true" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>';
+  $('list').innerHTML = list.map((m, i) => {
+    if (wantSellers) { const p = prof[m.uid] || {}, nom = p.nom || 'Vendeur';
+      return `<article class="sl-card" data-i="${i}" role="button" tabindex="0" aria-label="Voir le profil de ${esc(nom)}">
+        <div class="sl-av">${avatarHtml(p.avatar_url, nom)}</div>
+        <div class="sl-nm">${esc(nom)}</div><span class="arl vendeur">Vendeur</span>
+        <div class="meta">${esc(p.ville || 'Madagascar')}</div>
+        ${p.vend ? `<div class="sl-sell">${esc(String(p.vend).slice(0, 70))}</div>` : ''}
+        <div class="sl-n">${m.n} publication${m.n > 1 ? 's' : ''} · ${esc(label)}</div></article>`; }
+    const a = m.last;
+    return `<article class="sl-card" data-i="${i}" role="button" tabindex="0" aria-label="Voir la commande de ce client">
+      <div class="sl-av cl">${person}</div>
+      <div class="sl-nm">Client</div><span class="arl client">Client</span>
+      <div class="meta">${esc(a.ville || 'Madagascar')}</div>
+      <div class="sl-sell">${esc(String(a.titre || '').slice(0, 70))}</div>
+      <div class="sl-n">${m.n} commande${m.n > 1 ? 's' : ''} · ${esc(label)}</div></article>`; }).join('');
+  $('list').querySelectorAll('.sl-card').forEach(b => { const m = list[+b.dataset.i];
+    const go = () => wantSellers ? openShop(m.uid) : showAd(m.last);
+    b.onclick = go; b.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } }; });
 }
 
 var sellerMap = {};
