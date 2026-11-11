@@ -1338,13 +1338,12 @@ body:not(.landing) .shell main .head{margin-bottom:10px}
 /* ===== Écran partagé : une ligne par catégorie ===== */
 .crows{margin-top:22px;padding-top:6px;border-top:2px solid var(--line)}
 .crow{margin:6px 0 10px}
-.crow-h{display:flex;align-items:baseline;gap:10px;width:100%;background:none;border:0;padding:10px 2px 6px;cursor:pointer;text-align:left;color:var(--ink)}
+.crow-h{display:flex;align-items:baseline;gap:10px;width:100%;background:none;border:0;padding:10px 2px 6px;cursor:default;text-align:left;color:var(--ink)}
 .crow-t{font:700 1.3rem/1.2 inherit;font-family:inherit;color:var(--forest)}
 .crow-n{font-size:.8rem;font-weight:700;color:var(--muted)}
-.crow-h::after{content:"";margin-left:auto;width:9px;height:9px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);rotate:45deg;transition:rotate .2s;align-self:center}
-.crow.shut .crow-h::after{rotate:-45deg}
+#allHead{margin-top:6px}
+#allHead[hidden]{display:none}
 .crow-l{display:flex;flex-wrap:nowrap;gap:14px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;padding:4px 2px 14px;-webkit-overflow-scrolling:touch}
-.crow.shut .crow-l{display:none}
 .crow-l>.ad{flex:0 0 230px;width:230px;scroll-snap-align:start}
 @media(max-width:560px){.crow-l>.ad{flex-basis:180px;width:180px}}
 
@@ -1623,6 +1622,7 @@ body:not(.landing) .shell main .head{margin-bottom:10px}
       <button type="button" class="fx-reset" id="fxReset">Réinitialiser</button>
     </div>
   </div>
+  <div class="crow-h" id="allHead" hidden><span class="crow-t">Tout</span><span class="crow-n" id="allHeadN"></span></div>
   <div class="grid" id="list"></div>
   <p class="empty" id="empty" hidden>Aucune annonce pour cette recherche. Soyez le premier à en déposer une.</p>
   <section class="crows" id="catRows" aria-label="Publications par catégorie" hidden></section>
@@ -2356,7 +2356,7 @@ async function showPeers(key, sub) {
   const id = needId(key), label = (NEED.find(n => n[1] === key) || [])[0] || '';
   const subLbl = sub === 'all' ? '' : ' · ' + (sub === 'mono' ? 'une seule pièce' : 'en vrac');
   $('title').textContent = (wantSellers ? 'Vendeurs · ' : 'Clients · ') + label + subLbl; $('catFilters').hidden = true;
-  $('empty').hidden = true; $('catRows').hidden = true; $('list').innerHTML = '<p class="sl-info">Chargement…</p>';
+  $('empty').hidden = true; $('catRows').hidden = true; $('allHead').hidden = true; $('list').innerHTML = '<p class="sl-info">Chargement…</p>';
   let rows = [];
   try {
     let r = SB.from('ann_annonces').select('*, ann_categories(nom)').eq('statut', 'valide').order('cree_le', { ascending: false }).limit(2000);
@@ -2463,28 +2463,27 @@ function bindAdCards(box, list) {
 /* ===== Écran partagé : sous la liste, une ligne par catégorie (le nom, puis ses publications sur UNE seule ligne) ===== */
 async function loadCatRows(force) {
   const box = $('catRows'); if (!box) return;
-  if (!user || window.bpMode || sellerKey) { box.hidden = true; return; }
+  const headOff = () => { const h = $('allHead'); if (h) h.hidden = true; };
+  if (!user || window.bpMode || sellerKey) { box.hidden = true; headOff(); return; }
   try {
     if (force || !_rowsData || Date.now() - _rowsT > 20000) {
       const { data, error } = await SB.from('ann_annonces').select('*, ann_categories(nom)').eq('statut', 'valide').order('cree_le', { ascending: false }).limit(400);
       if (error) throw error; _rowsData = data || []; _rowsT = Date.now();
     }
-  } catch (e) { box.hidden = true; return; }
+  } catch (e) { box.hidden = true; headOff(); return; }
   const by = {}; _rowsData.forEach(a => { (by[a.category_id] = by[a.category_id] || []).push(a); });
   const groups = NEED.map(([label, key]) => ({ label, key, list: (by[needId(key)] || []).slice(0, 12) })).filter(g => g.list.length);
-  if (!groups.length || sellerKey || window.bpMode) { box.hidden = true; return; }
+  if (!groups.length || sellerKey || window.bpMode) { box.hidden = true; headOff(); return; }
   rowAds = groups.flatMap(g => g.list);
   await loadSellers(rowAds);
-  if (sellerKey || window.bpMode) { box.hidden = true; return; }
+  if (sellerKey || window.bpMode) { box.hidden = true; headOff(); return; }
   let n = 0;
-  box.innerHTML = groups.map(g => { const open = _rowsOpen[g.key] !== false;
-    return `<div class="crow${open ? '' : ' shut'}" data-k="${esc(g.key)}">
-      <button type="button" class="crow-h" aria-expanded="${open}"><span class="crow-t">${esc(g.label)}</span><span class="crow-n">${g.list.length}</span></button>
+  box.innerHTML = groups.map(g => {     return `<div class="crow" data-k="${esc(g.key)}">
+      <div class="crow-h"><span class="crow-t">${esc(g.label)}</span><span class="crow-n">${g.list.length}</span></div>
       <div class="crow-l">${g.list.map(a => adCardHtml(a, n++)).join('')}</div></div>`; }).join('');
   bindAdCards(box, rowAds);
-  box.querySelectorAll('.crow-h').forEach(h => h.onclick = () => {      /* clic sur le nom : replier / déplier sa ligne */
-    const r = h.parentElement, shut = r.classList.toggle('shut'); h.setAttribute('aria-expanded', String(!shut)); _rowsOpen[r.dataset.k] = !shut;
-  });
+  /* en-tête « Tout » au-dessus des publications, même style que les noms de catégories */
+  const ah = $('allHead'); if (ah) { const c = $('list').querySelectorAll('.ad').length; $('allHeadN').textContent = c || ''; ah.hidden = !c; }
   box.hidden = false; cartSync();
 }
 async function loadAds() {
