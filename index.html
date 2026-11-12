@@ -2351,6 +2351,7 @@ async function loadCounts() {
   let data = null;
   { const r1 = await SB.from('ann_annonces').select('id,category_id,user_id,role').eq('statut', 'valide').limit(5000);
     data = r1.error ? (await SB.from('ann_annonces').select('id,category_id,user_id').eq('statut', 'valide').limit(5000)).data : r1.data; }
+  data = await peerOnly(data || []);
   const c = { all: 0 };
   (data || []).forEach(a => { c.all++; c[a.category_id] = (c[a.category_id] || 0) + 1; });
   document.querySelectorAll('#catBar [data-n]').forEach(el => el.textContent = c[el.dataset.n] || 0);      /* en-têtes : annonces (inchangé) */
@@ -2452,6 +2453,16 @@ async function syncClientPublic() {
     if (!error) _clSig = sig;
   } catch (e) {}
 }
+/* Chacun ne voit que les publications de l'autre profil : le Vendeur voit les publications des Clients,
+   le Client voit celles des Vendeurs (hors « Mes ventes » / « Ma commande » et visiteur non connecté) */
+var _peerSh = null, _peerShT = 0;
+async function peerOnly(list) {
+  const want = (user && !window.bpMode) ? peerRole() : '';
+  if (!want) return list || [];
+  if (!_peerSh || Date.now() - _peerShT > 30000) { _peerSh = await sellerIds(); _peerShT = Date.now(); }
+  const sh = _peerSh;
+  return (list || []).filter(a => (a.role === 'vendeur' || (a.role !== 'client' && sh.has(a.user_id))) === (want === 'vendeur'));
+}
 async function loadSellers(list) {
   const ids = [...new Set((list || []).map(a => a.user_id).filter(Boolean))];
   if (!ids.length) return;
@@ -2498,7 +2509,7 @@ async function loadCatRows(force) {
   try {
     if (force || !_rowsData || Date.now() - _rowsT > 20000) {
       const { data, error } = await SB.from('ann_annonces').select('*, ann_categories(nom)').eq('statut', 'valide').order('cree_le', { ascending: false }).limit(400);
-      if (error) throw error; _rowsData = data || []; _rowsT = Date.now();
+      if (error) throw error; _rowsData = await peerOnly(data || []); _rowsT = Date.now();
     }
   } catch (e) { box.hidden = true; headOff(); return; }
   const by = {}; _rowsData.forEach(a => { (by[a.category_id] = by[a.category_id] || []).push(a); });
@@ -2531,7 +2542,7 @@ async function loadAds() {
   let r = SB.from('ann_annonces').select('*, ann_categories(nom)').eq('statut', 'valide');
   r = sort === 'recent' ? r.order('cree_le', { ascending: false })
     : r.order('prix', { ascending: sort === 'asc', nullsFirst: false }).order('cree_le', { ascending: false });
-  r = r.limit(100);                                 // toutes les annonces publiées (les plus récentes d'abord)
+  r = r.limit(user && !window.bpMode && peerRole() ? 500 : 100);   // annonces publiées (les plus récentes d'abord)
   if (cat) r = r.eq('category_id', cat);
   let modeEmpty = false;
   if (window.bpMode && user) {
@@ -2547,7 +2558,8 @@ async function loadAds() {
   const { data, error } = modeEmpty ? { data: [], error: null } : await r;
   if (my !== reqId) return;                        // une recherche plus récente est en cours : on ignore celle-ci
   setNet(!!error);
-  ads = data || [];
+  ads = await peerOnly(data || []);
+  if (my !== reqId) return;
   $('title').textContent = t ? `Résultats pour « ${t} »` : (cats.find(c => c.id === cat)?.nom || 'Dernières annonces');
   $('empty').textContent = error ? 'Impossible de charger les annonces. Vérifiez votre connexion et réessayez.' : 'Aucune annonce pour cette recherche. Soyez le premier à en déposer une.';
   if (window.bpMode && user && !error) {
@@ -3692,8 +3704,8 @@ var tickAt = 0, tickAds = [], tickW = 0;
 function tickRefresh() { if (Date.now() - tickAt < 30000) return; tickAt = Date.now(); loadTicker(); }
 async function loadTicker() {
   try {
-    const { data } = await SB.from('ann_annonces').select('*, ann_categories(nom)').eq('statut', 'valide').order('cree_le', { ascending: false }).limit(14);
-    tickAds = (data || []).filter(a => a.photos && safeUrl(a.photos[0])).slice(0, 12);
+    const { data } = await SB.from('ann_annonces').select('*, ann_categories(nom)').eq('statut', 'valide').order('cree_le', { ascending: false }).limit(60);
+    tickAds = (await peerOnly(data || [])).filter(a => a.photos && safeUrl(a.photos[0])).slice(0, 12);
   } catch (e) { tickAds = []; }
   tickBuild();
 }
