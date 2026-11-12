@@ -4690,8 +4690,6 @@ body:not(.landing) .shell main .head{position:sticky;top:calc(var(--hh,76px) + v
 /* ===== Titre + barre de recherche toujours visibles : ils rétrécissent en douceur quand on descend ===== */
 html,body{overflow-anchor:none}
 body:not(.landing) .search{position:sticky;top:var(--hh,76px);z-index:45;background:var(--paper);--fs:clamp(1.3rem,2.4vw + .6rem,2.7rem)}
-body:not(.landing) .search h2{font-size:calc(var(--fs) * (1 - var(--p,0)) + 1.15rem * var(--p,0));
-  margin-bottom:calc(clamp(8px,1.1vw,14px) * (1 - var(--p,0)) + 6px * var(--p,0))}
 body:not(.landing) .search{box-shadow:0 8px 10px -8px rgba(42,23,11,calc(.22 * var(--p,0)))}
 body:not(.landing) .shell .side{top:calc(var(--hh,76px) + var(--sh,0px) + 14px);max-height:calc(100vh - var(--hh,76px) - var(--sh,0px) - 24px);overflow-y:auto;scrollbar-width:thin}
 @media(max-width:560px){
