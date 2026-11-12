@@ -1362,9 +1362,9 @@ body:not(.landing) .shell main .head{margin-bottom:10px}
 #allHead[hidden]{display:none}
 /* ===== « Tout » : une seule ligne qu'on fait glisser à gauche / droite ===== */
 body:not(.landing) #allHead:not([hidden])+#list.grid{display:flex;flex-wrap:nowrap;gap:14px;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scroll-snap-type:x proximity;padding:4px 2px 14px;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:#a2501a transparent}
-body:not(.landing) #allHead:not([hidden])+#list.grid>.ad{flex:0 0 230px;width:230px;max-width:230px;scroll-snap-align:start}
+body:not(.landing) #allHead:not([hidden])+#list.grid>.ad{flex:0 0 190px;width:190px;max-width:190px;scroll-snap-align:start}
 body:not(.landing) #allHead:not([hidden])+#list.grid>.sl-info,body:not(.landing) #allHead:not([hidden])+#list.grid>p{flex:1 0 100%}
-@media(max-width:560px){body:not(.landing) #allHead:not([hidden])+#list.grid>.ad{flex-basis:180px;width:180px;max-width:180px}}
+@media(max-width:560px){body:not(.landing) #allHead:not([hidden])+#list.grid>.ad{flex-basis:160px;width:160px;max-width:160px}}
 #list::-webkit-scrollbar,.crow-l::-webkit-scrollbar{height:8px}
 #list::-webkit-scrollbar-thumb,.crow-l::-webkit-scrollbar-thumb{background:#a2501a;border-radius:8px}
 #list::-webkit-scrollbar-track,.crow-l::-webkit-scrollbar-track{background:transparent}
@@ -1374,8 +1374,8 @@ body:not(.landing) #allHead:not([hidden])+#list.grid>.sl-info,body:not(.landing)
 .crow-a:active{filter:brightness(.92)}
 @media(max-width:560px){.crow-a{display:none}}
 .crow-l{display:flex;flex-wrap:nowrap;gap:14px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;padding:4px 2px 14px;-webkit-overflow-scrolling:touch}
-.crow-l>.ad{flex:0 0 230px;width:230px;scroll-snap-align:start}
-@media(max-width:560px){.crow-l>.ad{flex-basis:180px;width:180px}}
+.crow-l>.ad{flex:0 0 190px;width:190px;scroll-snap-align:start}
+@media(max-width:560px){.crow-l>.ad{flex-basis:160px;width:160px}}
 
 /* liste de gauche (profils Client / Vendeur) : « Vendeurs » / « Clients » au-dessus, la catégorie en dessous, tout aligné à gauche */
 #cats .pl{display:flex;flex-direction:column;align-items:flex-start;gap:1px;line-height:1.15;min-width:0;text-align:left}
@@ -4690,11 +4690,19 @@ body:not(.landing) .shell main .head{position:sticky;top:calc(var(--hh,76px) + v
 /* ===== Titre + barre de recherche toujours visibles : ils rétrécissent en douceur quand on descend ===== */
 html,body{overflow-anchor:none}
 body:not(.landing) .search{position:sticky;top:var(--hh,76px);z-index:45;background:var(--paper);--fs:clamp(1.3rem,2.4vw + .6rem,2.7rem)}
-body:not(.landing) .search{box-shadow:0 8px 10px -8px rgba(42,23,11,calc(.22 * var(--p,0)))}
+body:not(.landing) .search{box-shadow:none;border:0}
 body:not(.landing) .shell .side{top:calc(var(--hh,76px) + var(--sh,0px) + 14px);max-height:calc(100vh - var(--hh,76px) - var(--sh,0px) - 24px);overflow-y:auto;scrollbar-width:thin}
 @media(max-width:560px){
   body:not(.landing) .search h2{overflow:hidden;max-height:calc(6.5em * (1 - var(--p,0)));opacity:calc(1 - var(--p,0));margin-bottom:calc(10px * (1 - var(--p,0)))}
 }
+/* ===== Cartes plus compactes ===== */
+.crow-l>.ad .b,#allHead:not([hidden])+#list>.ad .b{padding:9px 11px 10px!important;gap:3px}
+.crow-l>.ad .price,#allHead:not([hidden])+#list>.ad .price{font-size:1.02rem!important}
+.crow-l>.ad h3,#allHead:not([hidden])+#list>.ad h3{font-size:.84rem!important;min-height:2.5em}
+.crow-l>.ad .meta,#allHead:not([hidden])+#list>.ad .meta{font-size:.72rem}
+.crow-l>.ad .cact,#allHead:not([hidden])+#list>.ad .cact{padding:0 10px 10px;gap:5px}
+.crow-l>.ad .cb,#allHead:not([hidden])+#list>.ad .cb{font-size:.72rem;padding:5px 7px}
+@media(min-width:561px){body:not(.landing) .grid{grid-template-columns:repeat(auto-fill,minmax(190px,210px));justify-content:start;gap:14px}}
 </style>
 <script>
 /* Mesure la hauteur réelle de l'en-tête (elle change selon l'écran) pour y accrocher la ligne des catégories */
