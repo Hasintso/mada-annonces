@@ -1361,6 +1361,19 @@ body:not(.landing) .shell main .head{margin-bottom:10px}
 @media(prefers-reduced-motion:reduce){.crow-t{transition:none}}
 #allHead{margin-top:6px}
 #allHead[hidden]{display:none}
+/* ===== « Tout » : une seule ligne qu'on fait glisser à gauche / droite ===== */
+body:not(.landing) #allHead:not([hidden])+#list.grid{display:flex;flex-wrap:nowrap;gap:14px;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scroll-snap-type:x proximity;padding:4px 2px 14px;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:#a2501a transparent}
+body:not(.landing) #allHead:not([hidden])+#list.grid>.ad{flex:0 0 230px;width:230px;max-width:230px;scroll-snap-align:start}
+body:not(.landing) #allHead:not([hidden])+#list.grid>.sl-info,body:not(.landing) #allHead:not([hidden])+#list.grid>p{flex:1 0 100%}
+@media(max-width:560px){body:not(.landing) #allHead:not([hidden])+#list.grid>.ad{flex-basis:180px;width:180px;max-width:180px}}
+#list::-webkit-scrollbar,.crow-l::-webkit-scrollbar{height:8px}
+#list::-webkit-scrollbar-thumb,.crow-l::-webkit-scrollbar-thumb{background:#a2501a;border-radius:8px}
+#list::-webkit-scrollbar-track,.crow-l::-webkit-scrollbar-track{background:transparent}
+/* flèches ‹ › à droite de chaque titre */
+.crow-a{order:2;flex:0 0 auto;width:36px;height:36px;border-radius:50%;border:2px solid #2a170b;background:linear-gradient(145deg,#ffe28a,#f2b705);color:#2a170b;font:800 1.4rem/1 "Poppins","Segoe UI",Arial,sans-serif;display:inline-flex;align-items:center;justify-content:center;padding:0 0 3px;cursor:pointer;box-shadow:3px 3px 0 #2a170b;transition:transform .12s,box-shadow .12s}
+.crow-a:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 #2a170b}
+.crow-a:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #2a170b}
+@media(max-width:560px){.crow-a{display:none}}
 .crow-l{display:flex;flex-wrap:nowrap;gap:14px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;padding:4px 2px 14px;-webkit-overflow-scrolling:touch}
 .crow-l>.ad{flex:0 0 230px;width:230px;scroll-snap-align:start}
 @media(max-width:560px){.crow-l>.ad{flex-basis:180px;width:180px}}
@@ -1640,7 +1653,7 @@ body:not(.landing) .shell main .head{margin-bottom:10px}
       <button type="button" class="fx-reset" id="fxReset">Réinitialiser</button>
     </div>
   </div>
-  <div class="crow-h" id="allHead" hidden><span class="crow-t">Tout</span><span class="crow-n" id="allHeadN"></span></div>
+  <div class="crow-h" id="allHead" hidden><span class="crow-t">Tout</span><span class="crow-n" id="allHeadN"></span><button type="button" class="crow-a" data-dir="-1" aria-label="Précédent">‹</button><button type="button" class="crow-a" data-dir="1" aria-label="Suivant">›</button></div>
   <div class="grid" id="list"></div>
   <p class="empty" id="empty" hidden>Aucune annonce pour cette recherche. Soyez le premier à en déposer une.</p>
   <section class="crows" id="catRows" aria-label="Publications par catégorie" hidden></section>
@@ -2497,13 +2510,19 @@ async function loadCatRows(force) {
   if (sellerKey || window.bpMode) { box.hidden = true; headOff(); return; }
   let n = 0;
   box.innerHTML = groups.map(g => {     return `<div class="crow" data-k="${esc(g.key)}">
-      <div class="crow-h"><span class="crow-t">${esc(g.label)}</span><span class="crow-n">${g.list.length}</span></div>
+      <div class="crow-h"><span class="crow-t">${esc(g.label)}</span><span class="crow-n">${g.list.length}</span><button type="button" class="crow-a" data-dir="-1" aria-label="Précédent">‹</button><button type="button" class="crow-a" data-dir="1" aria-label="Suivant">›</button></div>
       <div class="crow-l">${g.list.map(a => adCardHtml(a, n++)).join('')}</div></div>`; }).join('');
   bindAdCards(box, rowAds);
   /* en-tête « Tout » au-dessus des publications, même style que les noms de catégories */
   const ah = $('allHead'); if (ah) { const c = $('list').querySelectorAll('.ad').length; $('allHeadN').textContent = c || ''; ah.hidden = !c; }
   box.hidden = false; cartSync();
 }
+/* flèches ‹ › : font défiler la ligne voisine */
+document.addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('.crow-a'); if (!b) return;
+  const h = b.closest('.crow-h'); const row = h && h.nextElementSibling; if (!row) return;
+  row.scrollBy({ left: (+b.dataset.dir) * Math.max(240, row.clientWidth * 0.8), behavior: 'smooth' });
+});
 async function loadAds() {
   if (!user) return;
   if (sellerKey) { sellerKey = null; peerSub = 'all'; markCat(true); }     /* retour à la liste des publications */
