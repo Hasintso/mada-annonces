@@ -4667,7 +4667,7 @@ footer{padding-bottom:max(0px,env(safe-area-inset-bottom))}
 }
 
 /* --- Ligne des catégories figée sous l'en-tête pendant le défilement --- */
-body:not(.landing) .shell main .head{position:sticky;top:var(--hh,76px);z-index:40;
+body:not(.landing) .shell main .head{position:sticky;top:calc(var(--hh,76px) + var(--sh,0px));z-index:40;
   background:var(--paper);margin-bottom:10px;padding-top:8px;padding-bottom:8px;
   box-shadow:0 8px 8px -8px rgba(42,23,11,.18)}
 
@@ -4687,6 +4687,16 @@ body:not(.landing) .shell main .head{position:sticky;top:var(--hh,76px);z-index:
 .fx-row select,.fx-row input{padding:6px 10px}
 .fx-reset{padding:4px}
 @media(max-width:560px){.fx-row{gap:6px 10px}}
+/* ===== Titre + barre de recherche toujours visibles : ils rétrécissent en douceur quand on descend ===== */
+html,body{overflow-anchor:none}
+body:not(.landing) .search{position:sticky;top:var(--hh,76px);z-index:45;background:var(--paper);--fs:clamp(1.3rem,2.4vw + .6rem,2.7rem)}
+body:not(.landing) .search h2{font-size:calc(var(--fs) * (1 - var(--p,0)) + 1.15rem * var(--p,0));
+  margin-bottom:calc(clamp(8px,1.1vw,14px) * (1 - var(--p,0)) + 6px * var(--p,0))}
+body:not(.landing) .search{box-shadow:0 8px 10px -8px rgba(42,23,11,calc(.22 * var(--p,0)))}
+body:not(.landing) .shell .side{top:calc(var(--hh,76px) + var(--sh,0px) + 14px);max-height:calc(100vh - var(--hh,76px) - var(--sh,0px) - 24px);overflow-y:auto;scrollbar-width:thin}
+@media(max-width:560px){
+  body:not(.landing) .search h2{overflow:hidden;max-height:calc(6.5em * (1 - var(--p,0)));opacity:calc(1 - var(--p,0));margin-bottom:calc(10px * (1 - var(--p,0)))}
+}
 </style>
 <script>
 /* Mesure la hauteur réelle de l'en-tête (elle change selon l'écran) pour y accrocher la ligne des catégories */
@@ -4695,6 +4705,21 @@ body:not(.landing) .shell main .head{position:sticky;top:var(--hh,76px);z-index:
   function set(){ if(h) document.documentElement.style.setProperty('--hh', h.offsetHeight+'px'); }
   set(); addEventListener('resize',set); addEventListener('load',set);
   if(window.ResizeObserver&&h) new ResizeObserver(set).observe(h);
+})();
+/* Titre + recherche figés : progression du rétrécissement (--p) et hauteur réelle de la zone (--sh) */
+(function(){
+  var s=document.querySelector('.search'), r=document.documentElement, RANGE=120, last=-1, busy=false;
+  if(!s) return;
+  function upd(){
+    busy=false;
+    var y=Math.max(0, window.pageYOffset||0), p=Math.round(Math.min(1,y/RANGE)*100)/100;
+    if(p!==last){ last=p; r.style.setProperty('--p',p); }
+    r.style.setProperty('--sh', (document.body.classList.contains('landing')?0:s.offsetHeight)+'px');
+  }
+  function req(){ if(!busy){ busy=true; requestAnimationFrame(upd); } }
+  addEventListener('scroll',req,{passive:true}); addEventListener('resize',req); addEventListener('load',req);
+  if(window.ResizeObserver) new ResizeObserver(req).observe(s);
+  upd();
 })();
 </script>
 </body>
