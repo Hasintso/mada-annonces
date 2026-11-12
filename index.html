@@ -1347,9 +1347,8 @@ body:not(.landing) .shell main .head{margin-bottom:10px}
   transition:transform .25s ease,text-shadow .25s ease}
 .crow:hover .crow-t,#allHead:hover .crow-t{transform:skewX(-8deg) translate(-2px,-2px);
   text-shadow:1px 1px 0 #a2501a,2px 2px 0 #a2501a,3px 3px 0 #8a4112,4px 4px 0 #8a4112,5px 5px 0 #6a300c,6px 6px 0 #6a300c,7px 7px 0 #4a2008,8px 8px 0 #4a2008,9px 9px 0 #4a2008,12px 18px 18px rgba(42,23,11,.34)}
-.crow-n{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:34px;padding:0 9px;border-radius:50%;
-  font-family:"Poppins","Segoe UI",Arial,sans-serif;font-size:.95rem;font-weight:800;color:var(--ink);background:linear-gradient(145deg,#ffe28a,#f2b705);
-  border:2px solid #2a170b;box-shadow:3px 3px 0 #2a170b;transform:skewX(-8deg);flex:0 0 auto}
+.crow-n{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:30px;padding:0 10px;border-radius:999px;
+  font-family:"Poppins","Segoe UI",Arial,sans-serif;font-size:.85rem;font-weight:700;color:var(--forest);background:#fff;border:1.5px solid var(--forest);flex:0 0 auto}
 .crow-n:empty{display:none}
 /* traits de vitesse qui prolongent le titre */
 .crow-h::after{content:"";flex:1 1 auto;height:12px;min-width:40px;margin-left:4px;
@@ -1357,7 +1356,7 @@ body:not(.landing) .shell main .head{margin-bottom:10px}
   -webkit-mask-image:linear-gradient(90deg,#000 0%,rgba(0,0,0,.55) 55%,transparent 100%);mask-image:linear-gradient(90deg,#000 0%,rgba(0,0,0,.55) 55%,transparent 100%);
   opacity:.75;border-radius:2px}
 @media(max-width:560px){.crow-t{letter-spacing:.04em;text-shadow:1px 1px 0 #a2501a,2px 2px 0 #a2501a,3px 3px 0 #8a4112,4px 4px 0 #6a300c,5px 5px 0 #4a2008,6px 10px 10px rgba(42,23,11,.35)}
-  .crow-n{min-width:28px;height:28px;font-size:.8rem;box-shadow:2px 2px 0 #2a170b}.crow-h::after{height:9px}}
+  .crow-n{min-width:26px;height:26px;font-size:.75rem}.crow-h::after{height:9px}}
 @media(prefers-reduced-motion:reduce){.crow-t{transition:none}}
 #allHead{margin-top:6px}
 #allHead[hidden]{display:none}
@@ -1370,9 +1369,9 @@ body:not(.landing) #allHead:not([hidden])+#list.grid>.sl-info,body:not(.landing)
 #list::-webkit-scrollbar-thumb,.crow-l::-webkit-scrollbar-thumb{background:#a2501a;border-radius:8px}
 #list::-webkit-scrollbar-track,.crow-l::-webkit-scrollbar-track{background:transparent}
 /* flèches ‹ › à droite de chaque titre */
-.crow-a{order:2;flex:0 0 auto;width:36px;height:36px;border-radius:50%;border:2px solid #2a170b;background:linear-gradient(145deg,#ffe28a,#f2b705);color:#2a170b;font:800 1.4rem/1 "Poppins","Segoe UI",Arial,sans-serif;display:inline-flex;align-items:center;justify-content:center;padding:0 0 3px;cursor:pointer;box-shadow:3px 3px 0 #2a170b;transition:transform .12s,box-shadow .12s}
-.crow-a:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 #2a170b}
-.crow-a:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #2a170b}
+.crow-a{order:2;flex:0 0 auto;width:36px;height:36px;border-radius:50%;border:1.5px solid var(--forest);background:#fff;color:var(--forest);font:600 1.3rem/1 "Poppins","Segoe UI",Arial,sans-serif;display:inline-flex;align-items:center;justify-content:center;padding:0 0 3px;cursor:pointer;transition:background .15s,color .15s}
+.crow-a:hover{background:var(--forest);color:#fff}
+.crow-a:active{filter:brightness(.92)}
 @media(max-width:560px){.crow-a{display:none}}
 .crow-l{display:flex;flex-wrap:nowrap;gap:14px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;padding:4px 2px 14px;-webkit-overflow-scrolling:touch}
 .crow-l>.ad{flex:0 0 230px;width:230px;scroll-snap-align:start}
@@ -2495,7 +2494,7 @@ function bindAdCards(box, list) {
 async function loadCatRows(force) {
   const box = $('catRows'); if (!box) return;
   const headOff = () => { const h = $('allHead'); if (h) h.hidden = true; };
-  if (!user || window.bpMode || sellerKey) { box.hidden = true; headOff(); return; }
+  if (!user || window.bpMode || sellerKey || cat || clean(q)) { box.hidden = true; headOff(); return; }
   try {
     if (force || !_rowsData || Date.now() - _rowsT > 20000) {
       const { data, error } = await SB.from('ann_annonces').select('*, ann_categories(nom)').eq('statut', 'valide').order('cree_le', { ascending: false }).limit(400);
@@ -2504,10 +2503,10 @@ async function loadCatRows(force) {
   } catch (e) { box.hidden = true; headOff(); return; }
   const by = {}; _rowsData.forEach(a => { (by[a.category_id] = by[a.category_id] || []).push(a); });
   const groups = NEED.map(([label, key]) => ({ label, key, list: (by[needId(key)] || []).slice(0, 12) })).filter(g => g.list.length);
-  if (!groups.length || sellerKey || window.bpMode) { box.hidden = true; headOff(); return; }
+  if (!groups.length || sellerKey || window.bpMode || cat || clean(q)) { box.hidden = true; headOff(); return; }
   rowAds = groups.flatMap(g => g.list);
   await loadSellers(rowAds);
-  if (sellerKey || window.bpMode) { box.hidden = true; headOff(); return; }
+  if (sellerKey || window.bpMode || cat || clean(q)) { box.hidden = true; headOff(); return; }
   let n = 0;
   box.innerHTML = groups.map(g => {     return `<div class="crow" data-k="${esc(g.key)}">
       <div class="crow-h"><span class="crow-t">${esc(g.label)}</span><span class="crow-n">${g.list.length}</span><button type="button" class="crow-a" data-dir="-1" aria-label="Précédent">‹</button><button type="button" class="crow-a" data-dir="1" aria-label="Suivant">›</button></div>
@@ -2528,6 +2527,7 @@ async function loadAds() {
   if (sellerKey) { sellerKey = null; peerSub = 'all'; markCat(true); }     /* retour à la liste des publications */
   try { tickRefresh(); } catch (e) {}
   const my = ++reqId;
+  if (cat || clean(q)) { $('catRows').hidden = true; $('allHead').hidden = true; }
   let r = SB.from('ann_annonces').select('*, ann_categories(nom)').eq('statut', 'valide');
   r = sort === 'recent' ? r.order('cree_le', { ascending: false })
     : r.order('prix', { ascending: sort === 'asc', nullsFirst: false }).order('cree_le', { ascending: false });
