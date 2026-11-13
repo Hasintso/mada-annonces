@@ -4757,6 +4757,9 @@ body:not(.landing) .brand b{font-size:clamp(1.05rem,4.6vw,1.7rem)}
   scrollbar-width:none;cursor:grab;padding:8px 4px 24px;margin:-8px -4px -24px}
 .hl-grid::-webkit-scrollbar{display:none}
 .hl-grid.drag{cursor:grabbing}
+.hl-track{display:flex;flex-wrap:nowrap;flex:none;gap:14px;width:max-content}
+.hl-grid.loop{overflow:hidden;touch-action:pan-y;overscroll-behavior-x:contain}
+.hl-grid.loop .hl-track{will-change:transform}
 .hl-grid .hl-card{flex:0 0 min(280px,74vw);width:min(280px,74vw);max-width:min(280px,74vw);min-width:0;-webkit-user-select:none;user-select:none}
 .hl-grid .hl-card .ph{height:auto;aspect-ratio:1/1;border-radius:18px}
 .hl-grid .hl-card .b{min-width:0}
@@ -4768,52 +4771,42 @@ body.landing .post svg{width:24px;height:24px;fill:none;stroke:currentColor;stro
 body.landing .post{background:#fff;color:var(--forest,#a2501a);border:1.5px solid var(--line,#e6e6e6);box-shadow:0 3px 10px rgba(42,23,11,.15)}
 </style>
 <script>
-/* ===== hlLoop : « Dernières annonces » de l'accueil, une ligne qui tourne toute seule avec TOUTES les annonces ===== */
+/* ===== hlLoop : « Dernières annonces » de l'accueil — TOUTES les annonces défilent en boucle (animation du navigateur) ===== */
 (function(){
   var g=document.getElementById('hlGrid'), sec=document.getElementById('hLatest');
   if(!g||!sec) return;
+  var SPEED=55;            /* pixels par seconde */
+  var MAXADS=150;          /* nombre maximum d'annonces chargées (les plus récentes) */
+  var PEER_FILTER=false;   /* false : toutes les annonces à l'accueil · true : Vendeur = annonces des Clients, Client = annonces des Vendeurs */
   var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var SPEED=55, MAXADS=150;             /* pixels par seconde · nombre maximum d'annonces chargées (les plus récentes) */
-  var half=0, pos=0, last=0, raf=0, touch=false, down=false, moved=false, sx=0, sl=0, visible=true, hold=0, sig=null, busy=false, again=false, timer=0, io=null;
+  var track=null, anim=null, dur=0, half=0, io=null, busy=false, again=false, sig=null, timer=0;
+  var down=false, moved=false, sx=0, t0=0;
 
   function cardHtml(a){
     var p0=cssUrl(a.photos&&a.photos[0]);
     return '<button class="hl-card" type="button"><div class="ph"'+(p0?' data-bg="'+p0+'"':'')+'>'+(p0?'':'Pas de photo')+'</div><div class="b"><div class="pr">'+money(a.prix)+'</div><h3>'+esc(a.titre)+'</h3><div class="mt">'+esc(a.ville||'Madagascar')+'</div></div></button>';
   }
-  /* les photos ne se chargent que lorsqu'une carte approche de l'écran (léger, même avec beaucoup d'annonces) */
-  function lazy(card){
-    var ph=card.querySelector('.ph'); if(!ph||!ph.getAttribute('data-bg')) return;
-    if(!io){ ph.style.backgroundImage="url('"+ph.getAttribute('data-bg')+"')"; ph.removeAttribute('data-bg'); return; }
-    io.observe(card);
-  }
+  function loadBg(ph){ if(ph&&ph.getAttribute('data-bg')){ ph.style.backgroundImage="url('"+ph.getAttribute('data-bg')+"')"; ph.removeAttribute('data-bg'); } }
+  /* les photos ne se chargent que lorsqu'une carte approche de l'écran */
   function setupLazy(){
     if(io){ io.disconnect(); io=null; }
     if('IntersectionObserver' in window) io=new IntersectionObserver(function(en){
-      en.forEach(function(e){
-        if(!e.isIntersecting) return;
-        var ph=e.target.querySelector('.ph');
-        if(ph&&ph.getAttribute('data-bg')){ ph.style.backgroundImage="url('"+ph.getAttribute('data-bg')+"')"; ph.removeAttribute('data-bg'); }
-        io.unobserve(e.target);
-      });
+      en.forEach(function(e){ if(!e.isIntersecting) return; loadBg(e.target.querySelector('.ph')); io.unobserve(e.target); });
     },{root:g,rootMargin:'0px 700px 0px 700px'});
   }
+  function lazy(card){ if(io) io.observe(card); else loadBg(card.querySelector('.ph')); }
   function measure(){
-    var cl=g.querySelector('.hl-card[data-clone]'), c0=g.querySelector('.hl-card:not([data-clone])');
+    var cl=track.querySelector('.hl-card[data-clone]'), c0=track.querySelector('.hl-card:not([data-clone])');
     half=(cl&&c0)?cl.getBoundingClientRect().left-c0.getBoundingClientRect().left:0;
   }
-  function stop(){ if(raf){ cancelAnimationFrame(raf); raf=0; } last=0; }
-  function step(t){
-    raf=requestAnimationFrame(step);
-    if(!last){ last=t; return; }
-    var dt=Math.min(t-last,100); last=t;
-    if(!half||touch||down||!visible||t<hold) return;
-    if(Math.abs(g.scrollLeft-pos)>2) pos=g.scrollLeft;   /* la personne a fait défiler : on repart d'où elle est */
-    pos+=SPEED*dt/1000;
-    if(pos>=half) pos-=half;
-    g.scrollLeft=pos;
+  function wrap(t){ return ((t%dur)+dur)%dur; }
+  function build(frac){
+    if(anim){ try{ anim.cancel(); }catch(e){} anim=null; }
+    if(!half||!track.animate) return;
+    dur=half/SPEED*1000;
+    anim=track.animate([{transform:'translate3d(0,0,0)'},{transform:'translate3d('+(-half)+'px,0,0)'}],{duration:dur,iterations:Infinity,easing:'linear'});
+    if(frac) anim.currentTime=frac*dur;
   }
-  function start(){ if(!raf&&half) raf=requestAnimationFrame(step); }
-  function pause(ms){ hold=performance.now()+ms; }
 
   async function render(){
     if(busy){ again=true; return; } busy=true;
@@ -4822,71 +4815,85 @@ body.landing .post{background:#fff;color:var(--forest,#a2501a);border:1.5px soli
       if(!sbReady) return;
       var res=await SB.from('ann_annonces').select('*').eq('statut','valide').order('cree_le',{ascending:false}).limit(MAXADS);
       var data=res&&res.data;
-      if(data&&data.length) data=await peerOnly(data);     /* Vendeur : annonces des Clients · Client : annonces des Vendeurs */
-      stop(); half=0; pos=0;
+      if(PEER_FILTER&&data&&data.length) data=await peerOnly(data);
+      if(anim){ try{ anim.cancel(); }catch(e){} anim=null; } half=0; down=false;
+      g.classList.remove('loop','drag');
       if(!data||!data.length){ g.innerHTML=''; sec.hidden=true; return; }
       setupLazy();
-      g.innerHTML=data.map(cardHtml).join('');
-      var cards=[].slice.call(g.querySelectorAll('.hl-card'));
+      g.innerHTML='<div class="hl-track">'+data.map(cardHtml).join('')+'</div>';
+      track=g.firstChild;
+      var cards=[].slice.call(track.querySelectorAll('.hl-card'));
       cards.forEach(function(b){ b.onclick=closeWelcome; lazy(b); });
       sec.hidden=false;
-      g.scrollLeft=0;
-      /* 3 annonces ou plus : la ligne tourne sans fin (on recopie la série autant de fois qu'il faut pour remplir l'écran) */
-      if(!reduce&&cards.length>=3){
-        var need=Math.max(g.clientWidth,window.innerWidth||0,(window.screen&&screen.width)||0);
-        var guard=0;
+      /* 3 annonces ou plus : on recopie la série autant de fois qu'il faut pour remplir l'écran, puis elle tourne sans fin */
+      if(!reduce&&track.animate&&cards.length>=3){
+        var need=Math.max(g.clientWidth,window.innerWidth||0,(window.screen&&screen.width)||0), guard=0;
         do{
           cards.forEach(function(c){
-            var k=c.cloneNode(true); k.setAttribute('data-clone','1'); k.setAttribute('aria-hidden','true'); k.tabIndex=-1; k.onclick=closeWelcome; g.appendChild(k); lazy(k);
+            var k=c.cloneNode(true); k.setAttribute('data-clone','1'); k.setAttribute('aria-hidden','true'); k.tabIndex=-1; k.onclick=closeWelcome; track.appendChild(k); lazy(k);
           });
           measure(); guard++;
-        }while(half&&g.scrollWidth<half+need+40&&guard<12);
-        start();
+        }while(half&&track.getBoundingClientRect().width<half+need+40&&guard<12);
+        g.classList.add('loop');
+        build(0);
       }
-    }catch(e){} finally{ busy=false; if(again){ again=false; render(); } }
+    }catch(e){ try{ console.warn('hlLoop',e); }catch(_){} } finally{ busy=false; if(again){ again=false; render(); } }
   }
 
-  /* pause seulement quand on touche, on glisse ou on fait défiler horizontalement, puis reprise */
-  g.addEventListener('touchstart',function(){ touch=true; },{passive:true});
-  function endTouch(){ touch=false; pause(1500); }
-  g.addEventListener('touchend',endTouch,{passive:true});
-  g.addEventListener('touchcancel',endTouch,{passive:true});
-  g.addEventListener('wheel',function(e){ if(Math.abs(e.deltaX)>Math.abs(e.deltaY)) pause(2000); },{passive:true});
-  g.addEventListener('scroll',function(){ if(half&&g.scrollLeft>=half){ g.scrollLeft-=half; pos=g.scrollLeft; } },{passive:true});
-
-  /* glisser à la souris (sans fin : la ligne boucle dans les deux sens) */
+  /* glisser à la souris ou au doigt (la ligne boucle dans les deux sens) ; elle repart dès qu'on lâche */
   g.addEventListener('pointerdown',function(e){
-    if(e.pointerType!=='mouse'||e.button!==0) return;
-    down=true; moved=false; sx=e.clientX; sl=g.scrollLeft;
+    if(!anim||(e.pointerType==='mouse'&&e.button!==0)) return;
+    down=true; moved=false; sx=e.clientX; t0=+anim.currentTime||0;
   });
   window.addEventListener('pointermove',function(e){
-    if(!down) return;
+    if(!down||!anim) return;
+    if(e.pointerType==='mouse'&&e.buttons===0){ release(); return; }
     var dx=e.clientX-sx;
-    if(!moved&&Math.abs(dx)>5){ moved=true; g.classList.add('drag'); }
+    if(!moved&&Math.abs(dx)>5){ moved=true; anim.pause(); g.classList.add('drag'); }
     if(!moved) return;
-    var nl=sl-dx;
-    if(half){ while(nl<0){ nl+=half; sl+=half; } while(nl>=half){ nl-=half; sl-=half; } }
-    g.scrollLeft=nl; pos=nl;
+    anim.currentTime=wrap(t0-dx/SPEED*1000);
   });
-  function release(){ if(!down) return; down=false; g.classList.remove('drag'); pause(1500); }
+  function release(){
+    if(!down) return; down=false; g.classList.remove('drag');
+    if(anim&&anim.playState==='paused') anim.play();
+  }
   window.addEventListener('pointerup',release);
   window.addEventListener('pointercancel',release);
   window.addEventListener('blur',release);
   g.addEventListener('click',function(e){ if(moved){ e.stopPropagation(); e.preventDefault(); moved=false; } },true);
+  /* défilement horizontal à la molette / au pavé tactile */
+  g.addEventListener('wheel',function(e){
+    if(!anim||Math.abs(e.deltaX)<=Math.abs(e.deltaY)) return;
+    e.preventDefault(); anim.currentTime=wrap((+anim.currentTime||0)+e.deltaX/SPEED*1000);
+  },{passive:false});
+  /* filet de sécurité : si l'animation est restée en pause sans que personne ne glisse, on la relance */
+  setInterval(function(){ if(anim&&!down&&anim.playState==='paused') anim.play(); },1500);
 
-  /* n'anime que si la ligne est à l'écran */
-  if('IntersectionObserver' in window) new IntersectionObserver(function(en){ visible=en[0].isIntersecting; },{threshold:0}).observe(g);
-  window.addEventListener('resize',function(){ clearTimeout(timer); timer=setTimeout(function(){ if(half) measure(); },200); });
+  window.addEventListener('resize',function(){
+    clearTimeout(timer);
+    timer=setTimeout(function(){ if(!anim) return; var f=wrap(+anim.currentTime||0)/dur; measure(); build(f); },250);
+  });
 
-  /* recharger quand le profil change (connexion, déconnexion, Vendeur / Client) */
+  /* recharger quand le profil change (seulement utile si le filtre Vendeur / Client est activé) */
   function schedule(){
-    var s=(typeof user!=='undefined'&&user?user.id:'')+'|'+(typeof peerRole==='function'?peerRole():'');
+    var s=PEER_FILTER?((typeof user!=='undefined'&&user?user.id:'')+'|'+(typeof peerRole==='function'?peerRole():'')):'all';
     if(s===sig) return; sig=s;
     clearTimeout(schedule.t); schedule.t=setTimeout(render,400);
   }
   var _r=window.renderAuthBtn;
   if(typeof _r==='function'){ window.renderAuthBtn=function(){ var x=_r.apply(this,arguments); try{ schedule(); }catch(e){} return x; }; }
   schedule();
+
+  /* diagnostic : ouvrir le site avec ?debug à la fin de l'adresse affiche l'état de la ligne */
+  if(/[?&]debug/.test(location.search)){
+    var d=document.createElement('div');
+    d.style.cssText='position:fixed;left:8px;bottom:8px;z-index:99999;background:#000c;color:#0f0;font:12px/1.4 monospace;padding:6px 8px;border-radius:6px;max-width:90vw';
+    document.body.appendChild(d);
+    setInterval(function(){
+      var n=track?track.children.length:0;
+      d.textContent='cartes:'+n+' · boucle:'+(anim?'oui':'non')+' · etat:'+(anim?anim.playState:'-')+' · temps:'+(anim?Math.round(+anim.currentTime):'-')+' · reduit:'+reduce+' · ads:'+(sbReady?'pret':'attente');
+    },500);
+  }
 })();
 </script>
 </body>
