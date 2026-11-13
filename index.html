@@ -2057,19 +2057,7 @@ $('heroSearch').onsubmit = e => { e.preventDefault(); q = $('heroQ').value; $('q
   })();
 })();
 $('hlAll').onclick = closeWelcome;
-/* Dernières annonces sur l'accueil : la section reste masquée si rien n'est lisible */
-(async () => {
-  try {
-    for (let n = 0; n < 30 && !sbReady; n++) await new Promise(r => setTimeout(r, 300));   /* attend que Supabase soit prêt */
-    if (!sbReady) return;
-    const { data } = await SB.from('ann_annonces').select('id,titre,prix,ville,photos').eq('statut', 'valide').order('cree_le', { ascending: false }).limit(8);
-    if (!data || !data.length) return;
-    $('hlGrid').innerHTML = data.map(a => { const p0 = cssUrl(a.photos && a.photos[0]);
-      return `<button class="hl-card" type="button"><div class="ph" ${p0 ? `style="background-image:url('${p0}')"` : ''}>${p0 ? '' : 'Pas de photo'}</div><div class="b"><div class="pr">${money(a.prix)}</div><h3>${esc(a.titre)}</h3><div class="mt">${esc(a.ville || 'Madagascar')}</div></div></button>`; }).join('');
-    $('hlGrid').querySelectorAll('.hl-card').forEach(b => b.onclick = closeWelcome);
-    $('hLatest').hidden = false;
-  } catch (e) {}
-})();
+/* Dernières annonces de l'accueil : défilement automatique géré par le module « hlLoop » (fin de page) */
 $('btnHelp').onclick = showWelcome;
 $('footHelp').onclick = showWelcome;
 $('logo').onclick = showWelcome;
@@ -4765,20 +4753,84 @@ body:not(.landing) .brand b{font-size:clamp(1.05rem,4.6vw,1.7rem)}
 
 /* ===== Accueil : « Dernières annonces » sur une seule ligne qu'on fait glisser à gauche / droite ===== */
 .hl-grid{display:flex;flex-wrap:nowrap;gap:14px;overflow-x:auto;overflow-y:hidden;
-  scroll-snap-type:x proximity;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;
+  scroll-snap-type:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;
   scrollbar-width:none;cursor:grab;padding:8px 4px 24px;margin:-8px -4px -24px}
 .hl-grid::-webkit-scrollbar{display:none}
-.hl-grid.drag{cursor:grabbing;scroll-snap-type:none}
-.hl-grid .hl-card{flex:0 0 min(220px,62vw);width:auto;scroll-snap-align:start;-webkit-user-select:none;user-select:none}
+.hl-grid.drag{cursor:grabbing}
+.hl-grid .hl-card{flex:0 0 min(220px,62vw);width:auto;-webkit-user-select:none;user-select:none}
 
 /* ===== Accueil : le signe « + » du bouton jaune redevient visible ===== */
 body.landing .post svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+
+/* ===== Accueil : bouton « + » blanc, comme les autres boutons ===== */
+body.landing .post{background:#fff;color:var(--forest,#a2501a);border:1.5px solid var(--line,#e6e6e6);box-shadow:0 3px 10px rgba(42,23,11,.15)}
 </style>
 <script>
-/* Glisser la ligne « Dernières annonces » à la souris (au doigt, le défilement est natif) */
+/* ===== hlLoop : « Dernières annonces » de l'accueil, en une ligne qui tourne toute seule ===== */
 (function(){
-  var g=document.getElementById('hlGrid'); if(!g) return;
-  var down=false, moved=false, sx=0, sl=0;
+  var g=document.getElementById('hlGrid'), sec=document.getElementById('hLatest');
+  if(!g||!sec) return;
+  var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var SPEED=38;                         /* pixels par seconde */
+  var half=0, pos=0, last=0, raf=0, hover=false, touch=false, down=false, moved=false, sx=0, sl=0, visible=true, hold=0, sig=null, busy=false, timer=0;
+
+  function cardHtml(a){
+    var p0=cssUrl(a.photos&&a.photos[0]);
+    return '<button class="hl-card" type="button"><div class="ph" '+(p0?'style="background-image:url(\''+p0+'\')"':'')+'>'+(p0?'':'Pas de photo')+'</div><div class="b"><div class="pr">'+money(a.prix)+'</div><h3>'+esc(a.titre)+'</h3><div class="mt">'+esc(a.ville||'Madagascar')+'</div></div></button>';
+  }
+  function measure(){
+    var cl=g.querySelector('.hl-card[data-clone]'), c0=g.querySelector('.hl-card:not([data-clone])');
+    half=(cl&&c0)?cl.getBoundingClientRect().left-c0.getBoundingClientRect().left:0;
+  }
+  function stop(){ if(raf){ cancelAnimationFrame(raf); raf=0; } last=0; }
+  function step(t){
+    raf=requestAnimationFrame(step);
+    if(!last){ last=t; return; }
+    var dt=Math.min(t-last,100); last=t;
+    if(!half||hover||touch||down||!visible||t<hold) return;
+    if(Math.abs(g.scrollLeft-pos)>2) pos=g.scrollLeft;   /* la personne a fait défiler : on repart d'où elle est */
+    pos+=SPEED*dt/1000;
+    if(pos>=half) pos-=half;
+    g.scrollLeft=pos;
+  }
+  function start(){ if(!raf&&half) raf=requestAnimationFrame(step); }
+
+  async function render(){
+    if(busy) return; busy=true;
+    try{
+      for(var n=0;n<30&&!sbReady;n++) await new Promise(function(r){setTimeout(r,300);});
+      if(!sbReady) return;
+      var res=await SB.from('ann_annonces').select('*').eq('statut','valide').order('cree_le',{ascending:false}).limit(60);
+      var data=res&&res.data;
+      if(data&&data.length) data=await peerOnly(data);     /* Vendeur : annonces des Clients · Client : annonces des Vendeurs */
+      stop(); half=0; pos=0;
+      if(!data||!data.length){ g.innerHTML=''; sec.hidden=true; return; }
+      data=data.slice(0,30);
+      g.innerHTML=data.map(cardHtml).join('');
+      g.querySelectorAll('.hl-card').forEach(function(b){ b.onclick=closeWelcome; });
+      sec.hidden=false;
+      g.scrollLeft=0;
+      if(!reduce&&g.scrollWidth>g.clientWidth+20){
+        var cards=[].slice.call(g.querySelectorAll('.hl-card'));
+        cards.forEach(function(c){
+          var k=c.cloneNode(true); k.setAttribute('data-clone','1'); k.setAttribute('aria-hidden','true'); k.tabIndex=-1; k.onclick=closeWelcome; g.appendChild(k);
+        });
+        measure(); start();
+      }
+    }catch(e){} finally{ busy=false; }
+  }
+
+  /* pause quand la souris est dessus ou quand on touche, puis reprise */
+  g.addEventListener('mouseenter',function(){ hover=true; });
+  g.addEventListener('mouseleave',function(){ hover=false; });
+  g.addEventListener('touchstart',function(){ touch=true; },{passive:true});
+  function endTouch(){ touch=false; hold=performance.now()+2500; }
+  g.addEventListener('touchend',endTouch,{passive:true});
+  g.addEventListener('touchcancel',endTouch,{passive:true});
+  g.addEventListener('wheel',function(){ hold=performance.now()+2500; },{passive:true});
+  g.addEventListener('scroll',function(){ if(half&&g.scrollLeft>=half){ g.scrollLeft-=half; pos=g.scrollLeft; } },{passive:true});
+
+  /* glisser à la souris (sans fin : la ligne boucle dans les deux sens) */
   g.addEventListener('pointerdown',function(e){
     if(e.pointerType!=='mouse'||e.button!==0) return;
     down=true; moved=false; sx=e.clientX; sl=g.scrollLeft;
@@ -4787,10 +4839,27 @@ body.landing .post svg{width:24px;height:24px;fill:none;stroke:currentColor;stro
     if(!down) return;
     var dx=e.clientX-sx;
     if(!moved&&Math.abs(dx)>5){ moved=true; g.classList.add('drag'); }
-    if(moved) g.scrollLeft=sl-dx;
+    if(!moved) return;
+    var nl=sl-dx;
+    if(half){ while(nl<0){ nl+=half; sl+=half; } while(nl>=half){ nl-=half; sl-=half; } }
+    g.scrollLeft=nl; pos=nl;
   });
-  window.addEventListener('pointerup',function(){ if(!down) return; down=false; g.classList.remove('drag'); });
+  window.addEventListener('pointerup',function(){ if(!down) return; down=false; g.classList.remove('drag'); hold=performance.now()+1500; });
   g.addEventListener('click',function(e){ if(moved){ e.stopPropagation(); e.preventDefault(); moved=false; } },true);
+
+  /* n'anime que si la ligne est à l'écran */
+  if('IntersectionObserver' in window) new IntersectionObserver(function(en){ visible=en[0].isIntersecting; },{threshold:0}).observe(g);
+  window.addEventListener('resize',function(){ clearTimeout(timer); timer=setTimeout(function(){ if(half){ measure(); } },200); });
+
+  /* recharger quand le profil change (connexion, déconnexion, Vendeur / Client) */
+  function schedule(){
+    var s=(typeof user!=='undefined'&&user?user.id:'')+'|'+(typeof peerRole==='function'?peerRole():'');
+    if(s===sig) return; sig=s;
+    clearTimeout(schedule.t); schedule.t=setTimeout(render,400);
+  }
+  var _r=window.renderAuthBtn;
+  if(typeof _r==='function'){ window.renderAuthBtn=function(){ var x=_r.apply(this,arguments); try{ schedule(); }catch(e){} return x; }; }
+  schedule();
 })();
 </script>
 </body>
