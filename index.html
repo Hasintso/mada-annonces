@@ -4768,17 +4768,34 @@ body.landing .post svg{width:24px;height:24px;fill:none;stroke:currentColor;stro
 body.landing .post{background:#fff;color:var(--forest,#a2501a);border:1.5px solid var(--line,#e6e6e6);box-shadow:0 3px 10px rgba(42,23,11,.15)}
 </style>
 <script>
-/* ===== hlLoop : « Dernières annonces » de l'accueil, en une ligne qui tourne toute seule ===== */
+/* ===== hlLoop : « Dernières annonces » de l'accueil, une ligne qui tourne toute seule avec TOUTES les annonces ===== */
 (function(){
   var g=document.getElementById('hlGrid'), sec=document.getElementById('hLatest');
   if(!g||!sec) return;
   var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var SPEED=38;                         /* pixels par seconde */
-  var half=0, pos=0, last=0, raf=0, hover=false, touch=false, down=false, moved=false, sx=0, sl=0, visible=true, hold=0, sig=null, busy=false, again=false, timer=0;
+  var SPEED=55, MAXADS=150;             /* pixels par seconde · nombre maximum d'annonces chargées (les plus récentes) */
+  var half=0, pos=0, last=0, raf=0, touch=false, down=false, moved=false, sx=0, sl=0, visible=true, hold=0, sig=null, busy=false, again=false, timer=0, io=null;
 
   function cardHtml(a){
     var p0=cssUrl(a.photos&&a.photos[0]);
-    return '<button class="hl-card" type="button"><div class="ph" '+(p0?'style="background-image:url(\''+p0+'\')"':'')+'>'+(p0?'':'Pas de photo')+'</div><div class="b"><div class="pr">'+money(a.prix)+'</div><h3>'+esc(a.titre)+'</h3><div class="mt">'+esc(a.ville||'Madagascar')+'</div></div></button>';
+    return '<button class="hl-card" type="button"><div class="ph"'+(p0?' data-bg="'+p0+'"':'')+'>'+(p0?'':'Pas de photo')+'</div><div class="b"><div class="pr">'+money(a.prix)+'</div><h3>'+esc(a.titre)+'</h3><div class="mt">'+esc(a.ville||'Madagascar')+'</div></div></button>';
+  }
+  /* les photos ne se chargent que lorsqu'une carte approche de l'écran (léger, même avec beaucoup d'annonces) */
+  function lazy(card){
+    var ph=card.querySelector('.ph'); if(!ph||!ph.getAttribute('data-bg')) return;
+    if(!io){ ph.style.backgroundImage="url('"+ph.getAttribute('data-bg')+"')"; ph.removeAttribute('data-bg'); return; }
+    io.observe(card);
+  }
+  function setupLazy(){
+    if(io){ io.disconnect(); io=null; }
+    if('IntersectionObserver' in window) io=new IntersectionObserver(function(en){
+      en.forEach(function(e){
+        if(!e.isIntersecting) return;
+        var ph=e.target.querySelector('.ph');
+        if(ph&&ph.getAttribute('data-bg')){ ph.style.backgroundImage="url('"+ph.getAttribute('data-bg')+"')"; ph.removeAttribute('data-bg'); }
+        io.unobserve(e.target);
+      });
+    },{root:g,rootMargin:'0px 700px 0px 700px'});
   }
   function measure(){
     var cl=g.querySelector('.hl-card[data-clone]'), c0=g.querySelector('.hl-card:not([data-clone])');
@@ -4789,45 +4806,52 @@ body.landing .post{background:#fff;color:var(--forest,#a2501a);border:1.5px soli
     raf=requestAnimationFrame(step);
     if(!last){ last=t; return; }
     var dt=Math.min(t-last,100); last=t;
-    if(!half||hover||touch||down||!visible||t<hold) return;
+    if(!half||touch||down||!visible||t<hold) return;
     if(Math.abs(g.scrollLeft-pos)>2) pos=g.scrollLeft;   /* la personne a fait défiler : on repart d'où elle est */
     pos+=SPEED*dt/1000;
     if(pos>=half) pos-=half;
     g.scrollLeft=pos;
   }
   function start(){ if(!raf&&half) raf=requestAnimationFrame(step); }
+  function pause(ms){ hold=performance.now()+ms; }
 
   async function render(){
     if(busy){ again=true; return; } busy=true;
     try{
       for(var n=0;n<30&&!sbReady;n++) await new Promise(function(r){setTimeout(r,300);});
       if(!sbReady) return;
-      var res=await SB.from('ann_annonces').select('*').eq('statut','valide').order('cree_le',{ascending:false}).limit(60);
+      var res=await SB.from('ann_annonces').select('*').eq('statut','valide').order('cree_le',{ascending:false}).limit(MAXADS);
       var data=res&&res.data;
       if(data&&data.length) data=await peerOnly(data);     /* Vendeur : annonces des Clients · Client : annonces des Vendeurs */
       stop(); half=0; pos=0;
       if(!data||!data.length){ g.innerHTML=''; sec.hidden=true; return; }
-      data=data.slice(0,30);
+      setupLazy();
       g.innerHTML=data.map(cardHtml).join('');
-      g.querySelectorAll('.hl-card').forEach(function(b){ b.onclick=closeWelcome; });
+      var cards=[].slice.call(g.querySelectorAll('.hl-card'));
+      cards.forEach(function(b){ b.onclick=closeWelcome; lazy(b); });
       sec.hidden=false;
       g.scrollLeft=0;
-      if(!reduce&&g.scrollWidth>g.clientWidth+20){
-        var cards=[].slice.call(g.querySelectorAll('.hl-card'));
-        cards.forEach(function(c){
-          var k=c.cloneNode(true); k.setAttribute('data-clone','1'); k.setAttribute('aria-hidden','true'); k.tabIndex=-1; k.onclick=closeWelcome; g.appendChild(k);
-        });
-        measure(); start();
+      /* 3 annonces ou plus : la ligne tourne sans fin (on recopie la série autant de fois qu'il faut pour remplir l'écran) */
+      if(!reduce&&cards.length>=3){
+        var need=Math.max(g.clientWidth,window.innerWidth||0,(window.screen&&screen.width)||0);
+        var guard=0;
+        do{
+          cards.forEach(function(c){
+            var k=c.cloneNode(true); k.setAttribute('data-clone','1'); k.setAttribute('aria-hidden','true'); k.tabIndex=-1; k.onclick=closeWelcome; g.appendChild(k); lazy(k);
+          });
+          measure(); guard++;
+        }while(half&&g.scrollWidth<half+need+40&&guard<12);
+        start();
       }
     }catch(e){} finally{ busy=false; if(again){ again=false; render(); } }
   }
 
-  /* pause seulement quand on touche, on glisse ou on fait défiler, puis reprise */
+  /* pause seulement quand on touche, on glisse ou on fait défiler horizontalement, puis reprise */
   g.addEventListener('touchstart',function(){ touch=true; },{passive:true});
-  function endTouch(){ touch=false; hold=performance.now()+2500; }
+  function endTouch(){ touch=false; pause(1500); }
   g.addEventListener('touchend',endTouch,{passive:true});
   g.addEventListener('touchcancel',endTouch,{passive:true});
-  g.addEventListener('wheel',function(){ hold=performance.now()+2500; },{passive:true});
+  g.addEventListener('wheel',function(e){ if(Math.abs(e.deltaX)>Math.abs(e.deltaY)) pause(2000); },{passive:true});
   g.addEventListener('scroll',function(){ if(half&&g.scrollLeft>=half){ g.scrollLeft-=half; pos=g.scrollLeft; } },{passive:true});
 
   /* glisser à la souris (sans fin : la ligne boucle dans les deux sens) */
@@ -4844,12 +4868,15 @@ body.landing .post{background:#fff;color:var(--forest,#a2501a);border:1.5px soli
     if(half){ while(nl<0){ nl+=half; sl+=half; } while(nl>=half){ nl-=half; sl-=half; } }
     g.scrollLeft=nl; pos=nl;
   });
-  window.addEventListener('pointerup',function(){ if(!down) return; down=false; g.classList.remove('drag'); hold=performance.now()+1500; });
+  function release(){ if(!down) return; down=false; g.classList.remove('drag'); pause(1500); }
+  window.addEventListener('pointerup',release);
+  window.addEventListener('pointercancel',release);
+  window.addEventListener('blur',release);
   g.addEventListener('click',function(e){ if(moved){ e.stopPropagation(); e.preventDefault(); moved=false; } },true);
 
   /* n'anime que si la ligne est à l'écran */
   if('IntersectionObserver' in window) new IntersectionObserver(function(en){ visible=en[0].isIntersecting; },{threshold:0}).observe(g);
-  window.addEventListener('resize',function(){ clearTimeout(timer); timer=setTimeout(function(){ if(half){ measure(); } },200); });
+  window.addEventListener('resize',function(){ clearTimeout(timer); timer=setTimeout(function(){ if(half) measure(); },200); });
 
   /* recharger quand le profil change (connexion, déconnexion, Vendeur / Client) */
   function schedule(){
