@@ -4769,6 +4769,20 @@ body.landing .post svg{width:24px;height:24px;fill:none;stroke:currentColor;stro
 
 /* ===== Accueil : bouton « + » blanc, comme les autres boutons ===== */
 body.landing .post{background:#fff;color:var(--forest,#a2501a);border:1.5px solid var(--line,#e6e6e6);box-shadow:0 3px 10px rgba(42,23,11,.15)}
+
+/* ===== v32.0 · Animations : apparition en cascade + défilement automatique des publications ===== */
+@keyframes bpUp{from{opacity:0;transform:translateY(28px) scale(.95)}to{opacity:1;transform:none}}
+@keyframes bpPop{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:none}}
+.rv:not(.rv-in){opacity:0}
+.rv.rv-in{animation:bpUp .65s cubic-bezier(.2,.75,.25,1) backwards;animation-delay:var(--d,0ms)}
+.crow-h.rv.rv-in,#allHead.rv.rv-in{animation-name:bpPop}
+.hlatest.rv.rv-in{animation-duration:.8s}
+.tile.rv.rv-in{animation-delay:var(--d,0ms)}
+.hl-card .ph{transition:transform .35s ease,box-shadow .35s ease}
+.hl-card:hover .ph{transform:scale(1.03);box-shadow:0 14px 30px rgba(0,0,0,.45)}
+.crow-l.auto,#list.auto{scroll-snap-type:none!important}
+.crow-l>.ad,#list>.ad{transition:transform .25s ease,box-shadow .25s ease,border-color .15s}
+.crow-l>.ad:hover,#list>.ad:hover{transform:translateY(-4px);box-shadow:0 10px 22px rgba(42,23,11,.22)}
 </style>
 <script>
 /* ===== hlLoop : « Dernières annonces » de l'accueil — TOUTES les annonces défilent en boucle (animation du navigateur) ===== */
@@ -4778,7 +4792,9 @@ body.landing .post{background:#fff;color:var(--forest,#a2501a);border:1.5px soli
   var SPEED=55;            /* pixels par seconde */
   var MAXADS=150;          /* nombre maximum d'annonces chargées (les plus récentes) */
   var PEER_FILTER=false;   /* false : toutes les annonces à l'accueil · true : Vendeur = annonces des Clients, Client = annonces des Vendeurs */
-  var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var RESPECT_REDUCED_MOTION=false; /* false : l'animation tourne même si Windows/Android a désactivé les animations · true : on respecte ce réglage */
+  var reduce=RESPECT_REDUCED_MOTION&&window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var hov=false;
   var track=null, anim=null, dur=0, half=0, io=null, busy=false, again=false, sig=null, timer=0;
   var down=false, moved=false, sx=0, t0=0;
 
@@ -4806,6 +4822,7 @@ body.landing .post{background:#fff;color:var(--forest,#a2501a);border:1.5px soli
     dur=half/SPEED*1000;
     anim=track.animate([{transform:'translate3d(0,0,0)'},{transform:'translate3d('+(-half)+'px,0,0)'}],{duration:dur,iterations:Infinity,easing:'linear'});
     if(frac) anim.currentTime=frac*dur;
+    anim.playbackRate=hov?0.25:1;
   }
 
   async function render(){
@@ -4857,6 +4874,8 @@ body.landing .post{background:#fff;color:var(--forest,#a2501a);border:1.5px soli
     if(!down) return; down=false; g.classList.remove('drag');
     if(anim&&anim.playState==='paused') anim.play();
   }
+  g.addEventListener('mouseenter',function(){ hov=true; if(anim) anim.playbackRate=0.25; });
+  g.addEventListener('mouseleave',function(){ hov=false; if(anim) anim.playbackRate=1; });
   window.addEventListener('pointerup',release);
   window.addEventListener('pointercancel',release);
   window.addEventListener('blur',release);
@@ -4894,6 +4913,69 @@ body.landing .post{background:#fff;color:var(--forest,#a2501a);border:1.5px soli
       d.textContent='cartes:'+n+' · boucle:'+(anim?'oui':'non')+' · etat:'+(anim?anim.playState:'-')+' · temps:'+(anim?Math.round(+anim.currentTime):'-')+' · reduit:'+reduce+' · ads:'+(sbReady?'pret':'attente');
     },500);
   }
+})();
+</script>
+
+<script>
+/* ===== v32.0 · bpMotion : animations de l'accueil et des publications ===== */
+(function(){
+  var RESPECT_REDUCED_MOTION=false; /* true : on respecte le réglage « réduire les animations » du téléphone / PC */
+  var AUTO_SPEED=36;   /* pixels par seconde pour les lignes de publications */
+  var PAUSE_AFTER_TOUCH=2500, PAUSE_AT_END=1200; /* millisecondes */
+  if(RESPECT_REDUCED_MOTION&&window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  /* --- 1. apparition en cascade quand un élément entre à l'écran --- */
+  var io=('IntersectionObserver' in window)?new IntersectionObserver(function(en){
+    en.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('rv-in'); io.unobserve(e.target); } });
+  },{threshold:.1}):null;
+  function reveal(root){
+    if(!io||!root) return; var i=0;
+    root.querySelectorAll('.ad:not([data-rv]),.crow-h:not([data-rv]),.sl-card:not([data-rv]),.tile:not([data-rv]),.hlatest:not([data-rv])').forEach(function(el){
+      el.setAttribute('data-rv',''); el.classList.add('rv'); el.style.setProperty('--d',(i++%7)*70+'ms'); io.observe(el);
+    });
+  }
+
+  /* --- 2. défilement automatique (aller-retour) des lignes de publications --- */
+  var rows=new Map(), rio=('IntersectionObserver' in window)?new IntersectionObserver(function(en){
+    en.forEach(function(e){ var st=rows.get(e.target); if(st) st.vis=e.isIntersecting; });
+  }):null;
+  function now(){ return (window.performance&&performance.now)?performance.now():Date.now(); }
+  function pause(st,ms){ st.until=now()+ms; }
+  function watch(el){
+    if(rows.has(el)) return;
+    var st={pos:0,dir:1,last:0,until:now()+1500,vis:!rio,hover:false};
+    rows.set(el,st); el.classList.add('auto'); if(rio) rio.observe(el);
+    el.addEventListener('mouseenter',function(){ st.hover=true; });
+    el.addEventListener('mouseleave',function(){ st.hover=false; pause(st,600); });
+    ['touchstart','wheel','keydown','focusin','pointerdown'].forEach(function(t){ el.addEventListener(t,function(){ pause(st,PAUSE_AFTER_TOUCH); },{passive:true}); });
+  }
+  function scan(){ document.querySelectorAll('.crow-l,#list').forEach(watch); }
+  var lastT=0;
+  function tick(ts){
+    var dt=Math.min(64,ts-lastT)/1000; lastT=ts;
+    rows.forEach(function(st,el){
+      if(!el.isConnected){ rows.delete(el); if(rio) rio.unobserve(el); return; }
+      if(!st.vis||st.hover||el.offsetParent===null) return;
+      var max=el.scrollWidth-el.clientWidth;
+      if(max<8) return;                                   /* rien à faire défiler (liste en grille) */
+      if(Math.abs(el.scrollLeft-st.last)>2){ st.pos=el.scrollLeft; st.last=el.scrollLeft; pause(st,PAUSE_AFTER_TOUCH); return; } /* la personne a glissé / cliqué sur une flèche */
+      if(ts<st.until) return;
+      st.pos+=st.dir*AUTO_SPEED*dt;
+      if(st.pos>=max){ st.pos=max; st.dir=-1; pause(st,PAUSE_AT_END); }
+      else if(st.pos<=0){ st.pos=0; st.dir=1; pause(st,PAUSE_AT_END); }
+      el.scrollLeft=st.pos; st.last=el.scrollLeft;
+    });
+    requestAnimationFrame(tick);
+  }
+
+  /* --- 3. suivre les nouvelles publications affichées par le site --- */
+  function refresh(){ reveal(document.body); scan(); }
+  if('MutationObserver' in window){
+    var mo=new MutationObserver(function(){ clearTimeout(refresh.t); refresh.t=setTimeout(refresh,60); });
+    ['list','catRows','hLatest','welcome'].forEach(function(id){ var n=document.getElementById(id); if(n) mo.observe(n,{childList:true,subtree:true}); });
+  }
+  window.addEventListener('resize',function(){ clearTimeout(refresh.t); refresh.t=setTimeout(refresh,200); });
+  refresh(); requestAnimationFrame(tick);
 })();
 </script>
 </body>
