@@ -4757,7 +4757,9 @@ body:not(.landing) .brand b{font-size:clamp(1.05rem,4.6vw,1.7rem)}
   scrollbar-width:none;cursor:grab;padding:8px 4px 24px;margin:-8px -4px -24px}
 .hl-grid::-webkit-scrollbar{display:none}
 .hl-grid.drag{cursor:grabbing}
-.hl-grid .hl-card{flex:0 0 min(220px,62vw);width:auto;-webkit-user-select:none;user-select:none}
+.hl-grid .hl-card{flex:0 0 min(280px,74vw);width:min(280px,74vw);max-width:min(280px,74vw);min-width:0;-webkit-user-select:none;user-select:none}
+.hl-grid .hl-card .ph{height:auto;aspect-ratio:1/1;border-radius:18px}
+.hl-grid .hl-card .b{min-width:0}
 
 /* ===== Accueil : le signe « + » du bouton jaune redevient visible ===== */
 body.landing .post svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
@@ -4772,7 +4774,7 @@ body.landing .post{background:#fff;color:var(--forest,#a2501a);border:1.5px soli
   if(!g||!sec) return;
   var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
   var SPEED=38;                         /* pixels par seconde */
-  var half=0, pos=0, last=0, raf=0, hover=false, touch=false, down=false, moved=false, sx=0, sl=0, visible=true, hold=0, sig=null, busy=false, timer=0;
+  var half=0, pos=0, last=0, raf=0, hover=false, touch=false, down=false, moved=false, sx=0, sl=0, visible=true, hold=0, sig=null, busy=false, again=false, timer=0;
 
   function cardHtml(a){
     var p0=cssUrl(a.photos&&a.photos[0]);
@@ -4796,7 +4798,7 @@ body.landing .post{background:#fff;color:var(--forest,#a2501a);border:1.5px soli
   function start(){ if(!raf&&half) raf=requestAnimationFrame(step); }
 
   async function render(){
-    if(busy) return; busy=true;
+    if(busy){ again=true; return; } busy=true;
     try{
       for(var n=0;n<30&&!sbReady;n++) await new Promise(function(r){setTimeout(r,300);});
       if(!sbReady) return;
@@ -4817,12 +4819,10 @@ body.landing .post{background:#fff;color:var(--forest,#a2501a);border:1.5px soli
         });
         measure(); start();
       }
-    }catch(e){} finally{ busy=false; }
+    }catch(e){} finally{ busy=false; if(again){ again=false; render(); } }
   }
 
-  /* pause quand la souris est dessus ou quand on touche, puis reprise */
-  g.addEventListener('mouseenter',function(){ hover=true; });
-  g.addEventListener('mouseleave',function(){ hover=false; });
+  /* pause seulement quand on touche, on glisse ou on fait défiler, puis reprise */
   g.addEventListener('touchstart',function(){ touch=true; },{passive:true});
   function endTouch(){ touch=false; hold=performance.now()+2500; }
   g.addEventListener('touchend',endTouch,{passive:true});
