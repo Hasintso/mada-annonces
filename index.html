@@ -4762,6 +4762,36 @@ body.landing header .dots .dotl{color:#fff;text-shadow:0 1px 4px rgba(40,15,0,.6
   font-weight:400;letter-spacing:.07em}
 body:not(.landing) .brand b{font-size:clamp(1.05rem,4.6vw,1.7rem)}
 .rg-brand{font-size:1.9rem}
+
+/* ===== Accueil : « Dernières annonces » sur une seule ligne qu'on fait glisser à gauche / droite ===== */
+.hl-grid{display:flex;flex-wrap:nowrap;gap:14px;overflow-x:auto;overflow-y:hidden;
+  scroll-snap-type:x proximity;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;cursor:grab;padding:8px 4px 24px;margin:-8px -4px -24px}
+.hl-grid::-webkit-scrollbar{display:none}
+.hl-grid.drag{cursor:grabbing;scroll-snap-type:none}
+.hl-grid .hl-card{flex:0 0 min(220px,62vw);width:auto;scroll-snap-align:start;-webkit-user-select:none;user-select:none}
+
+/* ===== Accueil : le signe « + » du bouton jaune redevient visible ===== */
+body.landing .post svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
 </style>
+<script>
+/* Glisser la ligne « Dernières annonces » à la souris (au doigt, le défilement est natif) */
+(function(){
+  var g=document.getElementById('hlGrid'); if(!g) return;
+  var down=false, moved=false, sx=0, sl=0;
+  g.addEventListener('pointerdown',function(e){
+    if(e.pointerType!=='mouse'||e.button!==0) return;
+    down=true; moved=false; sx=e.clientX; sl=g.scrollLeft;
+  });
+  window.addEventListener('pointermove',function(e){
+    if(!down) return;
+    var dx=e.clientX-sx;
+    if(!moved&&Math.abs(dx)>5){ moved=true; g.classList.add('drag'); }
+    if(moved) g.scrollLeft=sl-dx;
+  });
+  window.addEventListener('pointerup',function(){ if(!down) return; down=false; g.classList.remove('drag'); });
+  g.addEventListener('click',function(e){ if(moved){ e.stopPropagation(); e.preventDefault(); moved=false; } },true);
+})();
+</script>
 </body>
 </html>
