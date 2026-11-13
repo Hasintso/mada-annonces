@@ -1395,7 +1395,7 @@ body:not(.landing) #allHead:not([hidden])+#list.grid>.sl-info,body:not(.landing)
 <!-- Choix du profil (affiché en premier à chaque nouveau visiteur) -->
 <div id="roleGate" hidden role="dialog" aria-modal="true" aria-labelledby="rgTitle">
   <div class="rg-in">
-    <p class="rg-brand">Bustoplay</p>
+    <p class="rg-brand" aria-label="Bustoplay">𝐁𝐔𝐒𝐓𝐎𝐏𝐋𝐀𝐘</p>
     <h1 id="rgTitle">Qui êtes-vous ?</h1>
     <p class="rg-sub">Choisissez comment vous voulez utiliser le site. Un compte correspond à un seul profil.</p>
     <div class="rg-cards" id="rgCards" role="radiogroup" aria-label="Choisissez votre profil">
@@ -1433,7 +1433,7 @@ body:not(.landing) #allHead:not([hidden])+#list.grid>.sl-info,body:not(.landing)
      <span class="bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="dotl">MENU</span>
     </button>
    </div>
-   <div class="logo" id="logo" role="button" tabindex="0" title="Retour à l'accueil" aria-label="Accueil"><span id="typed"></span><span class="brand"><b>Bustoplay</b></span></div>
+   <div class="logo" id="logo" role="button" tabindex="0" title="Retour à l'accueil" aria-label="Accueil"><span id="typed"></span><span class="brand"><b aria-label="Bustoplay">𝐁𝐔𝐒𝐓𝐎𝐏𝐋𝐀𝐘</b></span></div>
    <div class="tick" id="tick" aria-label="Bustoplay vous propose un grand service pour élargir et booster votre vente"><div class="tick-in"><div class="tick-track" id="tickTrack"></div></div></div>
    <div class="links">
    </div>
@@ -4740,5 +4740,27 @@ body:not(.landing) .shell .side{top:calc(var(--hh,76px) + var(--sh,0px) + 14px);
   upd();
 })();
 </script>
+<style id="menuPremiumCss">
+/* ===== Bouton menu : carré arrondi marron premium, 3 barres alignées, sans fond blanc ===== */
+header .dots{background:none;border:0;box-shadow:none;gap:5px;min-width:0;padding:2px 4px;filter:none}
+header .dots .bars{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  width:46px;height:46px;border-radius:14px;
+  background:linear-gradient(145deg,var(--forest),var(--forest2));
+  box-shadow:0 4px 10px rgba(80,35,5,.35),inset 0 1px 0 rgba(255,255,255,.22);
+  transition:transform .15s,box-shadow .15s}
+header .dots .bars i{display:block;width:22px;height:3px;border-radius:3px;background:#fff;box-shadow:none}
+header .dots:hover .bars{transform:translateY(-2px);box-shadow:0 7px 14px rgba(80,35,5,.4),inset 0 1px 0 rgba(255,255,255,.22)}
+header .dots:active .bars{transform:translateY(1px);box-shadow:0 2px 5px rgba(80,35,5,.35)}
+header .dots .dotl{font-size:.64rem;font-weight:800;letter-spacing:.08em;color:var(--ink)}
+body.landing header .dots .dotl{color:#fff;text-shadow:0 1px 4px rgba(40,15,0,.65)}
+@media(max-width:480px){header .dots .bars{width:42px;height:42px;border-radius:13px}header .dots .bars i{width:20px}}
+
+/* ===== Nom du site en lettres grasses 𝐁𝐔𝐒𝐓𝐎𝐏𝐋𝐀𝐘 ===== */
+.brand b,body:not(.landing) .brand b,.rg-brand{
+  font-family:"Segoe UI Symbol","Cambria Math","Noto Sans Math","Noto Sans Symbols 2","Apple Symbols","STIX Two Math",system-ui,sans-serif;
+  font-weight:400;letter-spacing:.07em}
+body:not(.landing) .brand b{font-size:clamp(1.05rem,4.6vw,1.7rem)}
+.rg-brand{font-size:1.9rem}
+</style>
 </body>
 </html>
