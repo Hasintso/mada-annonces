@@ -4811,6 +4811,33 @@ body.landing .post{background:#fff;color:var(--forest,#a2501a);border:1.5px soli
 .catbar .cb-chip:hover::after,.catbar .cb-chip:focus-visible::after,.catbar .cb-chip.on::after{transform:scaleX(1)}
 .catbar .cb-chip.on{color:var(--forest)}
 .catbar .cb-chip.on .cb-n{opacity:.7}
+
+/* ===== v32.4 · Bouton « Toutes catégories » (barre de recherche) : style premium bleu marine + or ===== */
+@keyframes bpShine{0%,55%{background-position:160% 0,0 0,0 0}100%{background-position:-60% 0,0 0,0 0}}
+@keyframes bpNudge{0%,100%{transform:translate(0,-50%)}50%{transform:translate(4px,-50%)}}
+.search form .csel{border:0;border-radius:0;width:212px}
+.search form .csel #cselBtn{position:relative;height:42px;width:100%;padding:0 38px 0 46px;gap:0;justify-content:flex-start;cursor:pointer;color:#fff;
+  border:2.5px solid transparent;border-radius:999px;
+  background-image:linear-gradient(105deg,transparent 42%,rgba(255,255,255,.4) 50%,transparent 58%),linear-gradient(160deg,#0d3b8f 0%,#06235f 48%,#031238 100%),linear-gradient(135deg,#fff3a8,#f7c81c 26%,#a87400 50%,#ffe27a 74%,#d49a0a);
+  background-origin:padding-box,padding-box,border-box;background-clip:padding-box,padding-box,border-box;
+  background-size:250% 100%,100% 100%,100% 100%;background-repeat:no-repeat;background-position:160% 0,0 0,0 0;
+  box-shadow:0 3px 10px rgba(4,22,63,.45),0 0 0 1px rgba(168,116,0,.35);
+  transition:transform .25s ease,box-shadow .25s ease;animation:bpShine 4.5s ease-in-out infinite}
+.search form .csel #cselBtn:hover{transform:translateY(-2px) scale(1.04);box-shadow:0 9px 22px rgba(4,22,63,.55),0 0 18px rgba(255,200,40,.6)}
+.search form .csel #cselBtn:active{transform:scale(.97)}
+.search form .csel #cselBtn:focus-visible{outline:3px solid #ffd23f;outline-offset:3px}
+/* pastille ronde à gauche avec les 4 carrés */
+.search form .csel #cselBtn::before{content:"";position:absolute;left:3px;top:50%;width:31px;height:31px;margin-top:-15.5px;border-radius:50%;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='white'%3E%3Crect x='3' y='3' width='8' height='8' rx='2.4'/%3E%3Crect x='13' y='3' width='8' height='8' rx='2.4'/%3E%3Crect x='3' y='13' width='8' height='8' rx='2.4'/%3E%3Crect x='13' y='13' width='8' height='8' rx='2.4'/%3E%3C/g%3E%3C/svg%3E") center/54% no-repeat,radial-gradient(circle at 35% 30%,#1a52b8,#06235f 70%);
+  border:2px solid #f2c230;box-shadow:inset 0 0 6px rgba(0,0,0,.5),0 0 6px rgba(255,205,60,.5)}
+/* double chevron doré à droite */
+.search form .csel #cselBtn::after{content:"";position:absolute;right:11px;top:50%;width:17px;height:17px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffcf3a' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 5l7 7-7 7M13 5l7 7-7 7'/%3E%3C/svg%3E") center/contain no-repeat;
+  transform:translate(0,-50%);animation:bpNudge 1.6s ease-in-out infinite}
+/* texte : 1re ligne blanche, suite en or */
+.search form .csel #cselLbl{display:block;width:7.2em;max-height:2.15em;overflow:hidden;white-space:normal;text-overflow:clip;text-transform:capitalize;
+  font:italic 900 .8rem/1.04 Poppins,Nunito,system-ui,sans-serif;color:#ffd23f;letter-spacing:.1px;text-shadow:0 1px 0 #7a5200,0 2px 5px rgba(0,0,0,.5)}
+.search form .csel #cselLbl::first-line{color:#fff;text-shadow:0 1px 0 #001a5c,0 2px 5px rgba(0,0,0,.55)}
+@media(max-width:700px){.search form .csel{width:auto}}
 </style>
 <script>
 /* ===== hlLoop : « Dernières annonces » de l'accueil — TOUTES les annonces défilent en boucle (animation du navigateur) ===== */
