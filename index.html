@@ -4952,6 +4952,35 @@ body:not(.landing) .brand b.bp-word{display:inline-flex;align-items:center;gap:0
 .crow-a::before{content:"";display:block;width:18px;height:18px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 5l7 7-7 7'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 5l7 7-7 7'/%3E%3C/svg%3E") center/contain no-repeat}
 .crow-a[data-dir="-1"]::before{transform:rotate(180deg)}
 @media(max-width:560px){.crow-h .crow-t{font-size:1.2rem;text-shadow:none}.crow-h .crow-n{min-width:30px;height:30px;font-size:.9rem}.crow-h::after{height:9px}}
+
+/* ===== v32.9 · Cartes d'annonces plus compactes (plus étroites, plus basses) : accueil par catégorie, liste « Tout » et résultats filtrés ===== */
+.crow-l>.ad{flex:0 0 168px;width:168px}
+body:not(.landing) #allHead:not([hidden])+#list.grid>.ad{flex:0 0 168px;width:168px;max-width:168px}
+@media(min-width:561px){body:not(.landing) .grid{grid-template-columns:repeat(auto-fill,minmax(168px,176px));gap:12px}}
+@media(max-width:560px){.crow-l>.ad{flex-basis:150px;width:150px}body:not(.landing) #allHead:not([hidden])+#list.grid>.ad{flex-basis:150px;width:150px;max-width:150px}}
+.crow-l,body:not(.landing) #allHead:not([hidden])+#list.grid{gap:12px}
+/* photo plus basse, étiquette de catégorie plus fine */
+.ad .ph{aspect-ratio:4/3}
+body:not(.landing) .ad .tag{top:7px;left:7px;font-size:.68rem;padding:2px 8px}
+/* texte */
+body:not(.landing) .ad .b,.crow-l>.ad .b,#allHead:not([hidden])+#list>.ad .b{padding:8px 9px 8px!important;gap:2px}
+body:not(.landing) .ad .price,.crow-l>.ad .price,#allHead:not([hidden])+#list>.ad .price{font-size:.88rem!important;letter-spacing:-.025em;white-space:nowrap}
+body:not(.landing) .ad h3,.crow-l>.ad h3,#allHead:not([hidden])+#list>.ad h3{font-size:.8rem!important;min-height:2.4em;line-height:1.2}
+body:not(.landing) .ad .meta,.crow-l>.ad .meta,#allHead:not([hidden])+#list>.ad .meta{font-size:.68rem;padding-top:3px}
+/* petit rond du vendeur */
+.ad .b .sav{width:34px;height:34px;top:8px;right:8px}
+.ad .b.hasav .price,.ad .b.hasav h3{padding-right:40px}
+.ad .b .arl{top:45px;right:-3px;font-size:.58rem}
+/* boutons : « appeler » sur toute la largeur, puis message · panier · Commander sur UNE seule ligne */
+.ad .cact{gap:5px;padding:0 8px 8px}
+.ad .cact .cb{font-size:.7rem}
+.ad .cact .cb.call{order:0;flex:1 1 100%;height:28px;padding:0 8px}
+.ad .cact .cb.msgb{order:1}
+.ad .cact .cb.cartb{order:2}
+.ad .cact .cb.ic{width:30px;height:30px}
+.ad .cact .cb.ic svg{width:14px;height:14px}
+.ad .cact .cb.order{order:3;flex:1 1 0;min-width:0;height:30px;padding:0 4px;white-space:nowrap}
+@media(max-width:560px){.ad .cact .cb.order{font-size:.66rem}}
 </style>
 <script>
 /* ===== hlLoop : « Dernières annonces » de l'accueil — TOUTES les annonces défilent en boucle (animation du navigateur) ===== */
