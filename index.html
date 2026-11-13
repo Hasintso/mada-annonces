@@ -4741,19 +4741,20 @@ body:not(.landing) .shell .side{top:calc(var(--hh,76px) + var(--sh,0px) + 14px);
 })();
 </script>
 <style id="menuPremiumCss">
-/* ===== Bouton menu : carré arrondi marron premium, 3 barres alignées, sans fond blanc ===== */
-header .dots{background:none;border:0;box-shadow:none;gap:5px;min-width:0;padding:2px 4px;filter:none}
-header .dots .bars{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
-  width:46px;height:46px;border-radius:14px;
-  background:linear-gradient(145deg,var(--forest),var(--forest2));
-  box-shadow:0 4px 10px rgba(80,35,5,.35),inset 0 1px 0 rgba(255,255,255,.22);
-  transition:transform .15s,box-shadow .15s}
-header .dots .bars i{display:block;width:22px;height:3px;border-radius:3px;background:#fff;box-shadow:none}
-header .dots:hover .bars{transform:translateY(-2px);box-shadow:0 7px 14px rgba(80,35,5,.4),inset 0 1px 0 rgba(255,255,255,.22)}
-header .dots:active .bars{transform:translateY(1px);box-shadow:0 2px 5px rgba(80,35,5,.35)}
+/* ===== Bouton menu : 3 barres alignées à gauche (longue, moyenne, courte), sans carré ni fond ===== */
+header .dots{background:none;border:0;box-shadow:none;gap:6px;min-width:0;padding:4px 6px;filter:none;color:var(--forest);-webkit-tap-highlight-color:transparent}
+header .dots .bars{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:6px;
+  width:34px;height:auto;border-radius:0;background:none;box-shadow:none;transition:transform .15s}
+header .dots .bars i{display:block;height:4px;border-radius:4px;background:currentColor;box-shadow:none}
+header .dots .bars i:nth-child(1){width:34px}
+header .dots .bars i:nth-child(2){width:24px}
+header .dots .bars i:nth-child(3){width:14px}
+header .dots:hover .bars{transform:translateY(-2px)}
+header .dots:active .bars{transform:translateY(1px)}
 header .dots .dotl{font-size:.64rem;font-weight:800;letter-spacing:.08em;color:var(--ink)}
+body.landing header .dots{color:#fff;filter:drop-shadow(0 2px 3px rgba(40,15,0,.55))}
 body.landing header .dots .dotl{color:#fff;text-shadow:0 1px 4px rgba(40,15,0,.65)}
-@media(max-width:480px){header .dots .bars{width:42px;height:42px;border-radius:13px}header .dots .bars i{width:20px}}
+@media(max-width:480px){header .dots .bars{width:30px}header .dots .bars i:nth-child(1){width:30px}header .dots .bars i:nth-child(2){width:21px}header .dots .bars i:nth-child(3){width:12px}}
 
 /* ===== Nom du site en lettres grasses 𝐁𝐔𝐒𝐓𝐎𝐏𝐋𝐀𝐘 ===== */
 .brand b,body:not(.landing) .brand b,.rg-brand{
