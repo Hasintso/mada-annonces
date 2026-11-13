@@ -2643,7 +2643,7 @@ function renderCatBar() {
   const bar = $('catBar'); if (!bar || !bar.children.length) return;
   let act = null;
   bar.querySelectorAll('.cb-chip').forEach(b => { const on = (b.dataset.key || '') === (needKey || ''); b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); if (on) act = b; });
-  if (act && needKey && bar.dataset.act !== needKey) bar.scrollTo({ left: Math.max(0, act.offsetLeft - 40), behavior: 'smooth' });
+  if (act && needKey && bar.dataset.act !== needKey && !bar.hasAttribute('data-hovkey')) bar.scrollTo({ left: Math.max(0, act.offsetLeft - 40), behavior: 'smooth' });
   bar.dataset.act = needKey || '';
   const box = $('catFilters'); box.hidden = !needKey;
   if (!needKey) return;
@@ -4802,6 +4802,15 @@ body.landing .post{background:#fff;color:var(--forest,#a2501a);border:1.5px soli
 #cats .grp.hov>.subs.pm .sb:nth-child(1),#cats .grp:has(>button.open)>.subs.pm .sb:nth-child(1){transition-delay:.06s}
 #cats .grp.hov>.subs.pm .sb:nth-child(2),#cats .grp:has(>button.open)>.subs.pm .sb:nth-child(2){transition-delay:.14s}
 #cats .subs.pm .sb:hover{transform:translateX(4px)}
+
+/* ===== v32.3 · Barre de catégories du haut : sans forme autour, simplement soulignée ===== */
+.catbar{gap:18px}
+.catbar .cb-chip,.catbar .cb-chip:not(.on),.catbar .cb-chip.on,.catbar .cb-chip:hover{background:transparent;border:0;border-radius:0;box-shadow:none;padding:9px 3px;position:relative;color:var(--ink);transition:color .2s,transform .2s}
+.catbar .cb-chip::after{content:"";position:absolute;left:3px;right:3px;bottom:2px;height:3px;border-radius:3px;background:var(--forest);transform:scaleX(0);transform-origin:left center;transition:transform .35s cubic-bezier(.2,.75,.25,1)}
+.catbar .cb-chip:hover,.catbar .cb-chip:focus-visible{color:var(--forest);transform:translateY(-1px)}
+.catbar .cb-chip:hover::after,.catbar .cb-chip:focus-visible::after,.catbar .cb-chip.on::after{transform:scaleX(1)}
+.catbar .cb-chip.on{color:var(--forest)}
+.catbar .cb-chip.on .cb-n{opacity:.7}
 </style>
 <script>
 /* ===== hlLoop : « Dernières annonces » de l'accueil — TOUTES les annonces défilent en boucle (animation du navigateur) ===== */
@@ -5044,6 +5053,33 @@ body.landing .post{background:#fff;color:var(--forest,#a2501a);border:1.5px soli
     box.addEventListener('mouseleave',function(){ clearTimeout(closeT); closeT=setTimeout(function(){ setHov(null); },300); });
     /* écran tactile : un appui ouvre aussi le sous-menu */
     box.addEventListener('touchstart',function(e){ var g=e.target.closest?e.target.closest('.grp'):null; if(g){ clearTimeout(closeT); setHov(g); } },{passive:true});
+  })();
+
+
+  /* --- 6. barre de catégories du haut : le filtre s'applique quand la souris se pose dessus (plus besoin de cliquer) --- */
+  (function(){
+    var bar=document.getElementById('catBar'); if(!bar) return;
+    var DELAY=170, timer=0;   /* délai (ms) : évite de lancer un filtre quand la souris ne fait que traverser la barre */
+    function curKey(){ try{ return needKey||''; }catch(e){ return ''; } }
+    bar.addEventListener('mouseover',function(e){
+      var b=e.target.closest?e.target.closest('.cb-chip'):null; if(!b) return;
+      clearTimeout(timer);
+      timer=setTimeout(function(){
+        var key=b.dataset.key||'';
+        if(key===curKey()) return;                         /* déjà le filtre affiché */
+        bar.setAttribute('data-hovkey','k:'+key);          /* ce filtre vient du survol : le clic qui suit ne doit pas l'annuler */
+        b.click();
+      },DELAY);
+    });
+    bar.addEventListener('mouseout',function(e){
+      var b=e.target.closest?e.target.closest('.cb-chip'):null; if(!b) return;
+      if(e.relatedTarget&&b.contains(e.relatedTarget)) return;
+      clearTimeout(timer); if(bar.getAttribute('data-hovkey')==='k:'+(b.dataset.key||'')) bar.removeAttribute('data-hovkey');
+    });
+    bar.addEventListener('click',function(e){
+      var b=e.target.closest?e.target.closest('.cb-chip'):null;
+      if(b&&e.isTrusted&&bar.getAttribute('data-hovkey')==='k:'+(b.dataset.key||'')){ e.stopImmediatePropagation(); e.preventDefault(); }
+    },true);
   })();
 
   /* --- 3. suivre les nouvelles publications affichées par le site --- */
