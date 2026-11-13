@@ -4783,6 +4783,25 @@ body.landing .post{background:#fff;color:var(--forest,#a2501a);border:1.5px soli
 .crow-l.auto,#list.auto{scroll-snap-type:none!important}
 .crow-l>.ad,#list>.ad{transition:transform .25s ease,box-shadow .25s ease,border-color .15s}
 .crow-l>.ad:hover,#list>.ad:hover{transform:translateY(-4px);box-shadow:0 10px 22px rgba(42,23,11,.22)}
+
+/* ===== v32.2 · Liste de gauche « Ici votre besoin » : le sous-menu (mono / multi) s'ouvre au survol, avec animation ===== */
+@keyframes bpSlideIn{from{opacity:0;transform:translateX(-22px)}to{opacity:1;transform:none}}
+#cats .grp{animation:bpSlideIn .5s cubic-bezier(.2,.75,.25,1) backwards}
+#cats .grp:nth-child(1){animation-delay:.02s}#cats .grp:nth-child(2){animation-delay:.07s}#cats .grp:nth-child(3){animation-delay:.12s}
+#cats .grp:nth-child(4){animation-delay:.17s}#cats .grp:nth-child(5){animation-delay:.22s}#cats .grp:nth-child(6){animation-delay:.27s}
+#cats .grp:nth-child(7){animation-delay:.32s}#cats .grp:nth-child(8){animation-delay:.37s}
+#cats .grp>button{transition:background .2s,transform .25s ease,box-shadow .25s ease}
+#cats .grp:hover>button:not(.on),#cats .grp.hov>button:not(.on){transform:translateX(5px);background:#fbeedd;box-shadow:0 4px 12px rgba(120,55,10,.14)}
+#cats .grp.hov>button::before,#cats .grp:has(>button.open)>button::before{rotate:90deg}
+/* le sous-menu est toujours présent mais replié ; il se déplie au survol (ou quand la catégorie est choisie) */
+#cats .grp>.subs.pm,#cats .grp>.subs.pm[hidden]{display:flex;overflow:hidden;max-height:0;opacity:0;margin-top:0;margin-bottom:0;transform:translateY(-8px);pointer-events:none;
+  transition:max-height .38s cubic-bezier(.2,.75,.25,1),opacity .3s ease,transform .35s ease,margin .3s ease}
+#cats .grp.hov>.subs.pm,#cats .grp:focus-within>.subs.pm,#cats .grp:has(>button.open)>.subs.pm{max-height:130px;opacity:1;transform:none;margin-top:2px;margin-bottom:6px;pointer-events:auto}
+#cats .subs.pm .sb{opacity:0;transform:translateX(-14px);transition:opacity .3s ease,transform .35s ease,background .2s}
+#cats .grp.hov>.subs.pm .sb,#cats .grp:focus-within>.subs.pm .sb,#cats .grp:has(>button.open)>.subs.pm .sb{opacity:1;transform:none}
+#cats .grp.hov>.subs.pm .sb:nth-child(1),#cats .grp:has(>button.open)>.subs.pm .sb:nth-child(1){transition-delay:.06s}
+#cats .grp.hov>.subs.pm .sb:nth-child(2),#cats .grp:has(>button.open)>.subs.pm .sb:nth-child(2){transition-delay:.14s}
+#cats .subs.pm .sb:hover{transform:translateX(4px)}
 </style>
 <script>
 /* ===== hlLoop : « Dernières annonces » de l'accueil — TOUTES les annonces défilent en boucle (animation du navigateur) ===== */
@@ -5010,6 +5029,21 @@ body.landing .post{background:#fff;color:var(--forest,#a2501a);border:1.5px soli
       lastX=cur;
       if(still>=2){ takeOver(t); still=0; lastX=null; }
     },1500);
+  })();
+
+
+  /* --- 5. liste de gauche : le sous-menu s'ouvre quand la souris passe sur la catégorie (plus besoin de cliquer) --- */
+  (function(){
+    var box=document.getElementById('cats'); if(!box) return;
+    var closeT=0;
+    function setHov(g){ box.querySelectorAll('.grp.hov').forEach(function(x){ if(x!==g) x.classList.remove('hov'); }); if(g) g.classList.add('hov'); }
+    box.addEventListener('mouseover',function(e){
+      var g=e.target.closest?e.target.closest('.grp'):null; if(!g) return;
+      clearTimeout(closeT); setHov(g);
+    });
+    box.addEventListener('mouseleave',function(){ clearTimeout(closeT); closeT=setTimeout(function(){ setHov(null); },300); });
+    /* écran tactile : un appui ouvre aussi le sous-menu */
+    box.addEventListener('touchstart',function(e){ var g=e.target.closest?e.target.closest('.grp'):null; if(g){ clearTimeout(closeT); setHov(g); } },{passive:true});
   })();
 
   /* --- 3. suivre les nouvelles publications affichées par le site --- */
