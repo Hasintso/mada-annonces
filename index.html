@@ -5310,5 +5310,84 @@ body:not(.landing) .ad .meta,.crow-l>.ad .meta,#allHead:not([hidden])+#list>.ad 
 #menuList .mver{margin:14px 20px 0;text-align:center;font-size:.8rem}
 #menuList .mver::after{content:"♥";display:block;margin-top:6px;color:#e53935;font-size:1.05rem}
 </style>
+<style id="menuStyleV33b">
+/* ===== v33.1 · (1) en-tête du menu en orange · (2) animations du menu · (3) en-têtes « Tout » / catégories plus compacts ===== */
+
+/* --- 1) En-tête orange comme la maquette --- */
+#menuList .ddhead{background:linear-gradient(120deg,#ff8f1f,#f7650f 50%,#ff8f1f);background-size:200% 200%}
+#menuList .ddhead::before{content:"";position:absolute;left:0;right:0;bottom:20px;height:44px;background:rgba(255,255,255,.2);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 20' preserveAspectRatio='none'%3E%3Cpath d='M0 6C25 -2 45 16 70 8S92 0 100 4V20H0Z' fill='black'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 20' preserveAspectRatio='none'%3E%3Cpath d='M0 6C25 -2 45 16 70 8S92 0 100 4V20H0Z' fill='black'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat;pointer-events:none}
+#menuList .ddbag,#menuList .ddtitle{position:relative;z-index:1}
+#menuList .ddbag,#menuList .ddx{color:#f7650f}
+
+/* --- 2) Animations --- */
+@keyframes mnIn{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:none}}
+@keyframes mnDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+@keyframes mnPop{0%{opacity:0;transform:scale(.3) rotate(-25deg)}60%{opacity:1;transform:scale(1.15) rotate(6deg)}100%{opacity:1;transform:none}}
+@keyframes mnSpin{from{opacity:0;transform:rotate(-180deg) scale(.4)}to{opacity:1;transform:none}}
+@keyframes mnFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes mnGrad{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes mnBeat{0%,100%{transform:scale(1)}14%{transform:scale(1.28)}28%{transform:scale(1)}42%{transform:scale(1.2)}70%{transform:scale(1)}}
+@keyframes mnShine{0%{transform:translateX(-130%) skewX(-20deg)}55%,100%{transform:translateX(330%) skewX(-20deg)}}
+@keyframes mnWiggle{0%,100%{transform:none}25%{transform:rotate(-14deg) scale(1.18)}60%{transform:rotate(10deg) scale(1.18)}}
+@keyframes mnWave{0%,100%{transform:translateX(0)}50%{transform:translateX(-14px)}}
+
+/* en-tête : sac qui rebondit puis flotte, croix qui tourne, titre qui glisse, dégradé qui respire, vague qui ondule */
+#menuList.show .ddhead{animation:mnGrad 7s ease-in-out infinite}
+#menuList.show .ddhead::before{left:-20px;right:-20px;animation:mnWave 5s ease-in-out infinite}
+#menuList.show .ddbag{animation:mnPop .65s cubic-bezier(.2,.9,.3,1.2) .15s backwards,mnFloat 3.2s ease-in-out .9s infinite}
+#menuList.show .ddtitle{animation:mnIn .5s ease .22s backwards}
+#menuList.show .ddx{animation:mnSpin .55s ease .3s backwards}
+#menuList .ddx{transition:transform .25s ease}
+#menuList .ddx:hover{transform:rotate(90deg) scale(1.08)}
+
+/* ordre d'apparition : rubrique par rubrique, ligne par ligne (déclenché à chaque ouverture du menu) */
+#menuList .mg:nth-child(3){--g:1}#menuList .mg:nth-child(4){--g:2}#menuList .mg:nth-child(5){--g:3}#menuList .mg:nth-child(6){--g:4}
+#menuList .mg>:nth-child(2){--i:1}#menuList .mg>:nth-child(3){--i:2}#menuList .mg>:nth-child(4){--i:3}#menuList .mg>:nth-child(5){--i:4}#menuList .mg>:nth-child(6){--i:5}#menuList .mg>:nth-child(7){--i:6}#menuList .mg>:nth-child(8){--i:7}
+#menuList.mn-first .mg>*,#menuList.mn-first .mg.open>:not(.mgt){animation:mnIn .5s cubic-bezier(.2,.8,.2,1) backwards;animation-delay:calc(.3s + var(--g,0)*.08s + var(--i,0)*.055s)}
+#menuList.mn-first .mver{animation:mnIn .5s ease 1s backwards}
+/* ouverture d'une rubrique ou d'« Apparence » : les lignes tombent en douceur */
+#menuList .mg.open>:not(.mgt){animation:mnDown .35s ease backwards;animation-delay:calc(var(--i,0)*.045s)}
+#menuList .pref.open .pref-b{animation:mnDown .4s ease backwards}
+
+/* survol / appui : la ligne glisse, le picto se dandine */
+#menuList .mg>button,#menuList .mg>a,#menuList .pref-t{transition:background .15s,transform .2s ease}
+#menuList .mg>button:hover,#menuList .mg>a:hover,#menuList .pref-t:hover{transform:translateX(5px)}
+#menuList .mg>button:active,#menuList .mg>a:active,#menuList .pref-t:active{transform:scale(.97)}
+#menuList .mg>button:hover::before,#menuList .mg>a:hover::before,#menuList .pref-t:hover::before,#menuList .mgt:hover::before{animation:mnWiggle .5s ease}
+#menuList .mgt{transition:background .15s}
+#menuList .mgt:hover{background:rgba(162,80,26,.06);background:color-mix(in srgb,var(--forest) 7%,transparent)}
+#menuList .mgt::after{transition:transform .35s cubic-bezier(.4,1.5,.5,1),margin .35s}
+
+/* connexion / déconnexion : reflet qui passe, appui qui s'enfonce ; cœur qui bat */
+#menuList .mg>.mnout{position:relative;overflow:hidden;transition:transform .2s ease,filter .2s ease}
+#menuList .mg>.mnout::after{content:"";position:absolute;top:0;bottom:0;left:0;width:38%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent);pointer-events:none;animation:mnShine 3.6s ease-in-out 1.3s infinite}
+#menuList .mg>.mnout:hover{transform:translateY(-2px)}
+#menuList .mg>.mnout:active,#menuList .mg>#mnSignup:active{transform:scale(.96)}
+#menuList .mg>#mnSignup{transition:transform .2s ease,background .2s ease,color .2s ease}
+#menuList .mg>#mnSignup:hover{transform:translateY(-2px);background:var(--forest);color:#fff}
+#menuList .mg>#mnSignup:hover::before{background:#fff}
+#menuList .mver::after{animation:mnBeat 1.7s ease-in-out infinite}
+@media(prefers-reduced-motion:reduce){#menuList,#menuList *,#menuList *::before,#menuList *::after{animation:none!important;transition:none!important}}
+
+/* --- 3) En-têtes « Tout 4 » / catégories : plus petits, moins d'espace perdu --- */
+.crows{margin-top:10px;padding-top:2px}
+.crow{margin:2px 0 4px}
+.crow-h{gap:9px;padding:6px 2px 2px}
+.crow-h .crow-t{font-size:clamp(1rem,1.7vw,1.15rem)}
+.crow-h .crow-t::before{width:1.2em;height:1.2em}
+.crow-h .crow-n{min-width:26px;height:26px;padding:0 8px;font-size:.8rem}
+.crow-h::after{height:7px;margin-left:4px}
+.crow-a{width:30px;height:30px}
+.crow-a::before{width:13px;height:13px}
+.crow-l{padding:2px 2px 10px}
+@media(max-width:560px){.crow-h .crow-t{font-size:1rem}.crow-h .crow-n{min-width:24px;height:24px;font-size:.78rem}.crow-h::after{height:6px}}
+</style>
+<script>
+/* Menu : relance l'animation d'apparition à chaque ouverture */
+(function(){
+  var b=document.getElementById('btnMenu'), m=document.getElementById('menuList'); if(!b||!m) return;
+  b.addEventListener('click',function(){ m.classList.remove('mn-first'); void m.offsetWidth; m.classList.add('mn-first'); clearTimeout(m._mnT); m._mnT=setTimeout(function(){ m.classList.remove('mn-first'); },1600); });
+})();
+</script>
 </body>
 </html>
