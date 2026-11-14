@@ -2435,9 +2435,11 @@ let _clSig = '';
 async function syncClientPublic() {
   try {
     if (!user || accountRole() !== 'client') return;
-    const d = clientData(), row = { user_id: user.id, nom: d.full_name || null, avatar_url: safeUrl(d.avatar_url) ? d.avatar_url : null, region: d.region || null };
+    const d = clientData(), base = { user_id: user.id, nom: d.full_name || null, avatar_url: safeUrl(d.avatar_url) ? d.avatar_url : null, region: d.region || null };
+    const row = Object.assign({}, base, { telephone: d.phone || null, email: d.email || null, cover_url: safeUrl(d.cover_url) ? d.cover_url : null, cree_le: (user && user.created_at) || null });
     const sig = JSON.stringify(row); if (sig === _clSig) return;
-    const { error } = await SB.from('ann_clients').upsert(row, { onConflict: 'user_id' });
+    let { error } = await SB.from('ann_clients').upsert(row, { onConflict: 'user_id' });
+    if (error) ({ error } = await SB.from('ann_clients').upsert(base, { onConflict: 'user_id' }));   /* colonnes pas encore ajoutées : on garde l'ancien comportement */
     if (!error) _clSig = sig;
   } catch (e) {}
 }
@@ -3482,6 +3484,7 @@ function renderClientView() {
     const { error } = await SB.auth.updateUser({ data: { cover_url: url } });
     if (error) throw error;
     user = (await SB.auth.getUser()).data.user || user;
+    _clSig = ''; syncClientPublic();
   };
   pcv.onclick = () => file.click();
   file.onchange = async e => {
@@ -3623,13 +3626,17 @@ const pfWave = '<span class="pf-wv" aria-hidden="true"></span><span class="pf-cr
 const fmtDay = d => new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 async function openShop(uid) {
   $('shopView').innerHTML = '<div class="pf-cover"></div><p style="color:var(--muted);padding:16px 20px">Chargement…</p>'; open('mShopView');
-  const [s, a] = await Promise.all([
+  const [s, a, cl] = await Promise.all([
     SB.from('ann_boutiques').select('*').eq('user_id', uid).maybeSingle(),
-    SB.from('ann_annonces').select('*, ann_categories(nom)').eq('user_id', uid).eq('statut', 'valide').order('cree_le', { ascending: false }).limit(100)]);
-  const shop = s.data || {}, list = a.data || [], nom = shop.nom || 'Vendeur', mine = !!(user && user.id === uid);
+    SB.from('ann_annonces').select('*, ann_categories(nom)').eq('user_id', uid).eq('statut', 'valide').order('cree_le', { ascending: false }).limit(100),
+    Promise.resolve(SB.from('ann_clients').select('*').eq('user_id', uid).maybeSingle()).catch(() => ({ data: null }))]);
+  /* pas de boutique mais un profil client public → on affiche le profil du client (et non « Vendeur / Non renseigné ») */
+  const isCl = !s.data && !!(cl && cl.data), cd = isCl ? cl.data : {};
+  const shop = s.data || (isCl ? { nom: cd.nom, avatar_url: cd.avatar_url, ville: cd.region, telephone: cd.telephone, email: cd.email, cree_le: cd.cree_le, cover_url: cd.cover_url } : {}),
+    list = a.data || [], nom = shop.nom || (isCl ? 'Client' : 'Vendeur'), mine = !!(user && user.id === uid);
   const tel = String(shop.telephone || '').replace(/[^\d+]/g, '');
   const since = shop.cree_le ? new Date(shop.cree_le).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }) : '';
-  const miss = shopMissing(shop), complete = !miss.length, gal = Array.isArray(shop.photos) ? shop.photos.filter(safeUrl) : [];
+  const miss = isCl ? [] : shopMissing(shop), complete = !miss.length && !isCl, gal = Array.isArray(shop.photos) ? shop.photos.filter(safeUrl) : [];
   const badges = [safeUrl(shop.avatar_url) ? '📷 Photo' : '', tel ? '📞 Téléphone' : '', shop.email ? '✉️ E-mail' : '', shop.description ? '📝 À propos' : '', gal.length >= SH_MINP ? '📸 ' + gal.length + ' photos' : '', since ? '🗓️ Membre depuis ' + since : '']
     .filter(Boolean);
   const firstAd = list[0];
@@ -3646,25 +3653,24 @@ async function openShop(uid) {
   const row = (ic, k, v) => `<div class="pf-row"><span class="pf-ri">${I(ic)}</span><span class="pf-k">${k}</span><span class="pf-v">${v}</span></div>`;
   $('shopView').innerHTML = `<div class="pf-cover" id="pfCover"${cov ? ` style="background-image:url('${cov}')"` : ''}>${covBar}${pfWave}
     <div class="pf-top"><div class="pf-av"><div class="shoplogo">${avatarHtml(shop.avatar_url, nom)}</div>${mine ? '<b class="pf-dot" title="En ligne"></b>' : ''}</div>
-      <div class="pf-id"><h2>${esc(nom)}</h2><div class="meta"><span class="pf-cr">${I('crown')}</span><span>${esc(shop.ville || 'Madagascar')} · ${list.length} publication${list.length > 1 ? 's' : ''}</span></div></div></div></div>
+      <div class="pf-id"><h2>${esc(nom)}</h2><div class="meta"><span class="pf-cr">${I('crown')}</span><span>${esc(shop.ville || 'Madagascar')} · ${isCl ? 'Client · ' : ''}${list.length} publication${list.length > 1 ? 's' : ''}</span></div></div></div></div>
   <div class="pf-body">
     ${complete ? `<div class="pf-ok"><span class="pf-okc">${I('check')}</span>Profil complet<b>${I('leaf')}100%</b></div>` : ''}
     <div class="pf-tiles">${tiles}</div>
     <div id="pfAbt" class="pf-about">
       <div class="pf-ah"><h3>${I('user')}À propos</h3>${mine ? `<button class="pf-mod" id="pfEdit" type="button">${I('edit')}Modifier</button>` : ''}</div>
-      <p class="pf-desc">${esc(shop.description || 'Non renseigné')}</p>
+      ${isCl ? '' : `<p class="pf-desc">${esc(shop.description || 'Non renseigné')}</p>`}
       <div class="pf-rows">
-        ${row('briefcase', 'Je vends', esc(shop.vend || 'Non renseigné'))}
-        ${row('pin', 'Lieu exact', esc(shop.ville || 'Non renseigné'))}
+        ${isCl ? row('user', 'Nom', esc(shop.nom || 'Non renseigné')) + row('pin', 'Région', esc(shop.ville || 'Non renseigné')) : row('briefcase', 'Je vends', esc(shop.vend || 'Non renseigné')) + row('pin', 'Lieu exact', esc(shop.ville || 'Non renseigné'))}
         ${row('phone', 'Téléphone', tel ? `<a href="tel:${esc(tel)}">${esc(shop.telephone)}</a>` : 'Non renseigné')}
         ${row('mail', 'E-mail', shop.email ? `<a href="mailto:${esc(shop.email)}">${esc(shop.email)}</a>` : 'Non renseigné')}
         ${row('calendar', 'Membre depuis', esc(since || '—'))}
       </div>
     </div>
-    <div class="pf-stats"><div><span>${I('briefcase')}Publications</span><b>${list.length}</b></div><div><span>${I('camera')}Photos</span><b>${gal.length}</b></div><div><span>${I('calendar')}Depuis</span><b>${esc(shortSince)}</b></div></div>
+    <div class="pf-stats"${isCl ? ' style="grid-template-columns:repeat(2,1fr)"' : ''}><div><span>${I('briefcase')}Publications</span><b>${list.length}</b></div>${isCl ? '' : `<div><span>${I('camera')}Photos</span><b>${gal.length}</b></div>`}<div><span>${I('calendar')}Depuis</span><b>${esc(shortSince)}</b></div></div>
     ${gal.length ? `<div class="pf-gh"><h3 class="pf-h">${I('image')}Photos de la boutique</h3>${gal.length > 4 ? `<button type="button" class="pf-all" id="pfGalAll">Voir tout ${I('arrow')}</button>` : ''}</div><div class="pf-gal" id="pfGal">${gal.map(u => `<a href="${esc(u)}" target="_blank" rel="noopener"><img src="${esc(u)}" alt="" loading="lazy"></a>`).join('')}</div>` : ''}
-    ${mine && !complete ? `<div class="pf-prog"><b>Profil complété à ${shopPct(shop)} %</b><div class="pf-bar"><i style="width:${shopPct(shop)}%"></i></div>Il manque : ${esc(miss.join(', '))}. Un profil complet est obligatoire pour publier et rassure les acheteurs.</div>` : ''}
-    <div class="pf-pubh"><span class="pf-pubic">${I('box')}</span><div><h3 class="pf-h">Publications (${list.length})</h3><p>${mine ? 'Gérez vos annonces facilement' : 'Les annonces de ce vendeur'}</p></div></div>
+    ${mine && !complete && !isCl ? `<div class="pf-prog"><b>Profil complété à ${shopPct(shop)} %</b><div class="pf-bar"><i style="width:${shopPct(shop)}%"></i></div>Il manque : ${esc(miss.join(', '))}. Un profil complet est obligatoire pour publier et rassure les acheteurs.</div>` : ''}
+    <div class="pf-pubh"><span class="pf-pubic">${I('box')}</span><div><h3 class="pf-h">Publications (${list.length})</h3><p>${mine ? 'Gérez vos annonces facilement' : (isCl ? 'Les annonces de ce client' : 'Les annonces de ce vendeur')}</p></div></div>
     ${list.length > 1 ? `<div class="pf-tools"><label class="pf-search">${I('search')}<input id="pfQ" type="search" placeholder="Rechercher une publication…" autocomplete="off"></label><span class="pf-sel"><select id="pfCatF" aria-label="Filtrer par catégorie"><option value="">Tous</option>${pubCats.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('')}</select>${I('chev')}</span></div>` : ''}
     <div id="pfPub" class="shopads">${list.length ? list.map((x, i) => { const p0 = cssUrl(x.photos && x.photos[0]), cn = x.ann_categories ? x.ann_categories.nom : '';
       return `<div class="pf-post" data-cat="${esc(cn)}" data-s="${esc(String(x.titre || '').toLowerCase())}">
