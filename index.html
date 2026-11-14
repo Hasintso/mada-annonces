@@ -3454,24 +3454,27 @@ function renderClientView() {
   const since = user && user.created_at ? new Date(user.created_at).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }) : '';
   const cov = safeUrl(d.cover_url) ? cssUrl(d.cover_url) : '';
   const badges = [safeUrl(d.avatar_url) ? '📷 Photo' : '', tel ? '📞 Téléphone' : '', d.email ? '✉️ E-mail' : '', MG_REGIONS.includes(d.region) ? '📍 Région' : '', since ? '🗓️ Membre depuis ' + since : ''].filter(Boolean);
+  const I = pfI, rw = (ic, k, v) => `<div class="pf-row"><span class="pf-ri">${I(ic)}</span><span class="pf-k">${k}</span><span class="pf-v">${v}</span></div>`;
   $('clientView').innerHTML = `<div class="pf-cover" id="cvCover"${cov ? ` style="background-image:url('${cov}')"` : ''}>
       <div class="pf-covbar"><button class="pf-covbtn" id="cvCov" type="button">📷 <span id="cvCovTxt">${cov ? 'Modifier la couverture' : 'Ajouter une photo de couverture'}</span></button>
-      <button class="pf-covbtn rm" id="cvCovDel" type="button" title="Retirer la couverture" aria-label="Retirer la couverture"${cov ? '' : ' hidden'}>✕</button></div><input type="file" id="cvCovFile" accept="image/*" hidden></div>
+      <button class="pf-covbtn rm" id="cvCovDel" type="button" title="Retirer la couverture" aria-label="Retirer la couverture"${cov ? '' : ' hidden'}>✕</button></div><input type="file" id="cvCovFile" accept="image/*" hidden>${pfWave}
+      <div class="pf-top"><div class="pf-av"><div class="shoplogo">${avatarHtml(d.avatar_url, nom)}</div><b class="pf-dot" title="En ligne"></b></div>
+        <div class="pf-id"><h2>${esc(nom)}</h2><div class="meta"><span class="pf-cr">${I('user')}</span><span>${esc(MG_REGIONS.includes(d.region) ? d.region : 'Madagascar')} · Client</span></div></div></div></div>
     <div class="pf-body">
-      <div class="pf-top"><div class="shoplogo">${avatarHtml(d.avatar_url, nom)}</div>
-        <div class="pf-id"><h2>${esc(nom)}</h2><div class="meta">${esc(MG_REGIONS.includes(d.region) ? d.region : 'Madagascar')} · Client</div></div></div>
-      ${complete ? '<div class="trust"><span>✅ Profil complet</span></div>' : ''}
-      <div class="pf-act"><button class="btn cta" id="cvEdit" type="button">✏️ Modifier le profil</button></div>
-      <div class="pf-about"><dl>
-        <dt>Nom</dt><dd>${esc(d.full_name || 'Non renseigné')}</dd>
-        <dt>Région</dt><dd>${esc(d.region || 'Non renseigné')}</dd>
-        <dt>Téléphone</dt><dd>${tel ? `<a href="tel:${esc(telRaw)}">${esc(tel)}</a>` : 'Non renseigné'}</dd>
-        <dt>E-mail</dt><dd>${d.email ? `<a href="mailto:${esc(d.email)}">${esc(d.email)}</a>` : 'Non renseigné'}</dd>
-        <dt>Membre depuis</dt><dd>${esc(since || '—')}</dd></dl>
-        ${badges.length ? '<div class="trust">' + badges.map(x => `<span>${esc(x)}</span>`).join('') + '</div>' : ''}</div>
+      ${complete ? `<div class="pf-ok"><span class="pf-okc">${I('check')}</span>Profil complet<b>${I('leaf')}100%</b></div>` : ''}
+      <div class="pf-about"><div class="pf-ah"><h3>${I('user')}À propos</h3><button class="pf-mod" id="cvEdit" type="button">${I('edit')}Modifier</button></div>
+        <div class="pf-rows">
+          ${rw('user', 'Nom', esc(d.full_name || 'Non renseigné'))}
+          ${rw('pin', 'Région', esc(d.region || 'Non renseigné'))}
+          ${rw('phone', 'Téléphone', tel ? `<a href="tel:${esc(telRaw)}">${esc(tel)}</a>` : 'Non renseigné')}
+          ${rw('mail', 'E-mail', d.email ? `<a href="mailto:${esc(d.email)}">${esc(d.email)}</a>` : 'Non renseigné')}
+          ${rw('calendar', 'Membre depuis', esc(since || '—'))}
+        </div></div>
       ${complete ? '' : `<div class="pf-prog"><b>Profil complété à ${clientPct(d)} %</b><div class="pf-bar"><i style="width:${clientPct(d)}%"></i></div>Il manque : ${esc(miss.join(', '))}. Un profil complet rassure les vendeurs.</div>`}
+      <div class="pf-foot"><button type="button" class="pf-out" id="cvOut">${I('logout')}Se déconnecter</button></div>
     </div>`;
   $('cvEdit').onclick = () => openClientEdit();
+  $('cvOut').onclick = () => { close('mClientView'); $('btnAuth').click(); };
   /* photo de couverture : réduite à 1600 px, enregistrée avec le compte (cover_url) */
   const cover = $('cvCover'), txt = $('cvCovTxt'), del = $('cvCovDel'), pcv = $('cvCov'), file = $('cvCovFile');
   const busy = b => { pcv.disabled = del.disabled = b; };
@@ -3589,6 +3592,28 @@ $('shopForm').onsubmit = async e => {
 $('shSee').onclick = () => { close('mShop'); openShop(user.id); };
 
 /* --- Page de profil : en-tête, Publications (avec dates), À propos --- */
+/* --- Pictos du profil (v33.2) --- */
+const PF_IC = {
+  phone: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>',
+  msg: '<path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H9l-5 4V6a1 1 0 0 1 1-1z"/><path d="M8 10h8M8 13h5"/>',
+  mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+  share: '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5l6.8-4M8.6 13.5l6.8 4"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>',
+  briefcase: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18"/>',
+  pin: '<path d="M12 21s7-6.2 7-11a7 7 0 0 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/>',
+  calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  camera: '<path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/>',
+  image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5-5-8 9"/>',
+  crown: '<path d="M3 7l4.5 4L12 4l4.5 7L21 7l-2 12H5z"/>',
+  check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  leaf: '<path d="M5 19c0-8 5-13 14-14 0 9-5 14-13 14z"/><path d="M5 19l8-8"/>',
+  edit: '<path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19z"/><path d="M14 7l3 3"/>',
+  logout: '<path d="M10 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h5"/><path d="M16 8l4 4-4 4M20 12H9"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>'
+};
+function pfI(n) { return '<svg class="pfi" viewBox="0 0 24 24" aria-hidden="true">' + (PF_IC[n] || '') + '</svg>'; }
+const pfWave = '<span class="pf-wv" aria-hidden="true"></span><span class="pf-crown" aria-hidden="true">' + pfI('crown') + '</span>';
 const fmtDay = d => new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 async function openShop(uid) {
   $('shopView').innerHTML = '<div class="pf-cover"></div><p style="color:var(--muted);padding:16px 20px">Chargement…</p>'; open('mShopView');
@@ -3605,25 +3630,32 @@ async function openShop(uid) {
   const cov = safeUrl(shop.cover_url) ? cssUrl(shop.cover_url) : '';
   const covBar = mine ? `<div class="pf-covbar"><button class="pf-covbtn" id="pfCov" type="button">📷 <span id="pfCovTxt">${cov ? 'Modifier la couverture' : 'Ajouter une photo de couverture'}</span></button>`
     + `<button class="pf-covbtn rm" id="pfCovDel" type="button" title="Retirer la couverture" aria-label="Retirer la couverture"${cov ? '' : ' hidden'}>✕</button></div><input type="file" id="pfCovFile" accept="image/*" hidden>` : '';
-  $('shopView').innerHTML = `<div class="pf-cover" id="pfCover"${cov ? ` style="background-image:url('${cov}')"` : ''}>${covBar}</div><div class="pf-body">
-    <div class="pf-top"><div class="shoplogo">${avatarHtml(shop.avatar_url, nom)}</div>
-      <div class="pf-id"><h2>${esc(nom)}</h2><div class="meta">${esc(shop.ville || 'Madagascar')} · ${list.length} publication${list.length > 1 ? 's' : ''}</div></div></div>
-    ${complete ? '<div class="trust"><span>✅ Profil complet</span></div>' : ''}
-    <div class="pf-act">
-      ${mine ? '<button class="btn cta" id="pfEdit" type="button">✏️ Modifier le profil</button>'
-        : (tel ? `<a class="btn cta" href="tel:${esc(tel)}">📞 Appeler</a>` : '') + (firstAd ? '<button class="btn alt" id="pfMsg" type="button">💬 Message</button>' : '')
-          + (shop.email ? `<a class="btn alt" href="mailto:${esc(shop.email)}">✉️ E-mail</a>` : '')}
-      <button class="btn plain" id="pfShare" type="button">🔗 Partager</button>
+  const I = pfI, shortSince = shop.cree_le ? new Date(shop.cree_le).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' }) : '—';
+  const tile = (el, attrs, ic, label, hot) => `<${el} class="pf-tile${hot ? ' hot' : ''}" ${attrs}><span class="pf-ti">${I(ic)}</span><span>${label}</span></${el}>`;
+  const tiles = mine
+    ? tile('button', 'id="pfPost" type="button"', 'plus', 'Publier', true) + tile('button', 'id="pfInbox" type="button"', 'msg', 'Messages') + tile('button', 'id="pfShare" type="button"', 'share', 'Partager')
+    : (tel ? tile('a', `href="tel:${esc(tel)}"`, 'phone', 'Appeler', true) : '') + (firstAd ? tile('button', 'id="pfMsg" type="button"', 'msg', 'Message', !tel) : '')
+      + (shop.email ? tile('a', `href="mailto:${esc(shop.email)}"`, 'mail', 'E-mail') : '') + tile('button', 'id="pfShare" type="button"', 'share', 'Partager');
+  const row = (ic, k, v) => `<div class="pf-row"><span class="pf-ri">${I(ic)}</span><span class="pf-k">${k}</span><span class="pf-v">${v}</span></div>`;
+  $('shopView').innerHTML = `<div class="pf-cover" id="pfCover"${cov ? ` style="background-image:url('${cov}')"` : ''}>${covBar}${pfWave}
+    <div class="pf-top"><div class="pf-av"><div class="shoplogo">${avatarHtml(shop.avatar_url, nom)}</div>${mine ? '<b class="pf-dot" title="En ligne"></b>' : ''}</div>
+      <div class="pf-id"><h2>${esc(nom)}</h2><div class="meta"><span class="pf-cr">${I('crown')}</span><span>${esc(shop.ville || 'Madagascar')} · ${list.length} publication${list.length > 1 ? 's' : ''}</span></div></div></div></div>
+  <div class="pf-body">
+    ${complete ? `<div class="pf-ok"><span class="pf-okc">${I('check')}</span>Profil complet<b>${I('leaf')}100%</b></div>` : ''}
+    <div class="pf-tiles">${tiles}</div>
+    <div id="pfAbt" class="pf-about">
+      <div class="pf-ah"><h3>${I('user')}À propos</h3>${mine ? `<button class="pf-mod" id="pfEdit" type="button">${I('edit')}Modifier</button>` : ''}</div>
+      <p class="pf-desc">${esc(shop.description || 'Non renseigné')}</p>
+      <div class="pf-rows">
+        ${row('briefcase', 'Je vends', esc(shop.vend || 'Non renseigné'))}
+        ${row('pin', 'Lieu exact', esc(shop.ville || 'Non renseigné'))}
+        ${row('phone', 'Téléphone', tel ? `<a href="tel:${esc(tel)}">${esc(shop.telephone)}</a>` : 'Non renseigné')}
+        ${row('mail', 'E-mail', shop.email ? `<a href="mailto:${esc(shop.email)}">${esc(shop.email)}</a>` : 'Non renseigné')}
+        ${row('calendar', 'Membre depuis', esc(since || '—'))}
+      </div>
     </div>
-    <div id="pfAbt" class="pf-about"><dl>
-      <dt>À propos</dt><dd>${esc(shop.description || 'Non renseigné')}</dd>
-      <dt>Je vends</dt><dd>${esc(shop.vend || 'Non renseigné')}</dd>
-      <dt>Lieu exact</dt><dd>${esc(shop.ville || 'Non renseigné')}</dd>
-      <dt>Téléphone</dt><dd>${tel ? `<a href="tel:${esc(tel)}">${esc(shop.telephone)}</a>` : 'Non renseigné'}</dd>
-      <dt>E-mail</dt><dd>${shop.email ? `<a href="mailto:${esc(shop.email)}">${esc(shop.email)}</a>` : 'Non renseigné'}</dd>
-      <dt>Membre depuis</dt><dd>${esc(since || '—')}</dd></dl>
-      ${badges.length ? '<div class="trust">' + badges.map(x => `<span>${esc(x)}</span>`).join('') + '</div>' : ''}</div>
-    ${gal.length ? `<h3 class="pf-h">Photos de la boutique</h3><div class="pf-gal">${gal.map(u => `<a href="${esc(u)}" target="_blank" rel="noopener"><img src="${esc(u)}" alt="" loading="lazy"></a>`).join('')}</div>` : ''}
+    <div class="pf-stats"><div><span>${I('briefcase')}Publications</span><b>${list.length}</b></div><div><span>${I('camera')}Photos</span><b>${gal.length}</b></div><div><span>${I('calendar')}Depuis</span><b>${esc(shortSince)}</b></div></div>
+    ${gal.length ? `<div class="pf-gh"><h3 class="pf-h">${I('image')}Photos de la boutique</h3>${gal.length > 4 ? `<button type="button" class="pf-all" id="pfGalAll">Voir tout ${I('arrow')}</button>` : ''}</div><div class="pf-gal" id="pfGal">${gal.map(u => `<a href="${esc(u)}" target="_blank" rel="noopener"><img src="${esc(u)}" alt="" loading="lazy"></a>`).join('')}</div>` : ''}
     ${mine && !complete ? `<div class="pf-prog"><b>Profil complété à ${shopPct(shop)} %</b><div class="pf-bar"><i style="width:${shopPct(shop)}%"></i></div>Il manque : ${esc(miss.join(', '))}. Un profil complet est obligatoire pour publier et rassure les acheteurs.</div>` : ''}
     <h3 class="pf-h">Publications (${list.length})</h3>
     <div id="pfPub" class="shopads">${list.length ? list.map((x, i) => { const p0 = cssUrl(x.photos && x.photos[0]);
@@ -3631,6 +3663,7 @@ async function openShop(uid) {
         <div><div class="price">${money(x.prix)}</div><div>${esc(x.titre)}</div><div class="pf-date">${esc(x.ann_categories ? x.ann_categories.nom + ' · ' : '')}Publié le ${esc(fmtDay(x.cree_le))} · ${esc(ago(x.cree_le))}</div></div></div>
         ${mine ? `<div class="pf-own"><button class="btn alt" data-ed="${i}" type="button">Modifier</button><button class="btn danger" data-del="${i}" type="button">Supprimer</button></div>` : ''}</div>`; }).join('')
       : `<p style="color:var(--muted)">${mine ? "Vous n'avez encore rien publié. Touchez le « + » pour déposer votre première annonce." : 'Aucune publication pour le moment.'}</p>`}</div>
+    ${mine ? `<div class="pf-foot"><button type="button" class="pf-out" id="pfOut">${I('logout')}Se déconnecter</button></div>` : ''}
   </div>`;
   const root = $('shopView');
   root.querySelectorAll('.shopad').forEach(b => {
@@ -3645,6 +3678,10 @@ async function openShop(uid) {
     loadAds(); loadCounts(); openShop(uid);
   });
   const pe = $('pfEdit'); if (pe) pe.onclick = () => openMyShop();
+  { const pp = $('pfPost'); if (pp) pp.onclick = () => { close('mShopView'); $('btnPost').click(); };
+    const pi = $('pfInbox'); if (pi) pi.onclick = () => { close('mShopView'); $('btnMsg').click(); };
+    const po = $('pfOut'); if (po) po.onclick = () => { close('mShopView'); $('btnAuth').click(); };
+    const ga = $('pfGalAll'); if (ga) ga.onclick = () => { const o = $('pfGal').classList.toggle('all'); ga.childNodes[0].nodeValue = o ? 'Réduire ' : 'Voir tout '; }; }
   /* --- Photo de couverture (propriétaire uniquement) : réduite à 1600 px puis enregistrée dans ann_boutiques.cover_url --- */
   const pcv = $('pfCov');
   if (pcv) {
@@ -5389,5 +5426,119 @@ body:not(.landing) .ad .meta,.crow-l>.ad .meta,#allHead:not([hidden])+#list>.ad 
   b.addEventListener('click',function(){ m.classList.remove('mn-first'); void m.offsetWidth; m.classList.add('mn-first'); clearTimeout(m._mnT); m._mnT=setTimeout(function(){ m.classList.remove('mn-first'); },1600); });
 })();
 </script>
+<style id="profilStyleV33c">
+/* ===== v33.2 · Profil vendeur + profil client : style maquette (en-tête orange, pastille « Profil complet », tuiles, carte « À propos », photos, déconnexion) ===== */
+#mShopView .box,#mClientView .box{width:min(440px,94vw);border-radius:26px 0 0 26px;background:var(--surf,#fff);scrollbar-width:thin}
+#shopView,#clientView{min-height:100%;display:flex;flex-direction:column}
+.pfi{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* bouton fermer */
+#mShopView .x,#mClientView .x{z-index:5;width:38px;height:38px;right:14px;top:14px;background:#fff;color:#f7650f;font-size:1.5rem;font-weight:700;box-shadow:0 3px 10px rgba(120,40,0,.3);transition:transform .25s}
+#mShopView .x:hover,#mClientView .x:hover{transform:rotate(90deg) scale(1.08)}
+
+/* en-tête */
+.pf-cover{height:206px;overflow:hidden;background:linear-gradient(135deg,#ff8f1f,#f7650f 60%,#ff7a12) center/cover no-repeat}
+.pf-cover::before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,143,31,.82),rgba(247,101,15,.72));z-index:0}
+.pf-cover::after{content:"";position:absolute;left:0;right:0;top:auto;bottom:-1px;height:46px;background:var(--surf,#fff);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 20' preserveAspectRatio='none'%3E%3Cpath d='M0 20V10C20 20 40 0 65 7s27 5 35-5V20Z' fill='black'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 20' preserveAspectRatio='none'%3E%3Cpath d='M0 20V10C20 20 40 0 65 7s27 5 35-5V20Z' fill='black'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat;z-index:1;pointer-events:none}
+.pf-wv{position:absolute;left:-20px;right:-20px;bottom:22px;height:60px;background:rgba(255,255,255,.2);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 20' preserveAspectRatio='none'%3E%3Cpath d='M0 8C25 -3 45 14 70 6S92 -2 100 3V20H0Z' fill='black'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 20' preserveAspectRatio='none'%3E%3Cpath d='M0 8C25 -3 45 14 70 6S92 -2 100 3V20H0Z' fill='black'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat;z-index:0;pointer-events:none}
+.pf-crown{position:absolute;right:14px;bottom:50px;width:74px;height:74px;color:rgba(255,255,255,.32);z-index:0;pointer-events:none}
+.pf-crown .pfi{width:100%;height:100%;stroke-width:1.4}
+.pf-covbar{left:12px;top:12px;z-index:4}
+.pf-top{position:absolute;left:16px;right:66px;top:56px;margin:0;display:flex;align-items:center;gap:14px;z-index:2}
+.pf-av{position:relative;flex:none}
+.pf-top .shoplogo{width:96px;height:96px;font-size:2.4rem;border:4px solid #fff;box-shadow:0 6px 18px rgba(120,40,0,.35);background:#ffe6cc;color:#f7650f}
+.pf-dot{position:absolute;right:3px;bottom:3px;width:20px;height:20px;border-radius:50%;background:#22c55e;border:3px solid #fff}
+.pf-id{flex:1;min-width:0;padding:0}
+.pf-id h2{font-size:1.5rem;font-weight:800;color:#fff;margin:0 0 5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 2px 6px rgba(120,40,0,.35)}
+.pf-id .meta{display:flex;align-items:center;gap:7px;color:#fff;font-weight:600;font-size:.88rem;text-shadow:0 1px 3px rgba(120,40,0,.35)}
+.pf-cr{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.28);flex:none}
+.pf-cr .pfi{width:14px;height:14px}
+
+/* corps */
+.pf-body{flex:1;display:flex;flex-direction:column;padding:0 16px}
+.pf-ok{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;margin:2px 0 14px;padding:7px 14px 7px 8px;border-radius:999px;background:var(--card,#fff);box-shadow:0 4px 14px rgba(120,60,10,.15);font-weight:700;font-size:.9rem;color:var(--ink)}
+.pf-okc{width:22px;height:22px;border-radius:6px;background:#22a447;color:#fff;display:grid;place-items:center}
+.pf-okc .pfi{width:15px;height:15px;stroke-width:3}
+.pf-ok b{display:inline-flex;align-items:center;gap:3px;color:#f7650f}
+.pf-ok b .pfi{width:14px;height:14px}
+
+/* tuiles d'action */
+.pf-tiles{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:10px;margin:0 0 14px}
+.pf-tile{display:flex;flex-direction:column;align-items:center;gap:7px;padding:12px 4px 10px;border:0;border-radius:18px;background:var(--card,#fff);box-shadow:0 4px 14px rgba(120,60,10,.12);color:var(--ink);font-family:inherit;font-weight:700;font-size:.82rem;line-height:1.1;text-decoration:none;cursor:pointer;transition:transform .2s,box-shadow .2s}
+.pf-tile:hover{transform:translateY(-3px);box-shadow:0 8px 18px rgba(120,60,10,.2)}
+.pf-tile:active{transform:scale(.96)}
+.pf-tile.hot{background:linear-gradient(#fff1de,#ffe0bd);box-shadow:0 4px 14px rgba(247,101,15,.25)}
+.pf-ti{width:44px;height:44px;border-radius:50%;background:#fff;display:grid;place-items:center;color:#f7650f;box-shadow:0 2px 8px rgba(120,60,10,.15)}
+.pf-tile.hot .pf-ti{background:#f7650f;color:#fff}
+
+/* carte « À propos » */
+.pf-about{background:var(--card,#fff);border:0;border-radius:20px;padding:14px 16px;box-shadow:0 4px 18px rgba(120,60,10,.1);margin:0 0 14px}
+.pf-ah{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.pf-ah h3{display:flex;align-items:center;gap:8px;margin:0;font-size:1.05rem;font-weight:800;color:var(--ink)}
+.pf-ah h3 .pfi{color:#f7650f}
+.pf-mod{display:inline-flex;align-items:center;gap:6px;border:1.5px solid #f7a868;background:#fff4e8;color:#f7650f;border-radius:999px;padding:6px 14px;font-weight:700;font-size:.85rem;font-family:inherit;cursor:pointer;transition:transform .2s,background .2s,color .2s}
+.pf-mod .pfi{width:16px;height:16px}
+.pf-mod:hover{background:#f7650f;color:#fff;transform:translateY(-1px)}
+.pf-desc{margin:0 0 10px;line-height:1.45;font-size:.95rem;word-break:break-word}
+.pf-rows{border-top:1px solid var(--line);padding-top:10px;display:grid;gap:10px}
+.pf-row{display:grid;grid-template-columns:22px 104px 1fr;align-items:start;gap:10px;font-size:.9rem}
+.pf-ri .pfi{width:20px;height:20px;color:var(--ink)}
+.pf-k{color:var(--muted)}
+.pf-v{font-weight:700;word-break:break-word}
+.pf-v a{color:#e8530a;text-decoration:underline}
+
+/* compteurs */
+.pf-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 0 16px}
+.pf-stats>div{background:rgba(247,101,15,.1);border-radius:16px;padding:10px 6px;text-align:center}
+.pf-stats span{display:flex;align-items:center;justify-content:center;gap:5px;font-size:.78rem;color:var(--muted);font-weight:600}
+.pf-stats span .pfi{width:15px;height:15px}
+.pf-stats b{display:block;margin-top:2px;font-size:1.15rem;font-weight:800;color:#f7650f}
+
+/* photos de la boutique */
+.pf-gh{display:flex;align-items:center;justify-content:space-between;margin:2px 0 8px}
+.pf-h{font-size:1.05rem;font-weight:800;color:var(--ink);margin:14px 0 8px}
+.pf-gh .pf-h{display:flex;align-items:center;gap:8px;margin:0}
+.pf-gh .pf-h .pfi{color:#f7650f}
+.pf-all{display:inline-flex;align-items:center;gap:5px;border:0;background:none;color:#f7650f;font-weight:700;font-size:.9rem;font-family:inherit;cursor:pointer}
+.pf-all .pfi{width:16px;height:16px}
+.pf-gal{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 8px;margin:0 0 12px;scrollbar-width:none}
+.pf-gal::-webkit-scrollbar{display:none}
+.pf-gal a{flex:0 0 calc((100% - 24px)/4);aspect-ratio:1;border:0;border-radius:14px;box-shadow:0 3px 10px rgba(120,60,10,.18);transition:transform .2s}
+.pf-gal a:hover{transform:scale(1.05)}
+.pf-gal.all{flex-wrap:wrap;overflow:visible}
+.pf-gal.all a{flex-basis:calc((100% - 16px)/3)}
+
+/* publications + progression */
+.pf-post{border:0;border-radius:16px;box-shadow:0 3px 12px rgba(120,60,10,.12);background:var(--card,#fff)}
+.pf-prog{border-radius:16px;background:#fff7ec;border:1px solid #ffd9ae;margin:0 0 14px}
+
+/* pied : déconnexion sur vague */
+.pf-foot{position:sticky;bottom:0;z-index:3;margin:auto -16px 0;padding:36px 16px 16px;text-align:center;background:linear-gradient(135deg,#ffe3c4,#ffc58c)}
+.pf-foot::before{content:"";position:absolute;left:0;right:0;top:-1px;height:28px;background:var(--surf,#fff);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 20' preserveAspectRatio='none'%3E%3Cpath d='M0 0H100V6C78 20 56 -2 32 9S8 14 0 8Z' fill='black'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 20' preserveAspectRatio='none'%3E%3Cpath d='M0 0H100V6C78 20 56 -2 32 9S8 14 0 8Z' fill='black'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat;pointer-events:none}
+.pf-out{position:relative;display:inline-flex;align-items:center;gap:10px;padding:12px 30px;border:0;border-radius:999px;background:#fff;color:#e8530a;font-family:inherit;font-weight:800;font-size:.98rem;box-shadow:0 5px 16px rgba(247,101,15,.3);cursor:pointer;transition:transform .2s,box-shadow .2s}
+.pf-out:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(247,101,15,.38)}
+.pf-out:active{transform:scale(.96)}
+
+/* animations */
+@keyframes pfUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes pfPopA{0%{opacity:0;transform:scale(.4)}60%{opacity:1;transform:scale(1.1)}100%{opacity:1;transform:none}}
+@keyframes pfWave{0%,100%{transform:translateX(0)}50%{transform:translateX(-16px)}}
+@keyframes pfPulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.55)}70%,100%{box-shadow:0 0 0 9px rgba(34,197,94,0)}}
+@keyframes pfCrown{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg) translateY(-3px)}}
+.mask.open .pf-wv{animation:pfWave 6s ease-in-out infinite}
+.mask.open .pf-crown{animation:pfCrown 5s ease-in-out infinite}
+.mask.open .pf-dot{animation:pfPulse 2s ease-out infinite}
+.mask.open .pf-top .shoplogo{animation:pfPopA .6s cubic-bezier(.2,.9,.3,1.2) .1s backwards}
+.mask.open .pf-id{animation:pfUp .5s ease .2s backwards}
+.mask.open .pf-ok{animation:pfUp .45s ease .3s backwards}
+.mask.open .pf-tile{animation:pfUp .45s ease backwards}
+.mask.open .pf-tile:nth-child(1){animation-delay:.36s}.mask.open .pf-tile:nth-child(2){animation-delay:.43s}.mask.open .pf-tile:nth-child(3){animation-delay:.5s}.mask.open .pf-tile:nth-child(4){animation-delay:.57s}
+.mask.open .pf-about{animation:pfUp .5s ease .5s backwards}
+.mask.open .pf-stats{animation:pfUp .5s ease .62s backwards}
+.mask.open .pf-gh,.mask.open .pf-gal{animation:pfUp .5s ease .72s backwards}
+.mask.open .pf-foot{animation:pfUp .5s ease .8s backwards}
+@media(max-width:420px){.pf-row{grid-template-columns:22px 92px 1fr}.pf-id h2{font-size:1.25rem}.pf-top .shoplogo{width:84px;height:84px}.pf-crown{width:56px;height:56px}}
+@media(prefers-reduced-motion:reduce){#shopView *,#clientView *{animation:none!important;transition:none!important}}
+</style>
 </body>
 </html>
