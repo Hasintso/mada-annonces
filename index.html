@@ -1293,7 +1293,9 @@ body.landing .hero p{max-width:62ch;margin-bottom:16px}
 <script>
 /* Applique tout de suite les réglages d'apparence enregistrés (avant l'affichage de la page) */
 try { const t = JSON.parse(localStorage.getItem('va_apparence') || '{}'), h = document.documentElement;
-  if (t.th) h.dataset.th = t.th; if (t.ff) h.dataset.ff = t.ff; if (t.fs) h.dataset.fs = t.fs; if (t.ac) h.dataset.ac = t.ac; if (t.bg) h.style.setProperty('--paper', t.bg); } catch (e) {}
+  if (t.th) h.dataset.th = t.th; if (t.ff) h.dataset.ff = t.ff; if (t.fs) h.dataset.fs = t.fs; if (t.ac) h.dataset.ac = t.ac; if (t.bg) h.style.setProperty('--paper', t.bg);
+  window.vaShade = c => { const n = parseInt(String(c).slice(1), 16); return '#' + [16, 8, 0].map(sh => Math.round(((n >> sh) & 255) * 0.8).toString(16).padStart(2, '0')).join(''); };
+  if (/^#[0-9a-f]{6}$/i.test(t.fc || '')) { h.style.setProperty('--forest', t.fc); h.style.setProperty('--forest2', window.vaShade(t.fc)); } } catch (e) {}
 </script>
 <style id="fxCss">
 /* Barre de catégories dans la ligne « Voir toutes les annonces » + filtres de la catégorie choisie */
@@ -1903,34 +1905,43 @@ body:not(.landing) #allHead:not([hidden])+#list.grid>.sl-info,body:not(.landing)
       <div class="pref" id="prefBox">
         <button type="button" class="pref-t" id="prefToggle" aria-expanded="false"><span>Apparence</span><i aria-hidden="true">▾</i></button>
         <div class="pref-b">
-          <h4>Mode</h4>
-          <div class="seg" id="modeSeg">
-            <button type="button" class="md" data-md="">☀️ Clair</button>
-            <button type="button" class="md" data-md="sombre">🌙 Sombre</button>
+          <div class="apx-head">
+            <span class="apx-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M12 3a9 9 0 1 0 0 18c1.100 0 1.800-.9 1.500-1.900-.3-1 .3-2.100 1.500-2.100h2A3.500 3.500 0 0 0 21 11.500C21 6.800 17 3 12 3z"/><circle cx="7.500" cy="11" r="1.300" fill="#e8610a"/><circle cx="10.500" cy="7" r="1.300" fill="#e8610a"/><circle cx="15" cy="7" r="1.300" fill="#e8610a"/></svg></span>
+            <div class="apx-tt"><b>Apparence</b><small>Personnalisez le style de votre site</small></div>
+            <button type="button" class="apx-x" id="prefClose" aria-label="Fermer l'apparence"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.600" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
           </div>
-          <h4>Style d'écriture</h4>
+          <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.900 4.900l1.800 1.800M17.300 17.300l1.800 1.800M4.900 19.100l1.800-1.800M17.300 6.700l1.800-1.800"/></svg></svg>Mode</h4>
+          <div class="seg" id="modeSeg">
+            <button type="button" class="md" data-md=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.900 4.900l1.800 1.800M17.300 17.300l1.800 1.800M4.900 19.100l1.800-1.800M17.300 6.700l1.800-1.800"/></svg><span>Clair</span></button>
+            <button type="button" class="md" data-md="sombre"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21 12.800A9 9 0 1 1 11.200 3a7 7 0 0 0 9.800 9.800z"/></svg><span>Sombre</span></button>
+          </div>
+          <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h9M7.500 6v12M13 10h8M17 10v8"/></svg>Style d'écriture</h4>
           <div class="fgrid2">
             <button type="button" class="pf" data-ff="" style="font-family:'Segoe UI',Arial,sans-serif"><b>Aa</b><small>Par défaut</small></button>
             <button type="button" class="pf" data-ff="moderne" style="font-family:Poppins,sans-serif"><b>Aa</b><small>Moderne</small></button>
             <button type="button" class="pf" data-ff="elegant" style="font-family:Lora,serif"><b>Aa</b><small>Élégant</small></button>
-            <button type="button" class="pf" data-ff="rond" style="font-family:Quicksand,sans-serif"><b>Aa</b><small>Arrondi</small></button>
             <button type="button" class="pf" data-ff="classique" style="font-family:Georgia,serif"><b>Aa</b><small>Classique</small></button>
+            <button type="button" class="pf" data-ff="rond" style="font-family:Quicksand,sans-serif"><b>Aa</b><small>Arrondi</small></button>
+            <button type="button" class="pf" data-ff="minimaliste" style="font-family:system-ui,-apple-system,Arial,sans-serif"><b>Aa</b><small>Minimaliste</small></button>
           </div>
-          <h4>Taille du texte</h4>
-          <div class="seg">
-            <button type="button" class="pz" data-fs="" style="font-size:.85rem">A</button>
-            <button type="button" class="pz" data-fs="grand" style="font-size:1.05rem">A</button>
-            <button type="button" class="pz" data-fs="tres" style="font-size:1.3rem">A</button>
+          <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h9M7.500 6v12M13 10h8M17 10v8"/></svg>Taille du texte</h4>
+          <div class="seg seg4">
+            <button type="button" class="pz" data-fs="petit" style="font-size:.8rem" aria-label="Petit">A</button>
+            <button type="button" class="pz" data-fs="" style="font-size:1rem" aria-label="Normal">A</button>
+            <button type="button" class="pz" data-fs="grand" style="font-size:1.2rem" aria-label="Grand">A</button>
+            <button type="button" class="pz" data-fs="tres" style="font-size:1.5rem" aria-label="Très grand">A</button>
           </div>
-          <h4>Couleur principale</h4>
+          <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.100 0 1.800-.9 1.500-1.900-.3-1 .3-2.100 1.500-2.100h2A3.500 3.500 0 0 0 21 11.500C21 6.800 17 3 12 3z"/><circle cx="7.500" cy="11" r=".6"/><circle cx="10.500" cy="7" r=".6"/><circle cx="15" cy="7" r=".6"/></svg>Couleur principale</h4>
           <div class="swr">
-            <button type="button" class="ac" data-ac="" style="background:#a2501a" aria-label="Brun"></button>
-            <button type="button" class="ac" data-ac="vert" style="background:#1f8a4c" aria-label="Vert"></button>
+            <button type="button" class="ac" data-ac="" style="background:#a2501a" aria-label="Brun (par défaut)"></button>
+            <button type="button" class="ac" data-ac="orange" style="background:linear-gradient(#ff9a2e,#e8610a)" aria-label="Orange"></button>
             <button type="button" class="ac" data-ac="bleu" style="background:#1f6fd1" aria-label="Bleu"></button>
+            <button type="button" class="ac" data-ac="vert" style="background:#1f8a4c" aria-label="Vert"></button>
             <button type="button" class="ac" data-ac="violet" style="background:#7b3fc4" aria-label="Violet"></button>
-            <button type="button" class="ac" data-ac="rouge" style="background:#c8332b" aria-label="Rouge"></button>
+            <button type="button" class="ac" data-ac="rose" style="background:#d6336c" aria-label="Rose"></button>
+            <label class="acm" aria-label="Choisir une couleur principale libre"><input type="color" id="prefAc" value="#e8610a"></label>
           </div>
-          <h4>Couleur de fond</h4>
+          <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3s6 6.200 6 10.500a6 6 0 0 1-12 0C6 9.200 12 3 12 3z"/></svg>Couleur de fond</h4>
           <div class="swr">
             <button type="button" class="sw" data-th="" style="background:#faf5ee" aria-label="Crème"></button>
             <button type="button" class="sw" data-th="blanc" style="background:#ffffff" aria-label="Blanc"></button>
@@ -1939,7 +1950,11 @@ body:not(.landing) #allHead:not([hidden])+#list.grid>.sl-info,body:not(.landing)
             <button type="button" class="sw" data-th="rose" style="background:#fdeaf0" aria-label="Rose"></button>
             <button type="button" class="sw" data-th="sombre" style="background:#140f0b" aria-label="Sombre"></button>
           </div>
-          <label class="pcol">Couleur libre <input type="color" id="prefColor" value="#faf5ee"></label>
+          <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l1-4L16 5l3 3L8 19zM14 7l3 3"/></svg>Couleur libre</h4>
+          <div class="apx-free">
+            <label class="apx-hex"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 4l-3-1-4 4-1-1-2 2 8 8 2-2-1-1 4-4zM11 11l-7 7v3h3l7-7"/></svg><input type="text" id="prefHex" value="#FAF5EE" maxlength="7" spellcheck="false" autocomplete="off" aria-label="Code de la couleur de fond"><input type="color" id="prefColor" value="#faf5ee" aria-label="Choisir la couleur de fond"></label>
+            <button type="button" class="apx-rs" id="prefBgReset">↺ Réinitialiser</button>
+          </div>
           <button type="button" class="preset" id="prefReset">↺ Tout remettre par défaut</button>
         </div>
       </div>
@@ -3126,18 +3141,28 @@ function applyLook() {
   if (look.bg) h.style.setProperty('--paper', look.bg); else h.style.removeProperty('--paper');
   document.querySelectorAll('.pf').forEach(b => b.classList.toggle('on', (b.dataset.ff || '') === (look.ff || '')));
   document.querySelectorAll('.pz').forEach(b => b.classList.toggle('on', (b.dataset.fs || '') === (look.fs || '')));
-  document.querySelectorAll('.ac').forEach(b => b.classList.toggle('on', (b.dataset.ac || '') === (look.ac || '')));
+  document.querySelectorAll('.ac').forEach(b => b.classList.toggle('on', !look.fc && (b.dataset.ac || '') === (look.ac || '')));
+  { const fcOk = /^#[0-9a-f]{6}$/i.test(look.fc || ''), shade = window.vaShade || (c => c);
+    if (fcOk) { h.style.setProperty('--forest', look.fc); h.style.setProperty('--forest2', shade(look.fc)); $('prefAc').value = look.fc; }
+    else { h.style.removeProperty('--forest'); h.style.removeProperty('--forest2'); }
+    document.querySelectorAll('.acm').forEach(b => b.classList.toggle('on', fcOk)); }
   document.querySelectorAll('.md').forEach(b => b.classList.toggle('on', (b.dataset.md || '') === (look.th === 'sombre' ? 'sombre' : '')));
   document.querySelectorAll('.sw').forEach(b => b.classList.toggle('on', !look.bg && (b.dataset.th || '') === (look.th || '')));
   const cs = getComputedStyle(h).getPropertyValue('--paper').trim();
-  if (/^#[0-9a-f]{6}$/i.test(cs)) $('prefColor').value = cs;
+  if (/^#[0-9a-f]{6}$/i.test(cs)) { $('prefColor').value = cs; $('prefHex').value = cs.toUpperCase(); }
   try { localStorage.setItem(APP_KEY, JSON.stringify(look)); } catch (e) {}
 }
 $('prefToggle').onclick = () => { const b = $('prefBox'); const o = b.classList.toggle('open'); $('prefToggle').setAttribute('aria-expanded', String(o)); };
 document.querySelectorAll('.pf').forEach(b => b.onclick = () => { look.ff = b.dataset.ff; applyLook(); });
 document.querySelectorAll('.pz').forEach(b => b.onclick = () => { look.fs = b.dataset.fs; applyLook(); });
 document.querySelectorAll('.sw').forEach(b => b.onclick = () => { look.th = b.dataset.th; delete look.bg; applyLook(); });
-document.querySelectorAll('.ac').forEach(b => b.onclick = () => { look.ac = b.dataset.ac; applyLook(); });
+document.querySelectorAll('.ac').forEach(b => b.onclick = () => { look.ac = b.dataset.ac; delete look.fc; applyLook(); });
+$('prefAc').oninput = e => { look.fc = e.target.value; look.ac = ''; applyLook(); };
+$('prefClose').onclick = () => $('prefToggle').onclick();
+$('prefBox').addEventListener('click', e => e.stopPropagation());   /* un clic dans « Apparence » ne ferme pas le menu tiroir */
+$('prefBgReset').onclick = () => { delete look.bg; applyLook(); };
+$('prefColor').addEventListener('input', () => { $('prefHex').value = $('prefColor').value.toUpperCase(); });
+$('prefHex').oninput = e => { let v = e.target.value.trim(); if (v && v[0] !== '#') v = '#' + v; if (/^#[0-9a-f]{6}$/i.test(v)) { $('prefColor').value = v.toLowerCase(); $('prefColor').dispatchEvent(new Event('input')); } };
 document.querySelectorAll('.md').forEach(b => b.onclick = () => { look.th = b.dataset.md; delete look.bg; applyLook(); });
 $('prefColor').oninput = e => { look.bg = e.target.value; document.querySelectorAll('.sw').forEach(x => x.classList.remove('on')); document.documentElement.style.setProperty('--paper', look.bg); try { localStorage.setItem(APP_KEY, JSON.stringify(look)); } catch (e2) {} };
 $('prefReset').onclick = () => { look = {}; applyLook(); };
@@ -5627,6 +5652,70 @@ body:not(.landing) .ad .meta,.crow-l>.ad .meta,#allHead:not([hidden])+#list>.ad 
 #shopView .pf-new:hover{transform:translateY(-2px);box-shadow:0 9px 20px rgba(247,101,15,.42)}
 #shopView .pf-new:active{transform:scale(.97)}
 @media(max-width:380px){#shopView .pf-post{grid-template-columns:78px 1fr}#shopView .pf-thumb .th{width:78px;min-height:78px}#shopView .pf-b{padding:6px 8px;font-size:.74rem}}
+</style>
+<style id="apparenceCss">
+/* ===== v33.6 · Panneau « Apparence » : style de la maquette (orange, cartes douces, grands boutons) ===== */
+:root[data-ff="minimaliste"]{--ff:system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif}
+:root[data-fs="petit"]{font-size:90%}
+:root[data-ac="orange"]{--forest:#e8610a;--forest2:#bf4d05}
+:root[data-ac="rose"]{--forest:#d6336c;--forest2:#a8254f}
+#menuList .pref-b{position:relative;margin:10px 8px 16px;padding:16px 14px 18px;border-radius:22px;overflow:hidden;
+  background:radial-gradient(150px 110px at 100% 0,rgba(255,160,60,.28),transparent 72%),radial-gradient(160px 120px at 0 100%,rgba(255,160,60,.26),transparent 72%),var(--surf,#fff);
+  box-shadow:0 10px 28px rgba(232,97,10,.16);color:var(--ink)}
+#menuList .pref.open>.pref-t{display:none}
+.apx-head{display:flex;align-items:center;gap:12px;margin:0 0 4px}
+.apx-ic{flex:none;width:50px;height:50px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(#ff9a2e,#e8610a);box-shadow:0 5px 14px rgba(232,97,10,.4)}
+.apx-ic svg{width:28px;height:28px}
+.apx-tt{display:flex;flex-direction:column;gap:3px;min-width:0}
+.apx-tt b{font-size:1.2rem;line-height:1.1;color:var(--ink)}
+.apx-tt small{font-size:.74rem;color:var(--muted);line-height:1.25}
+#menuList .apx-x{flex:none;margin-left:auto;width:38px;height:38px;padding:0;border:0;border-radius:50%;display:grid;place-items:center;background:var(--card,#fff);color:var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.16);cursor:pointer}
+#menuList .apx-x svg{width:16px;height:16px}
+#menuList .apx-x:hover{background:#ffe9d2;color:#e8610a}
+#menuList .pref h4{display:flex;align-items:center;gap:9px;margin:18px 0 10px;font-size:.98rem;font-weight:800;letter-spacing:0;text-transform:none;color:var(--ink)}
+#menuList .pref h4 svg{width:20px;height:20px;flex:none;color:#e8610a}
+/* Mode : deux grandes pastilles */
+#menuList .pref .seg{display:flex;gap:10px;padding:0;background:none;border-radius:0}
+#menuList .pref .seg button{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;position:relative;padding:12px 8px;border:0;border-radius:999px;background:var(--card,#fff);color:var(--ink);font-size:.92rem;font-weight:700;box-shadow:0 3px 10px rgba(0,0,0,.12);transition:transform .15s,box-shadow .2s}
+#menuList .pref .seg button:hover{transform:translateY(-1px)}
+#menuList .pref .seg button svg{width:20px;height:20px;flex:none}
+#menuList .pref .seg button.on{background:linear-gradient(135deg,#ff9a2e,#e8610a);color:#fff;box-shadow:0 6px 16px rgba(232,97,10,.42)}
+#menuList .pref .seg button.md.on::after{content:"✓";flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:#fff;color:#e8610a;font-size:.8rem;font-weight:900}
+/* Taille du texte : 4 pastilles */
+#menuList .pref .seg4{gap:8px}
+#menuList .pref .seg4 button{padding:10px 0;font-weight:800;line-height:1.1}
+/* Style d'écriture : 3 colonnes */
+#menuList .pref .fgrid2{grid-template-columns:repeat(3,1fr);gap:9px}
+#menuList .pref .fgrid2 .pf{position:relative;padding:12px 4px 10px;border:2px solid transparent;border-radius:16px;background:var(--card,#fff);box-shadow:0 3px 10px rgba(0,0,0,.1)}
+#menuList .pref .fgrid2 .pf b{font-size:1.65rem;font-weight:700}
+#menuList .pref .fgrid2 .pf small{font-size:.7rem}
+#menuList .pref .fgrid2 .pf.on{border-color:#f28c1b;box-shadow:0 5px 14px rgba(232,97,10,.28)}
+#menuList .pref .fgrid2 .pf.on b{color:var(--ink)}
+#menuList .pref .fgrid2 .pf.on::after{content:"✓";position:absolute;top:-7px;right:-7px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(#ff9a2e,#e8610a);color:#fff;font-size:.75rem;font-weight:900;box-shadow:0 2px 6px rgba(232,97,10,.5)}
+/* Pastilles de couleur */
+#menuList .pref .swr{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+#menuList .pref .sw,#menuList .pref .ac,#menuList .pref .acm{width:34px;height:34px;border-radius:50%;padding:0;flex:none;position:relative;border:2px solid rgba(0,0,0,.1);box-shadow:0 2px 6px rgba(0,0,0,.12);transition:transform .15s}
+#menuList .pref .sw:hover,#menuList .pref .ac:hover,#menuList .pref .acm:hover{transform:scale(1.12)}
+#menuList .pref .sw.on,#menuList .pref .ac.on,#menuList .pref .acm.on{border-color:#fff;box-shadow:0 0 0 3px #f28c1b,0 3px 8px rgba(232,97,10,.35)}
+#menuList .pref .sw.on::after,#menuList .pref .ac.on::after,#menuList .pref .acm.on::after{content:"✓";position:absolute;inset:0;display:grid;place-items:center;font-size:.9rem;font-weight:900;color:#fff;text-shadow:0 0 3px rgba(0,0,0,.6)}
+#menuList .pref .sw[data-th=""].on::after,#menuList .pref .sw[data-th="blanc"].on::after,#menuList .pref .sw[data-th="ciel"].on::after,#menuList .pref .sw[data-th="menthe"].on::after,#menuList .pref .sw[data-th="rose"].on::after{color:#e8610a;text-shadow:none}
+#menuList .pref .acm{display:block;overflow:hidden;cursor:pointer;background:conic-gradient(#ff3b3b,#ffb300,#ffee00,#42d65b,#1fb6ff,#7b3fc4,#ff4fa3,#ff3b3b)}
+#menuList .pref .acm input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:0;padding:0}
+/* Couleur libre */
+.apx-free{display:flex;align-items:center;gap:10px}
+.apx-hex{flex:1;min-width:0;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:14px;background:var(--card,#fff);box-shadow:0 2px 8px rgba(0,0,0,.1);color:var(--muted)}
+.apx-hex svg{width:18px;height:18px;flex:none}
+#menuList .pref .apx-hex input[type=text]{flex:1;min-width:0;width:100%;border:0;outline:0;background:transparent;color:var(--ink);padding:6px 0;font:700 .85rem/1.2 inherit;font-family:inherit;text-transform:uppercase;box-shadow:none}
+#menuList .pref #prefColor{appearance:none;-webkit-appearance:none;flex:none;width:28px;height:28px;padding:0;border:2px solid #fff;border-radius:50%;background:none;box-shadow:0 0 0 1.5px rgba(0,0,0,.18);cursor:pointer}
+#prefColor::-webkit-color-swatch-wrapper{padding:0}
+#prefColor::-webkit-color-swatch{border:0;border-radius:50%}
+#prefColor::-moz-color-swatch{border:0;border-radius:50%}
+#menuList .pref .apx-rs{flex:none;padding:10px 12px;border:0;border-radius:14px;background:var(--card,#fff);color:var(--ink);font-size:.8rem;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.1);cursor:pointer}
+#menuList .pref .apx-rs:hover{background:#ffe9d2;color:#e8610a}
+/* Gros bouton final */
+#menuList .pref .preset{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:20px;padding:15px 14px;border:0;border-radius:999px;background:linear-gradient(135deg,#ff9a2e,#e8610a);color:#fff;font-size:.95rem;font-weight:800;box-shadow:0 8px 20px rgba(232,97,10,.42);cursor:pointer}
+#menuList .pref .preset:hover{filter:brightness(1.05)}
+#menuList .pref .preset:active{transform:scale(.98)}
 </style>
 </body>
 </html>
