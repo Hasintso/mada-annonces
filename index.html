@@ -5717,5 +5717,75 @@ body:not(.landing) .ad .meta,.crow-l>.ad .meta,#allHead:not([hidden])+#list>.ad 
 #menuList .pref .preset:hover{filter:brightness(1.05)}
 #menuList .pref .preset:active{transform:scale(.98)}
 </style>
+<style id="orangeV33_7">
+/* ===== v33.7 · Habillage orange « BUSTOPLAY » (d'après la maquette) =====
+   Touche : logo, boutons + / messages / panier, « près de vous. », « Rechercher », onglets de catégories, « Voir toutes les annonces ». */
+:root{--bp-o1:#ffa534;--bp-o2:#f26a0f;--bp-o3:#e8560a;--bp-brown:#7a2e0e;--bp-glow:rgba(242,106,15,.38);--bp-red:#e5382d}
+
+/* ---------- 1. Logo + signature ---------- */
+body:not(.landing) .brand{display:flex;flex-direction:column;align-items:flex-start;gap:3px}
+body:not(.landing) .brand b.bp-word{letter-spacing:.005em;text-shadow:none}
+.bp-word .bp-a{color:var(--bp-brown)}
+.bp-word .bp-b{color:var(--bp-o2)}
+.bp-word .bp-ic{filter:drop-shadow(0 3px 5px rgba(232,86,10,.35))}
+body:not(.landing) .brand::after{content:"Achetez • Vendez • Gagnez";padding-left:calc(1.28em + .3em);font:600 .66rem/1 Poppins,Nunito,"Segoe UI",system-ui,sans-serif;letter-spacing:.01em;color:var(--muted,#5d6b64);white-space:nowrap}
+@media(max-width:560px){body:not(.landing) .brand::after{display:none}}
+
+/* ---------- 2. Bouton « + » (orange, halo lumineux) ---------- */
+header .top #btnPost.post,body.landing header .top #btnPost.post,body:not(.landing) header .top #btnPost.post{
+  background:linear-gradient(145deg,var(--bp-o1),var(--bp-o2) 60%,var(--bp-o3));color:#fff;border:0;
+  box-shadow:0 0 0 5px rgba(242,106,15,.14),0 8px 18px var(--bp-glow),inset 0 1px 0 rgba(255,255,255,.45);
+  transition:transform .18s,box-shadow .18s,filter .18s}
+header .top #btnPost.post svg{width:26px;height:26px;stroke:#fff;stroke-width:3.2}
+header .top #btnPost.post:hover{transform:scale(1.08) rotate(90deg);filter:brightness(1.04);box-shadow:0 0 0 7px rgba(242,106,15,.18),0 10px 22px var(--bp-glow),inset 0 1px 0 rgba(255,255,255,.45)}
+header .top #btnPost.post:active{transform:scale(.95)}
+
+/* ---------- 3. Boutons Messages et Panier (ronds blancs, icône orange, pastille rouge) ---------- */
+header .top .hbtn{
+  background:linear-gradient(#fff,#fff6ee);color:var(--bp-o2);border:1.5px solid #ffd9bd;
+  box-shadow:0 6px 14px rgba(242,106,15,.18),inset 0 1px 0 #fff;
+  transition:transform .18s,box-shadow .18s,border-color .18s,background .18s}
+header .top .hbtn svg{width:24px;height:24px;stroke-width:2.2}
+header .top #btnMsg svg path{fill:rgba(242,106,15,.16)}
+header .top #btnCart svg circle{fill:currentColor}
+header .top .hbtn:hover{transform:translateY(-2px) scale(1.05);border-color:var(--bp-o2);box-shadow:0 10px 20px rgba(242,106,15,.28)}
+header .top .hbtn:active{transform:scale(.95)}
+header .top .hbtn .badge{top:-6px;right:-6px;min-width:21px;height:21px;line-height:17px;padding:0 5px;border:2px solid #fff;
+  background:var(--bp-red);color:#fff;font:800 .72rem/17px Poppins,Arial,sans-serif;box-shadow:0 3px 8px rgba(229,56,45,.45)}
+header .top .pbtn{border-color:#fff;box-shadow:0 0 0 2px #ffd9bd,0 6px 14px rgba(242,106,15,.22)}
+
+/* ---------- 4. Titre : « près de vous. » en orange, souligné d'un trait main ---------- */
+body:not(.landing) .search .in h2 em,.search h2 em{color:var(--bp-o2);font-style:normal;position:relative;display:inline-block;padding-bottom:.14em;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 12' preserveAspectRatio='none'%3E%3Cpath d='M3 8C45 2 110 1 197 6' fill='none' stroke='%23f26a0f' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat left bottom/100% .22em}
+
+/* ---------- 5. Bouton « Rechercher » ---------- */
+body .search form button.btn,body .hsearch button.btn.cta{
+  background:linear-gradient(135deg,var(--bp-o1),var(--bp-o2) 65%,var(--bp-o3));color:#fff;border:0;border-radius:999px;font-weight:800;letter-spacing:.01em;
+  box-shadow:0 8px 18px var(--bp-glow),inset 0 1px 0 rgba(255,255,255,.4);text-shadow:0 1px 2px rgba(150,50,0,.25);
+  transition:transform .18s,box-shadow .18s,filter .18s}
+body .search form button.btn:hover,body .hsearch button.btn.cta:hover{transform:translateY(-2px);filter:brightness(1.05);box-shadow:0 12px 24px var(--bp-glow),inset 0 1px 0 rgba(255,255,255,.4)}
+body .search form button.btn:active,body .hsearch button.btn.cta:active{transform:scale(.97)}
+
+/* ---------- 6. Onglets de catégories : « Toutes » en pilule orange ---------- */
+.catbar{gap:8px}
+.catbar .cb-chip,.catbar .cb-chip:not(.on){background:var(--card,#fff);border:1px solid transparent;border-radius:999px;padding:8px 16px;
+  box-shadow:0 2px 8px rgba(120,55,10,.08);color:var(--ink);font-weight:700;transform:none}
+.catbar .cb-chip::after{display:none}
+.catbar .cb-chip:hover,.catbar .cb-chip:focus-visible{background:#fff3e8;border-color:#ffd0aa;color:var(--bp-o3);transform:translateY(-1px)}
+.catbar .cb-chip.on,.catbar .cb-chip.on:hover{background:linear-gradient(135deg,var(--bp-o1),var(--bp-o2));border-color:transparent;color:#fff;box-shadow:0 6px 14px var(--bp-glow)}
+.catbar .cb-chip.on .cb-n{opacity:.9;color:#fff}
+.catbar .cb-chip[data-key=""]::before{content:"";width:16px;height:16px;flex:none;background:currentColor;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z'/%3E%3C/svg%3E") center/contain no-repeat}
+
+/* ---------- 7. « Voir toutes les annonces → » ---------- */
+main .head a#seeAll{color:var(--bp-o2);font-weight:800;text-decoration:none;display:inline-flex;align-items:center;gap:4px;padding:8px 4px;
+  background:linear-gradient(currentColor,currentColor) no-repeat left calc(100% - 4px)/0 2px;transition:background-size .25s,color .2s}
+main .head a#seeAll:hover,main .head a#seeAll:focus-visible{color:var(--bp-o3);background-size:100% 2px}
+
+@media(prefers-reduced-motion:reduce){
+  header .top #btnPost.post:hover,header .top .hbtn:hover,body .search form button.btn:hover{transform:none}
+}
+</style>
 </body>
 </html>
