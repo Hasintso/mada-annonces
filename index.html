@@ -5754,9 +5754,8 @@ header .top .hbtn .badge{top:-6px;right:-6px;min-width:21px;height:21px;line-hei
   background:var(--bp-red);color:#fff;font:800 .72rem/17px Poppins,Arial,sans-serif;box-shadow:0 3px 8px rgba(229,56,45,.45)}
 header .top .pbtn{border-color:#fff;box-shadow:0 0 0 2px #ffd9bd,0 6px 14px rgba(242,106,15,.22)}
 
-/* ---------- 4. Titre : « près de vous. » en orange, souligné d'un trait main ---------- */
-body:not(.landing) .search .in h2 em,.search h2 em{color:var(--bp-o2);font-style:normal;position:relative;display:inline-block;padding-bottom:.14em;
-  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 12' preserveAspectRatio='none'%3E%3Cpath d='M3 8C45 2 110 1 197 6' fill='none' stroke='%23f26a0f' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat left bottom/100% .22em}
+/* ---------- 4. Titre : « près de vous. » en orange (sans soulignement) ---------- */
+body:not(.landing) .search .in h2 em,.search h2 em{color:var(--bp-o2);font-style:normal;background:none;text-decoration:none;padding-bottom:0}
 
 /* ---------- 5. Bouton « Rechercher » ---------- */
 body .search form button.btn,body .hsearch button.btn.cta{
@@ -5774,6 +5773,12 @@ body .search form button.btn:active,body .hsearch button.btn.cta:active{transfor
 .catbar .cb-chip:hover,.catbar .cb-chip:focus-visible{color:var(--bp-o2);transform:translateY(-1px);outline-offset:0}
 .catbar .cb-chip.on{color:var(--bp-o2)}
 .catbar .cb-chip.on .cb-n{opacity:.7;color:inherit}
+/* Curseur de défilement (visible, fin, arrondi, orange) */
+.catbar{scrollbar-width:thin;scrollbar-color:var(--bp-o2) #ffe3cf;padding-bottom:10px;overscroll-behavior-x:contain}
+.catbar::-webkit-scrollbar{display:block;height:6px}
+.catbar::-webkit-scrollbar-track{background:#ffe3cf;border-radius:999px}
+.catbar::-webkit-scrollbar-thumb{background:linear-gradient(90deg,var(--bp-o1),var(--bp-o2));border-radius:999px}
+.catbar::-webkit-scrollbar-thumb:hover{background:var(--bp-o3)}
 
 /* ---------- 7. « Voir toutes les annonces → » ---------- */
 main .head a#seeAll{color:var(--bp-o2);font-weight:800;text-decoration:none;display:inline-flex;align-items:center;gap:4px;padding:8px 4px;
