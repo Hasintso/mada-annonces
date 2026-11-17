@@ -1611,6 +1611,7 @@ body:not(.landing) #allHead:not([hidden])+#list.grid>.sl-info,body:not(.landing)
     <h2>Vous achetez, vous vendez, vous travaillez et vous pouvez trouvez <em>près de vous.</em></h2>
     <p>Des milliers d'annonces, des produits de qualité, des vendeurs de confiance.<br>Tout en <b>un seul endroit</b>.</p>
     <div class="slogan">Des bonnes affaires<br>près de chez vous !</div>
+    <button type="button" class="esp-btn" id="esvBtn" hidden aria-label="Ouvrir l'Espace vendeur"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M2 12l3-8h22l3 8z"/><path d="M4 12v15h24V12"/><path d="M13 27v-8h6v8"/></svg><span><small>Espace</small><b>vendeur</b></span></button>
     <button type="button" class="esp-btn" id="espBtn" hidden aria-label="Ouvrir l'Espace client"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 7h16a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-7l-5 4v-4H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z"/><path d="M24 12h2a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-2v4l-4.500-4H14"/></svg><span><small>Espace</small><b>client</b></span></button>
     <form id="searchForm">
       <svg class="mag" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
@@ -1934,6 +1935,25 @@ body:not(.landing) #allHead:not([hidden])+#list.grid>.sl-info,body:not(.landing)
   <section id="espBesoins" hidden>
     <input class="esp-filter" id="espFilter" type="search" placeholder="Filtrer : moto, riz, téléphone…" aria-label="Filtrer les recherches">
     <div id="espList"></div>
+  </section>
+</div></div>
+<div class="mask" id="mEsv"><div class="box esp" role="dialog" aria-modal="true" aria-label="Espace vendeur">
+  <button class="x" data-close aria-label="Fermer">×</button>
+  <h2>Espace vendeur</h2>
+  <p class="esp-sub">Retrouvez les autres vendeurs, échangez avec eux et discutez dans le salon.</p>
+  <div class="esp-tabs" role="tablist" aria-label="Espace vendeur">
+    <button type="button" data-t="salon" class="on">💬 Salon</button>
+    <button type="button" data-t="annuaire">🏪 Annuaire des vendeurs</button>
+    <button type="button" data-t="prives">✉️ Messages privés</button>
+  </div>
+  <section id="esvSalon">
+    <div id="esvMsgs" aria-live="polite"></div>
+    <form id="esvForm"><textarea id="esvText" rows="1" maxlength="500" placeholder="Écrivez au salon des vendeurs…" aria-label="Votre message au salon"></textarea><button class="btn cta" id="esvSend" type="submit">Envoyer</button></form>
+    <p class="msg" id="esvErr" role="status"></p>
+  </section>
+  <section id="esvAnnuaire" hidden>
+    <input class="esp-filter" id="esvFilter" type="search" placeholder="Chercher un vendeur : nom, ville, produit…" aria-label="Chercher un vendeur">
+    <div id="esvList"></div>
   </section>
 </div></div>
 <div class="ovl" id="menuOv" hidden></div>
@@ -5686,6 +5706,129 @@ body:not(.landing) .ad .meta,.crow-l>.ad .meta,#allHead:not([hidden])+#list>.ad 
   });
   setInterval(() => { if (isOpenEsp() && E.tab === 'salon' && user && !document.hidden) loadSalon(false); }, 5000);
 })();
+
+/* ===== Espace vendeur : salon (table ann_salon_vendeurs) + annuaire des vendeurs (ann_boutiques) + messages privés ===== */
+(function () {
+  const TB = 'ann_salon_vendeurs';
+  const E = { tab: 'salon', msgs: [], busy: false, sig: '', ok: true, shops: [] };
+  const me = () => user && user.id;
+  const myName = () => { const m = (user && user.user_metadata) || {}; return m.full_name || m.name || 'Vendeur'; };
+  const say = m => window.bpSay ? window.bpSay(m) : alert(m);
+  const isVendor = () => (accountRole() || roleGet()) === 'vendeur';
+  const AVC = ['#0f7a4f', '#2f7fe0', '#a2501a', '#8e44ad', '#c0392b', '#00838f', '#6d4c41', '#ad1457'];
+  const hhmm = iso => new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  const sameDay = (a, b) => a.toDateString() === b.toDateString();
+  const dayLbl = iso => {
+    const d = new Date(iso), n = new Date(), y = new Date(); y.setDate(n.getDate() - 1);
+    if (sameDay(d, n)) return "Aujourd'hui"; if (sameDay(d, y)) return 'Hier';
+    const t = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }); return t.charAt(0).toUpperCase() + t.slice(1);
+  };
+  const isOpenEsv = () => $('mEsv').classList.contains('open');
+  const syncBtn = () => { const b = $('esvBtn'); if (b) b.hidden = !isVendor(); };
+  syncBtn(); setInterval(syncBtn, 1500);
+
+  function setTab(t) {
+    E.tab = t;
+    document.querySelectorAll('#mEsv .esp-tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+    $('esvSalon').hidden = t !== 'salon'; $('esvAnnuaire').hidden = t !== 'annuaire';
+  }
+
+  /* ----- Salon ----- */
+  const errMsg = e => {
+    const s = ((e && e.code) || '') + ' ' + ((e && e.message) || '');
+    if (/42P01|relation|schema cache|ann_salon_vendeurs/i.test(s)) return "Le salon n'est pas encore activé. Revenez bientôt !";
+    if (/42501|row-level|permission|policy/i.test(s)) return "Le salon est réservé aux vendeurs connectés.";
+    return "Impossible de joindre le salon pour le moment. Réessayez.";
+  };
+  function renderSalon(scroll) {
+    const box = $('esvMsgs');
+    if (!E.ok) return;
+    if (!E.msgs.length) { box.innerHTML = '<div class="chat-empty">Le salon est vide pour le moment.<br>Soyez le premier à écrire 👋</div>'; return; }
+    const atEnd = scroll || box.scrollHeight - box.scrollTop - box.clientHeight < 60;
+    let last = '';
+    box.innerHTML = E.msgs.map(m => {
+      const dk = new Date(m.cree_le).toDateString(), sep = dk !== last ? `<div class="esp-dsep">${esc(dayLbl(m.cree_le))}</div>` : ''; last = dk;
+      const mine = m.user_id === me(), nm = m.nom || 'Vendeur';
+      const act = mine ? `<button type="button" class="esv-del" data-id="${esc(m.id)}">Supprimer</button>`
+                       : `<button type="button" class="esv-pv" data-u="${esc(m.user_id)}" data-n="${esc(nm)}">Écrire en privé</button>`;
+      return sep + `<div class="esp-m ${mine ? 'me' : 'you'}"><div class="esp-b">${mine ? '' : `<span class="nm" style="color:${AVC[[...nm].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 0) % AVC.length]}">${esc(nm)}</span>`}${esc(m.texte)}<small><time>${esc(hhmm(m.cree_le))}</time>${act}</small></div></div>`;
+    }).join('');
+    if (atEnd) box.scrollTop = box.scrollHeight;
+  }
+  async function loadSalon(scroll) {
+    if (!user || !sbReady) return;
+    try {
+      const { data, error } = await SB.from(TB).select('*').order('cree_le', { ascending: false }).limit(100);
+      if (error) throw error;
+      E.ok = true; $('esvForm').style.display = ''; $('esvErr').textContent = '';
+      const list = (data || []).reverse(), sig = list.length + ':' + (list.length ? list[list.length - 1].id : '');
+      if (sig === E.sig && !scroll) return;
+      E.msgs = list; E.sig = sig; renderSalon(scroll);
+    } catch (e) {
+      E.ok = false; $('esvForm').style.display = 'none';
+      $('esvMsgs').innerHTML = `<div class="chat-empty">${esc(errMsg(e))}</div>`;
+    }
+  }
+  $('esvMsgs').addEventListener('click', async e => {
+    const pv = e.target.closest('.esv-pv'), del = e.target.closest('.esv-del');
+    if (pv) { close('mEsv'); window.openChat && window.openChat({ id: '', user_id: pv.dataset.u, titre: 'Espace vendeur', nom: pv.dataset.n }); return; }
+    if (del) {
+      try { const { error } = await SB.from(TB).delete().eq('id', del.dataset.id); if (error) throw error; } catch (x) { $('esvErr').textContent = errMsg(x); return; }
+      E.sig = ''; loadSalon(false);
+    }
+  });
+  $('esvForm').onsubmit = async e => {
+    e.preventDefault();
+    const t = $('esvText').value.trim(); if (!t || E.busy || !user) return;
+    E.busy = true; $('esvSend').disabled = true; $('esvErr').textContent = '';
+    try {
+      const { error } = await SB.from(TB).insert({ user_id: me(), nom: myName(), texte: t.slice(0, 500) });
+      if (error) throw error;
+      $('esvText').value = ''; E.sig = ''; await loadSalon(true);
+    } catch (x) { $('esvErr').textContent = errMsg(x); }
+    E.busy = false; $('esvSend').disabled = false;
+  };
+  $('esvText').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); $('esvForm').requestSubmit(); } });
+
+  /* ----- Annuaire des vendeurs ----- */
+  function renderShops() {
+    const q = norm($('esvFilter').value.trim()), box = $('esvList');
+    const rows = E.shops.filter(s => !q || norm((s.nom || '') + ' ' + (s.ville || '') + ' ' + (s.vend || '')).includes(q));
+    if (!rows.length) { box.innerHTML = '<div class="chat-empty">' + (q ? 'Aucun vendeur ne correspond.' : 'Aucun autre vendeur pour le moment.') + '</div>'; return; }
+    box.innerHTML = rows.map(s => {
+      const nom = s.nom || 'Vendeur';
+      return `<article class="esp-card"><div class="esv-who"><span class="esv-av">${avatarHtml(s.avatar_url, nom)}</span><div><h3>${esc(nom)}</h3>${s.ville ? `<p>📍 ${esc(s.ville)}</p>` : ''}</div></div>
+        ${s.vend ? `<p>Vend : ${esc(String(s.vend).replace(/\s+/g, ' ').trim().slice(0, 140))}</p>` : ''}
+        <div class="by"><span></span><button type="button" class="btn alt esv-pv2" data-u="${esc(s.user_id)}" data-n="${esc(nom)}">Écrire en privé</button></div></article>`;
+    }).join('');
+  }
+  async function loadShops() {
+    const box = $('esvList'); box.innerHTML = '<div class="chat-empty">Chargement…</div>';
+    try {
+      const { data, error } = await SB.from('ann_boutiques').select('user_id,nom,avatar_url,ville,vend').limit(500);
+      if (error) throw error;
+      E.shops = (data || []).filter(s => s.user_id && s.user_id !== me()); renderShops();
+    } catch (e) { box.innerHTML = '<div class="chat-empty">Impossible de charger les vendeurs pour le moment.</div>'; }
+  }
+  $('esvFilter').addEventListener('input', renderShops);
+  $('esvList').addEventListener('click', e => {
+    const b = e.target.closest('.esv-pv2'); if (!b) return;
+    close('mEsv'); window.openChat && window.openChat({ id: '', user_id: b.dataset.u, titre: 'Espace vendeur', nom: b.dataset.n });
+  });
+
+  /* ----- Ouverture, onglets, actualisation ----- */
+  $('esvBtn').onclick = () => {
+    if (!user) { say("Connectez-vous avec votre profil Vendeur pour entrer dans l'Espace vendeur."); return; }
+    if (accountRole() !== 'vendeur') { say("L'Espace vendeur est réservé aux profils Vendeur."); return; }
+    setTab('salon'); open('mEsv'); $('esvMsgs').innerHTML = '<div class="chat-empty">Chargement…</div>'; E.sig = ''; loadSalon(true);
+  };
+  document.querySelectorAll('#mEsv .esp-tabs button').forEach(b => b.onclick = () => {
+    const t = b.dataset.t;
+    if (t === 'prives') { close('mEsv'); const m = $('btnMsg'); if (m) m.click(); return; }
+    setTab(t); if (t === 'salon') { E.sig = ''; loadSalon(true); } else loadShops();
+  });
+  setInterval(() => { if (isOpenEsv() && E.tab === 'salon' && user && !document.hidden) loadSalon(false); }, 5000);
+})();
 </script>
 <style id="profilStyleV33c">
 /* ===== v33.2 · Profil vendeur + profil client : style maquette (en-tête orange, pastille « Profil complet », tuiles, carte « À propos », photos, déconnexion) ===== */
@@ -6123,6 +6266,13 @@ main .head a#seeAll:hover,main .head a#seeAll:focus-visible{color:var(--bp-o3);b
 .esp-card p{margin:0;color:var(--muted);font-size:.88rem}
 .esp-card .by{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:6px;font-size:.84rem;color:var(--muted)}
 .esp-card .by .btn{padding:6px 14px;font-size:.84rem}
+
+/* ===== Espace vendeur : annuaire des vendeurs + salon ===== */
+.esv-who{display:flex;gap:12px;align-items:center}
+.esv-av{width:48px;height:48px;border-radius:50%;overflow:hidden;background:#fbeedd;display:flex;align-items:center;justify-content:center;font-weight:800;color:#a5541a;border:2px solid #f2d3b0;flex:none}
+.esv-av img{width:100%;height:100%;object-fit:cover;display:block}
+.esv-who h3{margin:0}
+.esv-who p{margin:0}
 </style>
 </body>
 </html>
