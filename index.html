@@ -2317,7 +2317,7 @@ async function loadCats() {
   loadCounts();
 }
 
-/* Menu « Ici votre besoin » : sous « Toutes catégories », 12 catégories reliées à la base par leur nom (table ann_categories).
+/* Menu « Ici votre besoin » : sous « Toutes catégories », 13 catégories reliées à la base par leur nom (table ann_categories).
    Pour ajouter une catégorie : l'ajouter ici ET dans ann_categories (SQL). */
 const PETIT_PRIX = 100000; // « Petit prix » = annonces jusqu'à ce montant (en Ar) : modifiez ici si besoin
 const NEED = [
@@ -2332,7 +2332,8 @@ const NEED = [
   ['Fourniture scolaire', 'fourniture', []],
   ['Musics & Création', 'music', []],
   ['Art Malagasy', 'malagasy', []],
-  ['Exportation & Transport', 'exportation', []]
+  ['Exportation & Transport', 'exportation', []],
+  ['Agriculture & élevage', 'agriculture', []]
 ];
 const qCatVal = key => needId(key) > 0 ? needId(key) : 'k:' + key;
 const needId = key => {
@@ -2662,7 +2663,8 @@ function fxSubs(key) {
     fourniture: [['Cahiers & papeterie', ['cahier', 'papier', 'bloc', 'classeur', 'papeterie']], ['Stylos & crayons', ['stylo', 'crayon', 'gomme', 'règle', 'regle', 'feutre']], ['Cartables & sacs', ['cartable', 'sac', 'trousse']], ['Livres scolaires', ['livre', 'manuel', 'dictionnaire', 'programme']]],
     music:      [['Instrumentaux', ['instrumental', 'beat', 'prod']], ['Chansons', ['chanson', 'single', 'album', 'titre']], ['Instruments', ['guitare', 'piano', 'clavier', 'valiha', 'tambour', 'micro']], ['Studio & mix', ['studio', 'mix', 'mastering', 'enregistrement']]],
     malagasy:   [['Artisanat', ['artisanat', 'fait main', 'panier', 'vannerie']], ['Raphia & tissus', ['raphia', 'lamba', 'tissu', 'soie']], ['Sculpture & bois', ['sculpture', 'bois', 'zébu', 'zebu', 'statue']], ['Peinture & tableaux', ['peinture', 'tableau', 'dessin', 'cadre']]],
-    exportation:[['Exportation', ['export', 'exportation', 'international']], ['Transport', ['transport', 'livraison', 'camion', 'taxi']], ['Colis & fret', ['colis', 'fret', 'cargo', 'expédition', 'expedition']], ['Déménagement', ['déménagement', 'demenagement', 'transfert']]]
+    exportation:[['Exportation', ['export', 'exportation', 'international']], ['Transport', ['transport', 'livraison', 'camion', 'taxi']], ['Colis & fret', ['colis', 'fret', 'cargo', 'expédition', 'expedition']], ['Déménagement', ['déménagement', 'demenagement', 'transfert']]],
+    agriculture:[['Cultures & semences', ['semence', 'graine', 'plant', 'riz', 'maïs', 'mais', 'culture']], ['Élevage', ['zébu', 'zebu', 'poule', 'porc', 'canard', 'chèvre', 'chevre', 'lapin', 'bétail', 'betail', 'élevage', 'elevage']], ['Matériel agricole', ['tracteur', 'charrue', 'motoculteur', 'pulvérisateur', 'pulverisateur', 'arrosage', 'outil']], ['Engrais & aliments', ['engrais', 'fumier', 'aliment', 'provende', 'pesticide']]]
   })[key] || [];
 }
 /* Ajoute les filtres choisis à la requête des annonces */
@@ -5067,6 +5069,7 @@ body:not(.landing) .brand b.bp-word{display:inline-flex;align-items:center;gap:0
 #cats .grp>button[data-key="music"]::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M12.500 7.500l14-3v5l-14 3z' fill='%23f28c1b'/%3E%3Cellipse cx='9' cy='24' rx='4' ry='3' fill='%23e8782a'/%3E%3Cellipse cx='23' cy='21' rx='4' ry='3' fill='%23a2501a'/%3E%3Cpath d='M12.500 24V7.500l14-3V21' fill='none' stroke='%235b2a0c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
 #cats .grp>button[data-key="malagasy"]::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='20' r='9' fill='%23f6b25a'/%3E%3Cpath d='M12 28c1.500-3 2-6 1.500-10h5c-.5 4 0 7 1.500 10z' fill='%238a4112'/%3E%3Cpath d='M5 12.500c0-3 4-4 7-3.500 1.500-2.500 6.500-2.500 8.500 0 3.500-.5 7 .8 7 3.500 0 2.500-4 3.500-9 3.500H12c-4 0-7-1-7-3.500z' fill='%234f9a3a'/%3E%3Cpath d='M3 28h26' stroke='%235b2a0c' stroke-width='1.600' stroke-linecap='round'/%3E%3C/svg%3E")}
 #cats .grp>button[data-key="exportation"]::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='8' width='17' height='14' rx='1.500' fill='%231e63c8'/%3E%3Cpath d='M19 12.500h5.500l4.500 4.500v5H19z' fill='%23e8782a'/%3E%3Cpath d='M21 14.500h3.200l2.500 2.700H21z' fill='%23e3efff'/%3E%3Ccircle cx='8' cy='24' r='3' fill='%2314325f' stroke='%23fff3e2' stroke-width='1.200'/%3E%3Ccircle cx='23.500' cy='24' r='3' fill='%2314325f' stroke='%23fff3e2' stroke-width='1.200'/%3E%3C/svg%3E")}
+#cats .grp>button[data-key="agriculture"]::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 29V12' stroke='%232e8b3d' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M16 14C9 14 6 10 6 5c6 0 10 3 10 9z' fill='%2343a047'/%3E%3Cpath d='M16 18c7 0 10-4 10-9-6 0-10 3-10 9z' fill='%2366bb6a'/%3E%3Cpath d='M16 25c-5 0-8-3-8-7 5 0 8 2 8 7z' fill='%232e8b3d'/%3E%3C/svg%3E")}
 
 /* ===== v32.8 · Titres des listes (« Tout », « Sakafo »…) : icône + titre gras + pastille pêche + traits orange ===== */
 .crow-h .crow-t{display:inline-flex;align-items:center;gap:.42em;padding:0;transform:none;
@@ -5088,6 +5091,7 @@ body:not(.landing) .brand b.bp-word{display:inline-flex;align-items:center;gap:0
 .crow[data-k="music"] .crow-t::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M12.500 7.500l14-3v5l-14 3z' fill='%23f28c1b'/%3E%3Cellipse cx='9' cy='24' rx='4' ry='3' fill='%23e8782a'/%3E%3Cellipse cx='23' cy='21' rx='4' ry='3' fill='%23a2501a'/%3E%3Cpath d='M12.500 24V7.500l14-3V21' fill='none' stroke='%235b2a0c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
 .crow[data-k="malagasy"] .crow-t::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='20' r='9' fill='%23f6b25a'/%3E%3Cpath d='M12 28c1.500-3 2-6 1.500-10h5c-.5 4 0 7 1.500 10z' fill='%238a4112'/%3E%3Cpath d='M5 12.500c0-3 4-4 7-3.500 1.500-2.500 6.500-2.500 8.500 0 3.500-.5 7 .8 7 3.500 0 2.500-4 3.500-9 3.500H12c-4 0-7-1-7-3.500z' fill='%234f9a3a'/%3E%3Cpath d='M3 28h26' stroke='%235b2a0c' stroke-width='1.600' stroke-linecap='round'/%3E%3C/svg%3E")}
 .crow[data-k="exportation"] .crow-t::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='8' width='17' height='14' rx='1.500' fill='%231e63c8'/%3E%3Cpath d='M19 12.500h5.500l4.500 4.500v5H19z' fill='%23e8782a'/%3E%3Cpath d='M21 14.500h3.200l2.500 2.700H21z' fill='%23e3efff'/%3E%3Ccircle cx='8' cy='24' r='3' fill='%2314325f' stroke='%23fff3e2' stroke-width='1.200'/%3E%3Ccircle cx='23.500' cy='24' r='3' fill='%2314325f' stroke='%23fff3e2' stroke-width='1.200'/%3E%3C/svg%3E")}
+.crow[data-k="agriculture"] .crow-t::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 29V12' stroke='%232e8b3d' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M16 14C9 14 6 10 6 5c6 0 10 3 10 9z' fill='%2343a047'/%3E%3Cpath d='M16 18c7 0 10-4 10-9-6 0-10 3-10 9z' fill='%2366bb6a'/%3E%3Cpath d='M16 25c-5 0-8-3-8-7 5 0 8 2 8 7z' fill='%232e8b3d'/%3E%3C/svg%3E")}
 .crow-h .crow-n{min-width:36px;height:36px;padding:0 10px;border:0;background:#ffe4c4;color:#e8610a;font:800 1.05rem/1 Poppins,Nunito,system-ui,sans-serif}
 .crow-h::after{height:11px;margin-left:6px;background:repeating-linear-gradient(115deg,#f28c1b 0 1.6px,transparent 1.6px 5.5px);
   -webkit-mask-image:none;mask-image:none;opacity:.9;border-radius:0}
