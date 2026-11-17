@@ -1611,6 +1611,7 @@ body:not(.landing) #allHead:not([hidden])+#list.grid>.sl-info,body:not(.landing)
     <h2>Vous achetez, vous vendez, vous travaillez et vous pouvez trouvez <em>près de vous.</em></h2>
     <p>Des milliers d'annonces, des produits de qualité, des vendeurs de confiance.<br>Tout en <b>un seul endroit</b>.</p>
     <div class="slogan">Des bonnes affaires<br>près de chez vous !</div>
+    <button type="button" class="esp-btn" id="espBtn" hidden aria-label="Ouvrir l'Espace client"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 7h16a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-7l-5 4v-4H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z"/><path d="M24 12h2a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-2v4l-4.500-4H14"/></svg><span><small>Espace</small><b>client</b></span></button>
     <form id="searchForm">
       <svg class="mag" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
       <div class="qwrap"><input id="q" type="search" placeholder=" " aria-label="Ici vous pouvez trouver ce dont vous avez besoin. Ex. : des fournisseurs, des créateurs, des travailleurs."><span class="qhint" aria-hidden="true"><span id="qhintTxt">Ici vous pouvez trouver ce dont vous avez besoin. Ex. : des fournisseurs, des créateurs, des travailleurs.</span></span></div>
@@ -1916,6 +1917,25 @@ body:not(.landing) #allHead:not([hidden])+#list.grid>.sl-info,body:not(.landing)
   <div id="cartList"></div>
 </div></div>
 
+<div class="mask" id="mEsp"><div class="box esp" role="dialog" aria-modal="true" aria-label="Espace client">
+  <button class="x" data-close aria-label="Fermer">×</button>
+  <h2>Espace client</h2>
+  <p class="esp-sub">Discutez avec les autres clients et voyez ce qu'ils recherchent.</p>
+  <div class="esp-tabs" role="tablist" aria-label="Espace client">
+    <button type="button" data-t="salon" class="on">💬 Salon</button>
+    <button type="button" data-t="besoins">🔎 Ce que cherchent les clients</button>
+    <button type="button" data-t="prives">✉️ Messages privés</button>
+  </div>
+  <section id="espSalon">
+    <div id="espMsgs" aria-live="polite"></div>
+    <form id="espForm"><textarea id="espText" rows="1" maxlength="500" placeholder="Écrivez au salon…" aria-label="Votre message au salon"></textarea><button class="btn cta" id="espSend" type="submit">Envoyer</button></form>
+    <p class="msg" id="espErr" role="status"></p>
+  </section>
+  <section id="espBesoins" hidden>
+    <input class="esp-filter" id="espFilter" type="search" placeholder="Filtrer : moto, riz, téléphone…" aria-label="Filtrer les recherches">
+    <div id="espList"></div>
+  </section>
+</div></div>
 <div class="ovl" id="menuOv" hidden></div>
 <div class="dd" id="menuList" role="navigation" aria-label="Menu principal" hidden>
   <div class="ddhead"><span class="ddbag" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 13H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></span><span class="ddtitle"><span class="ddlogo">MENU</span><small>Explorez nos services</small></span><button type="button" id="menuClose" class="ddx" aria-label="Fermer le menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
@@ -5536,6 +5556,136 @@ body:not(.landing) .ad .meta,.crow-l>.ad .meta,#allHead:not([hidden])+#list>.ad 
   var b=document.getElementById('btnMenu'), m=document.getElementById('menuList'); if(!b||!m) return;
   b.addEventListener('click',function(){ m.classList.remove('mn-first'); void m.offsetWidth; m.classList.add('mn-first'); clearTimeout(m._mnT); m._mnT=setTimeout(function(){ m.classList.remove('mn-first'); },1600); });
 })();
+
+/* ===== Espace client : salon commun (table ann_salon) + besoins des clients + accès aux messages privés ===== */
+(function () {
+  const TB = 'ann_salon';
+  const E = { tab: 'salon', msgs: [], busy: false, sig: '', ok: true, needs: [] };
+  const me = () => user && user.id;
+  const myName = () => { const m = (user && user.user_metadata) || {}; return m.full_name || m.name || 'Client'; };
+  const say = m => window.bpSay ? window.bpSay(m) : alert(m);
+  const AVC = ['#0f7a4f', '#2f7fe0', '#a2501a', '#8e44ad', '#c0392b', '#00838f', '#6d4c41', '#ad1457'];
+  const hhmm = iso => new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  const sameDay = (a, b) => a.toDateString() === b.toDateString();
+  const dayLbl = iso => {
+    const d = new Date(iso), n = new Date(), y = new Date(); y.setDate(n.getDate() - 1);
+    if (sameDay(d, n)) return "Aujourd'hui"; if (sameDay(d, y)) return 'Hier';
+    const t = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }); return t.charAt(0).toUpperCase() + t.slice(1);
+  };
+  const isOpenEsp = () => $('mEsp').classList.contains('open');
+
+  /* Le bouton n'apparaît que pour le profil Client */
+  const syncBtn = () => { const b = $('espBtn'); if (b) b.hidden = !isClient(); };
+  syncBtn(); setInterval(syncBtn, 1500);
+
+  function setTab(t) {
+    E.tab = t;
+    document.querySelectorAll('#mEsp .esp-tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+    $('espSalon').hidden = t !== 'salon'; $('espBesoins').hidden = t !== 'besoins';
+  }
+
+  /* ----- Salon ----- */
+  const errMsg = e => {
+    const s = ((e && e.code) || '') + ' ' + ((e && e.message) || '');
+    if (/42P01|relation|schema cache|ann_salon/i.test(s)) return "Le salon n'est pas encore activé. Revenez bientôt !";
+    if (/42501|row-level|permission|policy/i.test(s)) return "Le salon est réservé aux clients connectés.";
+    return "Impossible de joindre le salon pour le moment. Réessayez.";
+  };
+  function renderSalon(scroll) {
+    const box = $('espMsgs');
+    if (!E.ok) return;
+    if (!E.msgs.length) { box.innerHTML = '<div class="chat-empty">Le salon est vide pour le moment.<br>Soyez le premier à écrire 👋</div>'; return; }
+    const atEnd = scroll || box.scrollHeight - box.scrollTop - box.clientHeight < 60;
+    let last = '';
+    box.innerHTML = E.msgs.map(m => {
+      const dk = new Date(m.cree_le).toDateString(), sep = dk !== last ? `<div class="esp-dsep">${esc(dayLbl(m.cree_le))}</div>` : ''; last = dk;
+      const mine = m.user_id === me(), nm = m.nom || 'Client';
+      const act = mine ? `<button type="button" class="esp-del" data-id="${esc(m.id)}">Supprimer</button>`
+                       : `<button type="button" class="esp-pv" data-u="${esc(m.user_id)}" data-n="${esc(nm)}">Écrire en privé</button>`;
+      return sep + `<div class="esp-m ${mine ? 'me' : 'you'}"><div class="esp-b">${mine ? '' : `<span class="nm" style="color:${AVC[[...nm].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 0) % AVC.length]}">${esc(nm)}</span>`}${esc(m.texte)}<small><time>${esc(hhmm(m.cree_le))}</time>${act}</small></div></div>`;
+    }).join('');
+    if (atEnd) box.scrollTop = box.scrollHeight;
+  }
+  async function loadSalon(scroll) {
+    if (!user || !sbReady) return;
+    try {
+      const { data, error } = await SB.from(TB).select('*').order('cree_le', { ascending: false }).limit(100);
+      if (error) throw error;
+      E.ok = true; $('espForm').style.display = ''; $('espErr').textContent = '';
+      const list = (data || []).reverse(), sig = list.length + ':' + (list.length ? list[list.length - 1].id : '');
+      if (sig === E.sig && !scroll) return;
+      E.msgs = list; E.sig = sig; renderSalon(scroll);
+    } catch (e) {
+      E.ok = false; $('espForm').style.display = 'none';
+      $('espMsgs').innerHTML = `<div class="chat-empty">${esc(errMsg(e))}</div>`;
+    }
+  }
+  $('espMsgs').addEventListener('click', async e => {
+    const pv = e.target.closest('.esp-pv'), del = e.target.closest('.esp-del');
+    if (pv) { close('mEsp'); window.openChat && window.openChat({ id: '', user_id: pv.dataset.u, titre: 'Espace client', nom: pv.dataset.n }); return; }
+    if (del) {
+      try { const { error } = await SB.from(TB).delete().eq('id', del.dataset.id); if (error) throw error; } catch (x) { $('espErr').textContent = errMsg(x); return; }
+      E.sig = ''; loadSalon(false);
+    }
+  });
+  $('espForm').onsubmit = async e => {
+    e.preventDefault();
+    const t = $('espText').value.trim(); if (!t || E.busy || !user) return;
+    E.busy = true; $('espSend').disabled = true; $('espErr').textContent = '';
+    try {
+      const { error } = await SB.from(TB).insert({ user_id: me(), nom: myName(), texte: t.slice(0, 500) });
+      if (error) throw error;
+      $('espText').value = ''; E.sig = ''; await loadSalon(true);
+    } catch (x) { $('espErr').textContent = errMsg(x); }
+    E.busy = false; $('espSend').disabled = false;
+  };
+  $('espText').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); $('espForm').requestSubmit(); } });
+
+  /* ----- Ce que cherchent les clients (commandes déposées par les clients) ----- */
+  function renderNeeds() {
+    const q = norm($('espFilter').value.trim()), box = $('espList');
+    const rows = E.needs.filter(a => !q || norm((a.titre || '') + ' ' + (a.description || '') + ' ' + (a.ann_categories ? a.ann_categories.nom : '') + ' ' + (a.ville || '')).includes(q));
+    if (!rows.length) { box.innerHTML = '<div class="chat-empty">' + (q ? 'Aucune recherche ne correspond.' : 'Aucun client ne recherche quelque chose pour le moment.') + '</div>'; return; }
+    box.innerHTML = rows.map(a => {
+      const mine = a.user_id === me(), cat = a.ann_categories ? a.ann_categories.nom : '';
+      const desc = String(a.description || '').replace(/\s+/g, ' ').trim().slice(0, 110);
+      return `<article class="esp-card"><div class="t1">${cat ? `<span class="tag">${esc(cat)}</span>` : '<span></span>'}<small>${esc(ago(a.cree_le))}</small></div>
+        <h3>${esc(a.titre || 'Recherche')}</h3>${desc ? `<p>${esc(desc)}</p>` : ''}
+        <div class="by"><span>${esc(a._nom || 'Client')}${a.ville ? ' · ' + esc(a.ville) : ''}</span>${mine ? '<span>Votre recherche</span>' : `<button type="button" class="btn alt esp-pv2" data-u="${esc(a.user_id)}" data-n="${esc(a._nom || 'Client')}" data-t="${esc(a.titre || '')}">Écrire en privé</button>`}</div></article>`;
+    }).join('');
+  }
+  async function loadNeeds() {
+    const box = $('espList'); box.innerHTML = '<div class="chat-empty">Chargement…</div>';
+    try {
+      const { data, error } = await SB.from('ann_annonces').select('*, ann_categories(nom)').eq('statut', 'valide').order('cree_le', { ascending: false }).limit(300);
+      if (error) throw error;
+      const sh = await sellerIds();
+      const rows = (data || []).filter(a => a.user_id && !isSellerAd(a, sh)).slice(0, 80);
+      const ids = [...new Set(rows.map(a => a.user_id))], nm = {};
+      if (ids.length) { try { const r = await SB.from('ann_clients').select('user_id,nom').in('user_id', ids); (r.data || []).forEach(x => nm[x.user_id] = x.nom); } catch (x) {} }
+      rows.forEach(a => a._nom = nm[a.user_id] || '');
+      E.needs = rows; renderNeeds();
+    } catch (e) { box.innerHTML = '<div class="chat-empty">Impossible de charger les recherches pour le moment.</div>'; }
+  }
+  $('espFilter').addEventListener('input', renderNeeds);
+  $('espList').addEventListener('click', e => {
+    const b = e.target.closest('.esp-pv2'); if (!b) return;
+    close('mEsp'); window.openChat && window.openChat({ id: '', user_id: b.dataset.u, titre: 'Espace client', nom: b.dataset.n, prefill: b.dataset.t ? 'Bonjour, je vois que vous cherchez « ' + b.dataset.t + ' ». ' : '' });
+  });
+
+  /* ----- Ouverture, onglets, actualisation ----- */
+  $('espBtn').onclick = () => {
+    if (!user) { say("Connectez-vous avec votre profil Client pour entrer dans l'Espace client."); return; }
+    if (accountRole() !== 'client') { say("L'Espace client est réservé aux profils Client."); return; }
+    setTab('salon'); open('mEsp'); $('espMsgs').innerHTML = '<div class="chat-empty">Chargement…</div>'; E.sig = ''; loadSalon(true);
+  };
+  document.querySelectorAll('#mEsp .esp-tabs button').forEach(b => b.onclick = () => {
+    const t = b.dataset.t;
+    if (t === 'prives') { close('mEsp'); const m = $('btnMsg'); if (m) m.click(); return; }
+    setTab(t); if (t === 'salon') { E.sig = ''; loadSalon(true); } else loadNeeds();
+  });
+  setInterval(() => { if (isOpenEsp() && E.tab === 'salon' && user && !document.hidden) loadSalon(false); }, 5000);
+})();
 </script>
 <style id="profilStyleV33c">
 /* ===== v33.2 · Profil vendeur + profil client : style maquette (en-tête orange, pastille « Profil complet », tuiles, carte « À propos », photos, déconnexion) ===== */
@@ -5933,6 +6083,46 @@ main .head a#seeAll:hover,main .head a#seeAll:focus-visible{color:var(--bp-o3);b
 }
 @media(max-width:400px){#roleGate .rg-trust li{border-left:0!important;padding:0 8px}}
 @media(prefers-reduced-motion:reduce){#roleGate .rg-card{transition:none}}
+
+/* ===== Espace client : bouton + salon commun + besoins des clients ===== */
+.esp-btn{position:absolute;right:16px;top:0;z-index:2;display:inline-flex;align-items:center;gap:10px;padding:9px 18px 9px 12px;cursor:pointer;
+  border:2px solid #f2b705;border-radius:999px;background:linear-gradient(180deg,#1b3a8a,#0d1d58);color:#fff;font:800 .95rem/1.1 inherit;
+  box-shadow:0 8px 18px rgba(13,29,88,.35),inset 0 0 0 1px rgba(255,255,255,.15);transition:transform .15s}
+.esp-btn:hover{transform:translateY(-2px)}
+.esp-btn[hidden]{display:none!important}
+.esp-btn svg{width:30px;height:30px;flex:none;fill:none;stroke:#ffd36b;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.esp-btn span{display:flex;flex-direction:column;text-align:left}
+.esp-btn small{font:700 .72rem/1 inherit;letter-spacing:.04em;color:#fff;opacity:.9}
+.esp-btn b{font-size:1.05rem;color:#ffd36b;font-style:italic}
+@media(max-width:1200px){.esp-btn{position:static;margin:0 auto 12px;width:max-content}}
+.box.esp{max-width:760px}
+.esp-sub{margin:-6px 0 12px;color:var(--muted);font-size:.95rem}
+.esp-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.esp-tabs button{border:1.5px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;padding:8px 14px;font:700 .9rem/1 inherit;cursor:pointer}
+.esp-tabs button.on{background:var(--forest);border-color:var(--forest);color:#fff}
+#espMsgs{height:min(50vh,430px);overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:10px 4px;border:1px solid var(--line);border-radius:12px;background:var(--paper)}
+.esp-dsep{align-self:center;font-size:.74rem;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:2px 10px;margin:4px 0}
+.esp-m{display:flex;max-width:86%}
+.esp-m.me{align-self:flex-end}
+.esp-m.you{align-self:flex-start}
+.esp-b{padding:8px 12px;border-radius:16px;font-size:.95rem;line-height:1.4;overflow-wrap:anywhere;white-space:pre-wrap}
+.esp-m.me .esp-b{background:var(--forest);color:#fff;border-bottom-right-radius:4px}
+.esp-m.you .esp-b{background:var(--card);color:var(--ink);border:1px solid var(--line);border-bottom-left-radius:4px}
+.esp-b .nm{display:block;font-weight:800;font-size:.8rem;margin-bottom:2px;color:var(--forest)}
+.esp-b small{display:flex;gap:8px;align-items:center;opacity:.8;font-size:.72rem;margin-top:3px}
+.esp-b small button{border:0;background:transparent;color:inherit;text-decoration:underline;cursor:pointer;font:inherit;padding:0}
+#espForm{display:flex;gap:8px;align-items:flex-end;margin-top:10px}
+#espForm textarea{flex:1;resize:none;min-height:42px}
+#espForm .btn{flex:none}
+#espList{display:grid;gap:10px;max-height:min(58vh,500px);overflow-y:auto;padding:2px}
+.esp-filter{margin-bottom:10px}
+.esp-card{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--card);display:grid;gap:4px}
+.esp-card .t1{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+.esp-card .tag{background:var(--forest);color:#fff;border-radius:999px;font-size:.72rem;font-weight:800;padding:3px 10px}
+.esp-card h3{font-size:1.02rem;margin:2px 0}
+.esp-card p{margin:0;color:var(--muted);font-size:.88rem}
+.esp-card .by{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:6px;font-size:.84rem;color:var(--muted)}
+.esp-card .by .btn{padding:6px 14px;font-size:.84rem}
 </style>
 </body>
 </html>
