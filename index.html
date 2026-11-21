@@ -1898,16 +1898,20 @@ body:not(.landing) #allHead:not([hidden])+#list.grid>.sl-info,body:not(.landing)
 <!-- Panier -->
 <div class="mask" id="mMsg"><div class="box" role="dialog" aria-modal="true" aria-label="Messages">
   <button class="x" data-close aria-label="Fermer">×</button>
-  <h2 id="chatTitle">Messages</h2>
+  <div class="esp-head" id="chatTitle">
+    <span class="esp-logo" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M4 7h16a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-7l-5 4v-4H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z"/><path d="M24 12h2a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-2v4l-4.500-4H14"/></svg></span>
+    <div><h2>Messages</h2><p class="esp-sub">Échangez en toute simplicité avec clients et vendeurs.</p></div>
+  </div>
   <div id="chatTools">
     <label class="chat-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="chatSearch" type="search" placeholder="Rechercher une conversation" aria-label="Rechercher une conversation" autocomplete="off"></label>
     <div class="chat-chips" id="chatChips" role="tablist" aria-label="Filtrer les messages"></div>
   </div>
   <div id="chatList"></div>
+  <div class="chat-total" id="chatTotal" hidden></div>
   <div id="chatThread">
     <div class="chat-top"><button type="button" class="btn alt" id="chatBack" style="padding:6px 12px" aria-label="Retour" title="Retour">←</button><div class="who" id="chatWho"></div><div class="chat-act"><button type="button" id="chatVoice" aria-label="Appel vocal" title="Appel vocal">📞</button><button type="button" id="chatVideo" aria-label="Appel vidéo" title="Appel vidéo">🎥</button></div></div>
     <div id="chatMsgs" aria-live="polite"></div>
-    <form class="chat-form" id="chatForm"><textarea id="chatText" rows="1" maxlength="1000" placeholder="Écrivez votre message…" aria-label="Votre message"></textarea><button class="btn cta" id="chatSend" type="submit">Envoyer</button></form>
+    <form class="chat-form" id="chatForm"><div class="esp-emo" id="chatEmo" hidden></div><button type="button" class="esp-emob" id="chatEmoB" aria-label="Ajouter un emoji">☺</button><textarea id="chatText" rows="1" maxlength="1000" placeholder="Écrivez votre message…" aria-label="Votre message"></textarea><button class="btn cta" id="chatSend" type="submit" aria-label="Envoyer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 3L10 14"/><path d="M21 3l-7 18-4-7-7-4z"/></svg></button></form>
     <p class="msg" id="chatErr" role="status"></p>
   </div>
 </div></div>
@@ -4088,17 +4092,20 @@ fitQHint();
     $('chatThread').style.display = v === 'thread' ? 'flex' : 'none';
     $('chatTitle').hidden = v === 'thread';
     $('chatTools').style.display = v === 'list' ? 'block' : 'none';
+    $('chatTotal').style.display = v === 'list' ? '' : 'none';
   }
   function renderChips() {
     const nU = S.convs.filter(c => c.unread).length, nV = S.convs.filter(c => c.role === 'vendeur').length, nC = S.convs.filter(c => c.role === 'client').length;
-    const defs = [['all', 'Tous'], ['unread', 'Non lus' + (nU ? ' (' + nU + ')' : '')]];
+    const defs = [['all', 'Tous', S.convs.length], ['unread', 'Non lus', nU]];
     const nT = S.convs.filter(c => c.role === 'travailleur').length;
-    if (nV) defs.push(['vendeur', 'Vendeurs']); if (nC) defs.push(['client', 'Clients']); if (nT) defs.push(['travailleur', 'Travailleurs']);
-    $('chatChips').innerHTML = defs.map(d => `<button type="button" role="tab" data-f="${d[0]}" class="${S.f === d[0] ? 'on' : ''}" aria-selected="${S.f === d[0]}">${esc(d[1])}</button>`).join('');
+    if (nV) defs.push(['vendeur', 'Vendeurs', 0]); if (nC) defs.push(['client', 'Clients', 0]); if (nT) defs.push(['travailleur', 'Travailleurs', 0]);
+    const CI = { all: '<circle cx="9" cy="8" r="3.5"/><path d="M2.500 20c0-3.800 3-6 6.500-6s6.500 2.200 6.500 6"/><path d="M16 4.500a3.500 3.500 0 0 1 0 7M18 14.500c2.200.8 3.500 2.700 3.500 5.500"/>', unread: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.500-7 8-7s8 3 8 7"/>', vendeur: '<path d="M3 10l2-6h14l2 6z"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>', client: '<circle cx="9" cy="8" r="3.500"/><path d="M2.500 20c0-3.800 3-6 6.500-6s6.500 2.200 6.500 6"/><path d="M18 3v6M15 6h6"/>', travailleur: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V4h6v3"/>' };
+    $('chatChips').innerHTML = defs.map(d => `<button type="button" role="tab" data-f="${d[0]}" class="${S.f === d[0] ? 'on' : ''}" aria-selected="${S.f === d[0]}"><svg viewBox="0 0 24 24" aria-hidden="true">${CI[d[0]] || CI.all}</svg><span>${esc(d[1])}</span>${d[2] ? `<i class="n">${d[2]}</i>` : ''}</button>`).join('');
     $('chatChips').querySelectorAll('button').forEach(b => b.onclick = () => { S.f = b.dataset.f; renderList(); });
   }
   function renderList() {
     showView('list'); renderChips();
+    $('chatTotal').hidden = !S.convs.length; $('chatTotal').textContent = S.convs.length + (S.convs.length > 1 ? ' conversations' : ' conversation') + ' au total';
     const box = $('chatList'), top = box.scrollTop;
     if (!S.convs.length) { box.innerHTML = '<div class="chat-empty">Aucun message pour le moment.<br>Ouvrez une annonce et touchez « Message » pour écrire à son auteur.</div>'; return; }
     const q = S.q.trim().toLowerCase();
@@ -4128,7 +4135,7 @@ fitQHint();
     let lastDay = '';
     box.innerHTML = c.msgs.length ? c.msgs.map(m => {
       const dk = new Date(m.cree_le).toDateString(), sep = dk !== lastDay ? `<div class="dsep">${esc(dayLbl(m.cree_le))}</div>` : ''; lastDay = dk;
-      return sep + `<div class="bub ${m.de_id === me() ? 'me' : 'you'}">${esc(m.texte)}<small>${esc(hhmm(m.cree_le))}</small></div>`;
+      return sep + `<div class="bub ${m.de_id === me() ? 'me' : 'you'}">${esc(m.texte)}<small>${esc(hhmm(m.cree_le))}${m.de_id === me() ? `<span class="tk${m.lu ? ' rd' : ''}" title="${m.lu ? 'Lu' : 'Envoyé'}">${m.lu ? '✓✓' : '✓'}</span>` : ''}</small></div>`;
     }).join('')
       : '<div class="chat-empty">Écrivez votre premier message ci-dessous.</div>';
     if (atEnd) box.scrollTop = box.scrollHeight;
@@ -4191,6 +4198,16 @@ fitQHint();
     if (!(await refresh()) || !isOpen()) return;
     if (S.cur) renderThread(false); else if ($('chatList').style.display !== 'none') renderList();
   }, 5000);
+  const CEMO = ['😀','😂','😍','👍','🙏','👋','🎉','❤️','🔥','😊','🤝','👌','😅','🤔','😢','💯'];
+  $('chatEmo').innerHTML = CEMO.map(x => `<button type="button" data-e="${x}" aria-label="${x}">${x}</button>`).join('');
+  $('chatEmoB').onclick = ev => { ev.stopPropagation(); $('chatEmo').hidden = !$('chatEmo').hidden; };
+  $('chatEmo').addEventListener('click', ev => {
+    const b = ev.target.closest('button[data-e]'); if (!b) return;
+    const t = $('chatText'), a = t.selectionStart == null ? t.value.length : t.selectionStart, z = t.selectionEnd == null ? a : t.selectionEnd;
+    if (t.value.length + b.dataset.e.length <= 1000) { t.value = t.value.slice(0, a) + b.dataset.e + t.value.slice(z); t.selectionStart = t.selectionEnd = a + b.dataset.e.length; }
+    $('chatEmo').hidden = true; t.focus();
+  });
+  document.addEventListener('click', ev => { if (!$('chatEmo').hidden && !ev.target.closest('#chatEmo')) $('chatEmo').hidden = true; });
   setTimeout(() => { if (user && sbReady) refresh(); }, 2500);
 })();
 </script>
@@ -6631,6 +6648,66 @@ main .head a#seeAll:hover,main .head a#seeAll:focus-visible{color:var(--bp-o3);b
 #mEsp #espList,#mEsv #esvList{max-height:none}
 #esvList{display:grid;gap:10px;padding:2px}
 @media(prefers-reduced-motion:reduce){#mEsp.open .box.esp,#mEsv.open .box.esp{animation:none}}
+</style>
+<style id="msgDrawerV34_4">
+/* ===== v34.4 · Messages : tiroir sur le bord droit, style maquette (orange chaleureux) ===== */
+#mMsg{--ep-o1:#ffa534;--ep-o2:#f26a0f;--ep-o3:#e8560a;--ep-peach:#fff1e3;--ep-peach2:#fde3c4;--ep-bd:#f6d3b0;background:rgba(20,36,31,.6);padding:0;justify-content:flex-end;align-items:stretch;overflow:hidden}
+:root[data-th="sombre"] #mMsg{--ep-peach:#2b2018;--ep-peach2:#3a2a1d;--ep-bd:#4a3626}
+#mMsg .box{position:relative;left:auto;top:auto;margin:0;width:min(480px,94vw);max-width:none;height:100dvh;max-height:none;padding:22px 20px 16px;border:0;border-radius:26px 0 0 26px;overflow:hidden;
+  background:linear-gradient(180deg,var(--ep-peach) 0,var(--card,#fff) 150px);box-shadow:-8px 0 30px rgba(40,15,0,.3);animation:pfslide .28s ease}
+:root[data-th="sombre"] #mMsg .box{background:var(--surf)}
+#mMsg .box::before{display:none}
+@media(prefers-reduced-motion:reduce){#mMsg .box{animation:none}}
+#mMsg .x{z-index:3;width:38px;height:38px;right:16px;top:16px;border-radius:50%;background:var(--card,#fff);color:var(--ink);display:grid;place-items:center;font-size:1.5rem;box-shadow:0 3px 10px rgba(120,40,0,.25);transition:transform .25s}
+#mMsg .x:hover{transform:rotate(90deg)}
+#mMsg #chatTitle[hidden]{display:none}
+#mMsg h2{margin:0;font:800 clamp(1.5rem,5vw,2.1rem)/1.1 Lora,Georgia,serif;color:var(--ink)}
+#chatTools{margin-bottom:6px}
+#mMsg .chat-search{background:var(--card,#fff);border:1.5px solid var(--ep-bd);padding:0 16px}
+#mMsg .chat-search input{padding:11px 0;font-size:.96rem}
+#mMsg .chat-search svg{stroke:var(--ep-o2)}
+#mMsg .chat-chips{gap:8px;margin:12px 0 8px}
+#mMsg .chat-chips button{display:inline-flex;align-items:center;gap:7px;padding:9px 15px;border:1.5px solid var(--ep-bd);background:var(--ep-peach);color:var(--ink);border-radius:999px;font:800 .9rem/1 inherit;transition:transform .15s}
+#mMsg .chat-chips button:hover{transform:translateY(-1px)}
+#mMsg .chat-chips button svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+#mMsg .chat-chips button .n{font-style:normal;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:var(--ep-o2);color:#fff;font:800 .75rem/22px inherit;text-align:center}
+#mMsg .chat-chips button.on{border-color:transparent;color:#fff;background:linear-gradient(145deg,var(--ep-o1),var(--ep-o2) 60%,var(--ep-o3));box-shadow:0 6px 14px rgba(242,106,15,.35)}
+#mMsg .chat-chips button.on .n{background:#fff;color:var(--ep-o2)}
+#mMsg #chatList{padding:2px 2px 4px}
+#mMsg .cv{gap:12px;align-items:center;padding:11px 10px;border-radius:16px;border-bottom:1px solid var(--ep-bd)}
+#mMsg .cv+.cv{margin-top:0}
+#mMsg .cv:hover{background:var(--ep-peach)}
+#mMsg .cv .av{width:52px;height:52px;border:2px solid #fff;box-shadow:0 2px 8px rgba(120,40,0,.2)}
+#mMsg .cv .r1 b{font-weight:800;font-size:1rem}
+#mMsg .cv .r1 time{color:var(--muted);font-size:.78rem}
+#mMsg .cv .r2 .pv{position:relative;padding-left:22px;font-size:.92rem}
+#mMsg .cv .r2 .pv::before{content:"";position:absolute;left:0;top:50%;width:15px;height:12px;margin-top:-7px;border-radius:5px;background:#b9a8c4}
+#mMsg .cv .un{min-width:26px;height:26px;line-height:26px;border-radius:50%;background:linear-gradient(145deg,var(--ep-o1),var(--ep-o2));color:#fff;font-size:.8rem;padding:0}
+#mMsg .cv .tg{background:var(--ep-peach2);color:var(--ep-o3);border-radius:999px;padding:2px 10px}
+#mMsg .cv.unread{background:var(--ep-peach)}
+#mMsg .cv.unread .r1 time{color:var(--ep-o2)}
+.chat-total{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;padding:12px;border-radius:16px;background:var(--ep-peach2);color:var(--ink);font-weight:700;font-size:.92rem}
+.chat-total[hidden]{display:none}
+#mMsg .chat-top{padding:0 52px 12px 0;border-bottom:1.5px solid var(--ep-bd);gap:10px}
+#mMsg .chat-top #chatBack{width:40px;height:40px;padding:0;border-radius:50%;background:var(--ep-peach);border:1.5px solid var(--ep-bd);display:grid;place-items:center;flex:none}
+#mMsg .chat-top .av.sm{width:46px;height:46px;border:2px solid #fff;box-shadow:0 2px 8px rgba(120,40,0,.2)}
+#mMsg .chat-top .who b{font-size:1.05rem}
+#mMsg .chat-act button{background:var(--ep-peach);border-color:var(--ep-bd)}
+#mMsg #chatMsgs{padding:14px 2px;gap:10px}
+#mMsg .dsep{background:var(--ep-peach);border:1px solid var(--ep-bd)}
+#mMsg .bub{padding:10px 14px;box-shadow:0 1px 3px rgba(120,40,0,.08)}
+#mMsg .bub.me{background:var(--ep-peach2);color:var(--ink);border:1px solid var(--ep-bd);border-bottom-right-radius:6px}
+#mMsg .bub.you{background:var(--card,#fff);color:var(--ink);border:1px solid var(--ep-bd);border-bottom-left-radius:6px}
+#mMsg .bub small{display:flex;justify-content:flex-end;align-items:center;gap:5px;opacity:1;color:var(--muted)}
+#mMsg .bub .tk{color:#b8a898;font-weight:800;letter-spacing:-2px}
+#mMsg .bub .tk.rd{color:var(--ep-o2)}
+#mMsg .chat-form{position:relative;align-items:center;gap:8px;margin-top:8px;padding:6px 6px 6px 10px;border:1.5px solid var(--ep-bd);border-radius:999px;background:var(--card,#fff)}
+#mMsg .chat-form textarea{flex:1;min-width:0;border:0;background:transparent;border-radius:0;min-height:40px;padding:10px 4px;outline:0}
+#mMsg .chat-form .btn{flex:none;width:48px;height:48px;padding:0;border:0;border-radius:16px;display:grid;place-items:center;color:#fff;background:linear-gradient(145deg,var(--ep-o1),var(--ep-o2) 60%,var(--ep-o3));box-shadow:0 6px 14px rgba(242,106,15,.4)}
+#mMsg .chat-form .btn svg{width:24px;height:24px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#mMsg .chat-form .btn:disabled{opacity:.6}
+#mMsg .chat-form .esp-emob{flex:none;width:38px;height:38px;border:0;border-radius:50%;background:transparent;color:var(--ep-o2);font-size:1.7rem;line-height:1;cursor:pointer;display:grid;place-items:center}
+#mMsg #chatErr{margin:6px 4px 0}
 </style>
 </body>
 </html>
