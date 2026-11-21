@@ -1920,17 +1920,30 @@ body:not(.landing) #allHead:not([hidden])+#list.grid>.sl-info,body:not(.landing)
 
 <div class="mask" id="mEsp"><div class="box esp" role="dialog" aria-modal="true" aria-label="Espace client">
   <button class="x" data-close aria-label="Fermer">×</button>
-  <h2>Espace client</h2>
-  <p class="esp-sub">Discutez avec les autres clients et voyez ce qu'ils recherchent.</p>
+  <div class="esp-head">
+    <span class="esp-logo" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M4 7h16a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-7l-5 4v-4H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z"/><path d="M24 12h2a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-2v4l-4.500-4H14"/></svg></span>
+    <div><h2>Espace <em>client</em></h2><p class="esp-sub">Discutez avec les autres clients et voyez ce qu'ils recherchent.</p></div>
+  </div>
   <div class="esp-tabs" role="tablist" aria-label="Espace client">
-    <button type="button" data-t="salon" class="on">💬 Salon</button>
-    <button type="button" data-t="besoins">🔎 Ce que cherchent les clients</button>
-    <button type="button" data-t="prives">✉️ Messages privés</button>
+    <button type="button" data-t="salon" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H10l-5 4v-4H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/></svg>Salon</button>
+    <button type="button" data-t="besoins"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5"/></svg>Ce que cherchent les clients</button>
+    <button type="button" data-t="prives"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>Messages privés</button>
   </div>
   <section id="espSalon">
-    <div id="espMsgs" aria-live="polite"></div>
-    <form id="espForm"><textarea id="espText" rows="1" maxlength="500" placeholder="Écrivez au salon…" aria-label="Votre message au salon"></textarea><button class="btn cta" id="espSend" type="submit">Envoyer</button></form>
-    <p class="msg" id="espErr" role="status"></p>
+    <div class="esp-split">
+      <aside class="esp-side" aria-label="Liste des clients">
+        <div class="esp-side-h"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.500 20c0-3.800 3-6 6.500-6s6.500 2.200 6.500 6"/><path d="M16 4.500a3.500 3.500 0 0 1 0 7M18 14.500c2.200.8 3.500 2.700 3.500 5.500"/></svg></span><b id="espSideT">Clients</b><span class="esp-count" id="espCount">0</span></div>
+        <input type="search" id="espWho" placeholder="Rechercher un client…" aria-label="Rechercher un client">
+        <div id="espPeople"></div>
+        <button type="button" class="esp-all" id="espAll" hidden>Voir tous les clients</button>
+      </aside>
+      <div class="esp-chat">
+        <div class="esp-chat-h"><span class="esp-av big" aria-hidden="true">💬</span><div><b>Salon des clients</b><small id="espOnl">Tout le monde peut écrire ici</small></div></div>
+        <div id="espMsgs" aria-live="polite"></div>
+        <form id="espForm"><div class="esp-emo" id="espEmo" hidden></div><button type="button" class="esp-emob" id="espEmoB" aria-label="Ajouter un emoji">☺</button><textarea id="espText" rows="1" maxlength="500" placeholder="Écrivez votre message…" aria-label="Votre message au salon"></textarea><button class="btn cta" id="espSend" type="submit" aria-label="Envoyer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 3L10 14"/><path d="M21 3l-7 18-4-7-7-4z"/></svg></button></form>
+        <p class="msg" id="espErr" role="status"></p>
+      </div>
+    </div>
   </section>
   <section id="espBesoins" hidden>
     <input class="esp-filter" id="espFilter" type="search" placeholder="Filtrer : moto, riz, téléphone…" aria-label="Filtrer les recherches">
@@ -5580,7 +5593,7 @@ body:not(.landing) .ad .meta,.crow-l>.ad .meta,#allHead:not([hidden])+#list>.ad 
 /* ===== Espace client : salon commun (table ann_salon) + besoins des clients + accès aux messages privés ===== */
 (function () {
   const TB = 'ann_salon';
-  const E = { tab: 'salon', msgs: [], busy: false, sig: '', ok: true, needs: [] };
+  const E = { tab: 'salon', msgs: [], busy: false, sig: '', ok: true, needs: [], people: {}, list: [], online: new Set(), pres: false, all: false };
   const me = () => user && user.id;
   const myName = () => { const m = (user && user.user_metadata) || {}; return m.full_name || m.name || 'Client'; };
   const say = m => window.bpSay ? window.bpSay(m) : alert(m);
@@ -5611,6 +5624,7 @@ body:not(.landing) .ad .meta,.crow-l>.ad .meta,#allHead:not([hidden])+#list>.ad 
     if (/42501|row-level|permission|policy/i.test(s)) return "Le salon est réservé aux clients connectés.";
     return "Impossible de joindre le salon pour le moment. Réessayez.";
   };
+  const avOf = (uid, nm) => { const p = E.people[uid]; return avatarHtml(p && p.avatar_url, (p && p.nom) || nm); };
   function renderSalon(scroll) {
     const box = $('espMsgs');
     if (!E.ok) return;
@@ -5622,7 +5636,8 @@ body:not(.landing) .ad .meta,.crow-l>.ad .meta,#allHead:not([hidden])+#list>.ad 
       const mine = m.user_id === me(), nm = m.nom || 'Client';
       const act = mine ? `<button type="button" class="esp-del" data-id="${esc(m.id)}">Supprimer</button>`
                        : `<button type="button" class="esp-pv" data-u="${esc(m.user_id)}" data-n="${esc(nm)}">Écrire en privé</button>`;
-      return sep + `<div class="esp-m ${mine ? 'me' : 'you'}"><div class="esp-b">${mine ? '' : `<span class="nm" style="color:${AVC[[...nm].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 0) % AVC.length]}">${esc(nm)}</span>`}${esc(m.texte)}<small><time>${esc(hhmm(m.cree_le))}</time>${act}</small></div></div>`;
+      const col = AVC[[...nm].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 0) % AVC.length];
+      return sep + `<div class="esp-m ${mine ? 'me' : 'you'}"><span class="esp-av">${avOf(m.user_id, nm)}</span><div class="esp-col"><div class="esp-meta">${mine ? '' : `<b style="color:${col}">${esc(nm)}</b>`}<time>${esc(hhmm(m.cree_le))}</time></div><div class="esp-b">${esc(m.texte)}</div><div class="esp-act">${act}</div></div></div>`;
     }).join('');
     if (atEnd) box.scrollTop = box.scrollHeight;
   }
@@ -5693,11 +5708,74 @@ body:not(.landing) .ad .meta,.crow-l>.ad .meta,#allHead:not([hidden])+#list>.ad 
     close('mEsp'); window.openChat && window.openChat({ id: '', user_id: b.dataset.u, titre: 'Espace client', nom: b.dataset.n, prefill: b.dataset.t ? 'Bonjour, je vois que vous cherchez « ' + b.dataset.t + ' ». ' : '' });
   });
 
+  /* ----- Liste des clients (panneau de gauche) + présence « En ligne » ----- */
+  const isMob = () => window.matchMedia && window.matchMedia('(max-width:700px)').matches;
+  function renderPeople() {
+    const box = $('espPeople'); if (!box) return;
+    const q = norm($('espWho').value.trim());
+    const rows = E.list.filter(p => p.user_id !== me() && (!q || norm((p.nom || '') + ' ' + (p.region || '')).includes(q)));
+    rows.sort((a, b) => (E.online.has(b.user_id) - E.online.has(a.user_id)) || String(a.nom || '').localeCompare(String(b.nom || ''), 'fr'));
+    const nOn = [...E.online].filter(u => u !== me()).length;
+    $('espSideT').textContent = E.pres ? 'Clients en ligne' : 'Clients';
+    $('espCount').textContent = E.pres ? nOn : rows.length;
+    $('espOnl').textContent = E.pres ? (nOn ? nOn + (nOn > 1 ? ' autres clients en ligne' : ' autre client en ligne') : 'Vous êtes seul(e) en ligne pour le moment') : 'Tout le monde peut écrire ici';
+    const shown = (E.all || q || isMob()) ? rows : rows.slice(0, 6);
+    box.innerHTML = shown.length ? shown.map(p => {
+      const on = E.online.has(p.user_id), nm = p.nom || 'Client';
+      const sub = E.pres ? `<small class="${on ? 'on' : ''}">${on ? 'En ligne' : 'Hors ligne'}</small>` : (p.region ? `<small>${esc(p.region)}</small>` : '');
+      return `<button type="button" class="esp-p" data-u="${esc(p.user_id)}" data-n="${esc(nm)}" title="Écrire en privé à ${esc(nm)}"><span class="esp-av ${E.pres && on ? 'on' : ''}">${avatarHtml(p.avatar_url, nm)}</span><span class="esp-pn"><b>${esc(nm)}</b>${sub}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>`;
+    }).join('') : '<div class="chat-empty">' + (q ? 'Aucun client trouvé.' : 'Aucun autre client pour le moment.') + '</div>';
+    const more = !q && !isMob() && rows.length > 6;
+    $('espAll').hidden = !more; $('espAll').textContent = E.all ? 'Réduire la liste' : 'Voir tous les clients (' + rows.length + ')';
+  }
+  async function loadPeople() {
+    if (!user || !sbReady) return;
+    try {
+      const { data, error } = await SB.from('ann_clients').select('user_id,nom,avatar_url,region').limit(300);
+      if (error) throw error;
+      E.list = data || []; E.people = {}; E.list.forEach(p => E.people[p.user_id] = p);
+      renderPeople(); if (E.msgs.length) renderSalon(false);
+    } catch (e) { $('espPeople').innerHTML = '<div class="chat-empty">Liste des clients indisponible pour le moment.</div>'; }
+  }
+  let pch = null;
+  function joinPresence() {
+    if (pch || !user || !sbReady || !SB.channel) return;
+    try {
+      pch = SB.channel('bp-espace-client', { config: { presence: { key: me() } } });
+      pch.on('presence', { event: 'sync' }, () => { E.online = new Set(Object.keys(pch.presenceState())); E.pres = true; renderPeople(); });
+      pch.subscribe(st => { if (st === 'SUBSCRIBED') pch.track({ t: Date.now() }); });
+    } catch (e) { pch = null; }
+  }
+  function leavePresence() {
+    if (!pch) return;
+    try { SB.removeChannel(pch); } catch (e) {}
+    pch = null; E.online = new Set(); E.pres = false;
+  }
+  setInterval(() => { if (pch && !isOpenEsp()) leavePresence(); }, 3000);
+  $('espWho').addEventListener('input', renderPeople);
+  $('espAll').onclick = () => { E.all = !E.all; renderPeople(); };
+  $('espPeople').addEventListener('click', e => {
+    const b = e.target.closest('.esp-p'); if (!b) return;
+    close('mEsp'); window.openChat && window.openChat({ id: '', user_id: b.dataset.u, titre: 'Espace client', nom: b.dataset.n });
+  });
+
+  /* ----- Emojis ----- */
+  const EMO = ['😀','😂','😍','👍','🙏','👋','🎉','❤️','🔥','😊','🤝','👌','😅','🤔','😢','💯'];
+  $('espEmo').innerHTML = EMO.map(x => `<button type="button" data-e="${x}" aria-label="${x}">${x}</button>`).join('');
+  $('espEmoB').onclick = ev => { ev.stopPropagation(); $('espEmo').hidden = !$('espEmo').hidden; };
+  $('espEmo').addEventListener('click', ev => {
+    const b = ev.target.closest('button[data-e]'); if (!b) return;
+    const t = $('espText'), a = t.selectionStart == null ? t.value.length : t.selectionStart, z = t.selectionEnd == null ? a : t.selectionEnd;
+    if ((t.value.length + b.dataset.e.length) <= 500) { t.value = t.value.slice(0, a) + b.dataset.e + t.value.slice(z); t.selectionStart = t.selectionEnd = a + b.dataset.e.length; }
+    $('espEmo').hidden = true; t.focus();
+  });
+  document.addEventListener('click', ev => { const m = $('espEmo'); if (m && !m.hidden && !ev.target.closest('#espEmo')) m.hidden = true; });
+
   /* ----- Ouverture, onglets, actualisation ----- */
   $('espBtn').onclick = () => {
     if (!user) { say("Connectez-vous avec votre profil Client pour entrer dans l'Espace client."); return; }
     if (accountRole() !== 'client') { say("L'Espace client est réservé aux profils Client."); return; }
-    setTab('salon'); open('mEsp'); $('espMsgs').innerHTML = '<div class="chat-empty">Chargement…</div>'; E.sig = ''; loadSalon(true);
+    setTab('salon'); open('mEsp'); $('espMsgs').innerHTML = '<div class="chat-empty">Chargement…</div>'; E.sig = ''; loadSalon(true); E.all = false; $('espWho').value = ''; $('espEmo').hidden = true; renderPeople(); loadPeople(); joinPresence();
   };
   document.querySelectorAll('#mEsp .esp-tabs button').forEach(b => b.onclick = () => {
     const t = b.dataset.t;
@@ -6273,6 +6351,102 @@ main .head a#seeAll:hover,main .head a#seeAll:focus-visible{color:var(--bp-o3);b
 .esv-av img{width:100%;height:100%;object-fit:cover;display:block}
 .esv-who h3{margin:0}
 .esv-who p{margin:0}
+</style>
+<style id="espClientV34_2">
+/* ===== v34.2 · Espace client : habillage d'après la maquette (orange chaleureux) ===== */
+#mEsp{--ep-o1:#ffa534;--ep-o2:#f26a0f;--ep-o3:#e8560a;--ep-peach:#fff1e3;--ep-peach2:#fde3c4;--ep-bd:#f6d3b0}
+:root[data-th="sombre"] #mEsp{--ep-peach:#2b2018;--ep-peach2:#3a2a1d;--ep-bd:#4a3626}
+#mEsp .box.esp{max-width:980px;padding:22px 22px 20px;border-radius:26px;background:linear-gradient(180deg,var(--ep-peach) 0,var(--card,#fff) 150px);box-shadow:0 30px 70px rgba(120,40,0,.35)}
+:root[data-th="sombre"] #mEsp .box.esp{background:var(--surf)}
+#mEsp .x{z-index:3;width:38px;height:38px;right:16px;top:16px;border-radius:50%;background:var(--card,#fff);color:var(--ink);display:grid;place-items:center;font-size:1.5rem;box-shadow:0 3px 10px rgba(120,40,0,.25);transition:transform .25s}
+#mEsp .x:hover{transform:rotate(90deg)}
+.esp-head{display:flex;align-items:center;gap:14px;padding-right:48px;margin-bottom:16px}
+.esp-logo{flex:none;width:60px;height:60px;border-radius:18px;display:grid;place-items:center;background:linear-gradient(145deg,var(--ep-o1),var(--ep-o2) 60%,var(--ep-o3));box-shadow:0 8px 18px rgba(242,106,15,.35),inset 0 1px 0 rgba(255,255,255,.45)}
+.esp-logo svg{width:34px;height:34px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#mEsp .box h2{margin:0;font:800 clamp(1.5rem,4.5vw,2.1rem)/1.1 Lora,Georgia,serif;color:var(--ink)}
+#mEsp .box h2 em{font-style:normal;color:var(--ep-o2)}
+#mEsp .esp-sub{margin:4px 0 0;color:var(--muted);font-size:.98rem}
+#mEsp .esp-tabs{gap:10px;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid var(--ep-bd)}
+#mEsp .esp-tabs button{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border:1.5px solid var(--ep-bd);background:var(--ep-peach);color:var(--ink);border-radius:999px;font:800 .95rem/1 inherit;transition:transform .15s,box-shadow .15s}
+#mEsp .esp-tabs button svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+#mEsp .esp-tabs button:hover{transform:translateY(-1px)}
+#mEsp .esp-tabs button.on{border-color:transparent;color:#fff;background:linear-gradient(145deg,var(--ep-o1),var(--ep-o2) 60%,var(--ep-o3));box-shadow:0 6px 14px rgba(242,106,15,.35)}
+.esp-split{display:grid;grid-template-columns:300px 1fr;gap:14px;height:min(62vh,520px)}
+.esp-side{display:flex;flex-direction:column;min-height:0;border:1.5px solid var(--ep-bd);border-radius:20px;padding:12px;background:var(--card,#fff)}
+.esp-side-h{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.esp-side-h .ic{width:38px;height:38px;border-radius:12px;background:var(--ep-peach2);display:grid;place-items:center;flex:none}
+.esp-side-h .ic svg{width:22px;height:22px;fill:none;stroke:var(--ep-o2);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.esp-side-h b{flex:1;font-size:1.02rem}
+.esp-count{min-width:30px;height:30px;padding:0 8px;border-radius:999px;background:var(--ep-peach2);color:var(--ep-o2);font-weight:800;display:grid;place-items:center}
+#mEsp #espWho{border:1.5px solid var(--ep-bd);border-radius:999px;padding:9px 14px;margin-bottom:8px;background:var(--card,#fff)}
+#espPeople{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:2px}
+.esp-p{display:flex;align-items:center;gap:10px;width:100%;padding:8px 8px;border:0;border-radius:14px;background:transparent;color:var(--ink);text-align:left;cursor:pointer;transition:background .15s}
+.esp-p:hover{background:var(--ep-peach)}
+.esp-p .esp-pn{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.esp-p .esp-pn b{font-size:.95rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.esp-p .esp-pn small{font-size:.8rem;color:var(--muted);display:flex;align-items:center;gap:6px}
+.esp-p .esp-pn small::before{content:"";width:9px;height:9px;border-radius:50%;background:#b8b8b8;flex:none}
+.esp-p .esp-pn small.on::before{background:#19b36b}
+.esp-p .esp-pn small:not(.on):not([class])::before{display:none}
+.esp-p > svg{width:18px;height:18px;flex:none;fill:none;stroke:var(--ep-o2);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.esp-all{margin-top:8px;border:0;border-radius:14px;padding:12px;background:var(--ep-peach);color:var(--ink);font:800 .9rem/1 inherit;cursor:pointer}
+.esp-all:hover{background:var(--ep-peach2)}
+.esp-av{position:relative;flex:none;width:44px;height:44px;border-radius:50%;background:var(--ep-peach2);color:var(--ep-o2);font-weight:800;display:grid;place-items:center;border:2px solid #fff;box-shadow:0 2px 8px rgba(120,40,0,.18);overflow:visible}
+.esp-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
+.esp-av.on::after{content:"";position:absolute;right:-1px;bottom:-1px;width:12px;height:12px;border-radius:50%;background:#19b36b;border:2px solid #fff}
+.esp-av.big{width:46px;height:46px;font-size:1.4rem}
+.esp-chat{display:flex;flex-direction:column;min-height:0;border:1.5px solid var(--ep-bd);border-radius:20px;background:var(--card,#fff);overflow:hidden}
+.esp-chat-h{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--ep-bd)}
+.esp-chat-h b{display:block;font-size:1.08rem}
+.esp-chat-h small{color:var(--muted);font-size:.85rem}
+#mEsp #espMsgs{flex:1;height:auto;min-height:0;border:0;border-radius:0;background:transparent;padding:14px 14px 6px;gap:12px}
+#mEsp .esp-dsep{background:var(--ep-peach);border-color:var(--ep-bd)}
+#mEsp .esp-m{max-width:90%;align-items:flex-end;gap:8px}
+#mEsp .esp-m.me{flex-direction:row-reverse}
+#mEsp .esp-m .esp-av{width:36px;height:36px;font-size:.9rem;border-width:1.5px}
+.esp-col{min-width:0;display:flex;flex-direction:column;gap:3px}
+.esp-m.me .esp-col{align-items:flex-end}
+.esp-meta{display:flex;gap:8px;align-items:baseline;font-size:.75rem;color:var(--muted)}
+.esp-meta b{font-size:.8rem}
+#mEsp .esp-b{padding:10px 14px;border-radius:18px;font-size:.96rem;line-height:1.4;overflow-wrap:anywhere;white-space:pre-wrap;box-shadow:0 1px 3px rgba(120,40,0,.08)}
+#mEsp .esp-m.me .esp-b{background:var(--ep-peach2);color:var(--ink);border:1px solid var(--ep-bd);border-bottom-right-radius:6px}
+#mEsp .esp-m.you .esp-b{background:var(--card,#fff);color:var(--ink);border:1px solid var(--ep-bd);border-bottom-left-radius:6px}
+.esp-act{font-size:.72rem}
+.esp-act button{border:0;background:transparent;color:var(--muted);text-decoration:underline;cursor:pointer;font:inherit;padding:0}
+.esp-act button:hover{color:var(--ep-o2)}
+#mEsp #espForm{position:relative;display:flex;align-items:center;gap:8px;margin:8px 12px 12px;padding:6px 6px 6px 10px;border:1.5px solid var(--ep-bd);border-radius:999px;background:var(--card,#fff)}
+#mEsp #espForm textarea{flex:1;min-width:0;resize:none;min-height:40px;max-height:96px;border:0;background:transparent;padding:10px 4px;outline:0}
+#mEsp #espForm .esp-emob{flex:none;width:38px;height:38px;border:0;border-radius:50%;background:transparent;color:var(--ep-o2);font-size:1.7rem;line-height:1;cursor:pointer;display:grid;place-items:center}
+#mEsp #espSend{flex:none;width:48px;height:48px;padding:0;border:0;border-radius:16px;display:grid;place-items:center;color:#fff;background:linear-gradient(145deg,var(--ep-o1),var(--ep-o2) 60%,var(--ep-o3));box-shadow:0 6px 14px rgba(242,106,15,.4)}
+#mEsp #espSend svg{width:24px;height:24px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#mEsp #espSend:disabled{opacity:.6}
+.esp-emo{position:absolute;left:8px;bottom:calc(100% + 8px);z-index:5;display:grid;grid-template-columns:repeat(8,1fr);gap:2px;padding:8px;background:var(--card,#fff);border:1.5px solid var(--ep-bd);border-radius:16px;box-shadow:0 10px 24px rgba(120,40,0,.22)}
+.esp-emo[hidden]{display:none}
+.esp-emo button{border:0;background:transparent;font-size:1.35rem;padding:4px;border-radius:8px;cursor:pointer}
+.esp-emo button:hover{background:var(--ep-peach)}
+#mEsp #espErr{margin:0 14px 10px}
+#mEsp #espList{max-height:min(54vh,470px)}
+#mEsp .esp-filter{border:1.5px solid var(--ep-bd);border-radius:999px;padding:10px 16px}
+#mEsp .esp-card{border:1.5px solid var(--ep-bd);border-radius:18px;background:var(--card,#fff)}
+#mEsp .esp-card .tag{background:linear-gradient(145deg,var(--ep-o1),var(--ep-o2));color:#fff}
+#mEsp .esp-card .by .btn{background:var(--ep-peach2);color:var(--ink);border:0;border-radius:999px}
+@media(max-width:700px){
+  #mEsp .box.esp{padding:16px 12px 14px;border-radius:22px}
+  .esp-logo{width:48px;height:48px;border-radius:15px}.esp-logo svg{width:28px;height:28px}
+  #mEsp .esp-tabs{gap:6px}
+  #mEsp .esp-tabs button{padding:9px 12px;font-size:.85rem}
+  #mEsp .esp-tabs button svg{width:17px;height:17px}
+  .esp-split{grid-template-columns:1fr;height:auto}
+  .esp-side{padding:10px}
+  #mEsp #espWho,.esp-all{display:none}
+  #espPeople{flex-direction:row;overflow-x:auto;overflow-y:hidden;gap:4px;padding-bottom:4px}
+  .esp-p{flex:none;flex-direction:column;width:70px;padding:6px 2px;gap:4px;text-align:center}
+  .esp-p > svg,.esp-p .esp-pn small{display:none}
+  .esp-p .esp-pn{align-items:center}
+  .esp-p .esp-pn b{max-width:66px;font-size:.74rem}
+  .esp-chat{height:min(56vh,430px)}
+}
+@media(prefers-reduced-motion:reduce){#mEsp .x,#mEsp .esp-tabs button{transition:none}}
 </style>
 </body>
 </html>
