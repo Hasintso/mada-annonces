@@ -12,7 +12,10 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23a2501a'/%3E%3Ctext x='32' y='45' font-size='36' font-family='Georgia,serif' font-weight='700' text-anchor='middle' fill='%23f2b705'%3EB%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Bangers&family=Nunito:wght@600;800&family=Poppins:wght@400;600;700;800&family=Lora:wght@400;600;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://ujxctcwkppmhamgkpvmg.supabase.co" crossorigin>
+<link rel="preload" as="script" href="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js">
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Bangers&family=Nunito:wght@600;800&family=Poppins:wght@400;600;700;800&family=Lora:wght@400;600;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Bangers&family=Nunito:wght@600;800&family=Poppins:wght@400;600;700;800&family=Lora:wght@400;600;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet"></noscript>
 <style>
 :root{--ink:#2a170b;--forest:#a2501a;--forest2:#7a3a10;--paper:#faf5ee;--card:#fff;--saffron:#f2b705;--line:#eadfce;--muted:#5d6b64;--red:#b3261e;--lime:#ffd36b}
 *{box-sizing:border-box}
@@ -2935,7 +2938,7 @@ async function cartNotifPoll() {
   const { count, error } = await SB.from('ann_panier_notifs').select('id', { count: 'exact', head: true }).eq('vendeur_id', user.id).eq('lu', false);
   cartNotifN = error ? 0 : (count || 0); cartBadge();
 }
-setInterval(cartNotifPoll, 20000); setTimeout(cartNotifPoll, 3000);
+setInterval(() => { if (!document.hidden) cartNotifPoll(); }, 20000); setTimeout(cartNotifPoll, 3000);
 $('btnCart').onclick = () => { renderCart(); renderBuyers(); open('mCart'); };
 cartBadge();
 
@@ -3424,7 +3427,7 @@ const shopErr = e => /ann_boutiques|42P01|relation/.test(((e && e.code) || '') +
 /* --- Photo de profil : réduite à 400 px côté navigateur avant l'envoi (rapide, même en 3G) --- */
 var shBlob = null, shAvatar = '', shRemove = false, myShop = null, shForce = false, shPhotos = [];
 function initial(n) { return esc(String(n || '?').trim().charAt(0).toUpperCase() || '?'); }
-function avatarHtml(url, nom) { return safeUrl(url) ? `<img src="${esc(url)}" alt="" loading="lazy">` : initial(nom); }
+function avatarHtml(url, nom) { return safeUrl(url) ? `<img src="${esc(url)}" alt="" loading="lazy" decoding="async">` : initial(nom); }
 /* Profil complet = photo de profil + titre + lieu exact + « je vais vendre » + description + vrai téléphone malgache + e-mail + 3 photos de la boutique minimum */
 const SH_TOTAL = 8, SH_MINP = 3, SH_MAXP = 6;
 function shopMissing(d) {
@@ -6755,6 +6758,15 @@ main .head a#seeAll:hover,main .head a#seeAll:focus-visible{color:var(--bp-o3);b
 #mMsg .chat-chips button:active{transform:scale(.94)}
 #mMsg .chat-form .esp-emo{animation:msgPopIn .25s both;transform-origin:left bottom}
 }
+
+/* ===== v34_6 : avatars toujours ronds (photo portrait ou paysage) ===== */
+.esp-av,.esv-av{aspect-ratio:1/1;min-width:0;min-height:0}
+.esp-av{overflow:visible}
+.esp-av img,.esv-av img{position:absolute;inset:0;width:100%;height:100%;max-width:none;object-fit:cover;object-position:center top;border-radius:50%;display:block}
+.esv-av{position:relative}
+.esp-p .esp-av{width:44px;height:44px;flex:none}
+@media (max-width:720px){.esp-p .esp-av{width:48px;height:48px}}
+/* ===== v34_6 : vitesse ===== */
 </style>
 </body>
 </html>
