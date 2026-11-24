@@ -6768,5 +6768,61 @@ main .head a#seeAll:hover,main .head a#seeAll:focus-visible{color:var(--bp-o3);b
 @media (max-width:720px){.esp-p .esp-av{width:48px;height:48px}}
 /* ===== v34_6 : vitesse ===== */
 </style>
+<style id="bpAnimDepotCouverture">
+/* ===== v34_7 · 1) Animation d'ouverture des fenêtres de dépôt (vente / commande) ===== */
+@keyframes bpDepFade{from{opacity:0}to{opacity:1}}
+@keyframes bpDepBox{0%{opacity:0;transform:translateY(26px) scale(.93)}60%{opacity:1}100%{opacity:1;transform:none}}
+@keyframes bpDepMenu{from{opacity:0;transform:scale(.88) translateY(-8px)}to{opacity:1;transform:none}}
+@keyframes bpDepChoice{0%{opacity:0;transform:translateX(-22px) scale(.96)}70%{transform:translateX(4px) scale(1)}100%{opacity:1;transform:none}}
+@keyframes bpDepStep{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
+@keyframes bpDepArrow{0%,100%{transform:translateX(0)}50%{transform:translateX(3px)}}
+
+/* fond qui apparaît en douceur */
+#mPost.open:not(.pop){animation:bpDepFade .25s ease}
+/* fenêtre (choix une pièce / vrac, formulaires) : monte et se pose avec un petit rebond */
+#mPost.open:not(.pop) .box{animation:bpDepBox .42s cubic-bezier(.2,.9,.3,1.15)}
+/* menu « + » : s'ouvre depuis le bouton, puis les choix arrivent un par un */
+#mPost.pop.open .box{transform-origin:top left;animation:bpDepMenu .28s cubic-bezier(.2,.9,.3,1.2)}
+#mPost.pop.open .pchoice{animation:bpDepChoice .42s cubic-bezier(.2,.8,.3,1) backwards}
+#mPost.pop.open .pchoice:nth-child(1){animation-delay:0.095s}
+#mPost.pop.open .pchoice:nth-child(2){animation-delay:0.140s}
+#mPost.pop.open .pchoice:nth-child(3){animation-delay:0.185s}
+#mPost.pop.open .pchoice:nth-child(4){animation-delay:0.230s}
+#mPost.pop.open .pchoice:nth-child(5){animation-delay:0.275s}
+#mPost.pop.open .pchoice:nth-child(6){animation-delay:0.320s}
+#mPost.pop.open .pchoice:nth-child(7){animation-delay:0.365s}
+#mPost.pop.open .pchoice:nth-child(8){animation-delay:0.410s}
+#mPost.pop.open .pchoice:nth-child(9){animation-delay:0.455s}
+#mPost.pop.open .pchoice:nth-child(10){animation-delay:0.500s}
+#mPost.pop.open .pchoice:nth-child(11){animation-delay:0.545s}
+#mPost.pop.open .pchoice:nth-child(12){animation-delay:0.590s}
+#mPost.pop.open .pchoice:nth-child(13){animation-delay:0.635s}
+#mPost.pop.open .pchoice:nth-child(14){animation-delay:0.680s}
+#mPost.pop.open .pchoice:nth-child(15){animation-delay:0.725s}
+#mPost.pop.open .pchoice:nth-child(16){animation-delay:0.770s}
+/* « Déposer une seule pièce » / « Déposer en vrac » : arrivent l'un après l'autre */
+#postMode:not([hidden]) .pchoice{animation:bpDepChoice .45s cubic-bezier(.2,.8,.3,1) backwards}
+#postMode:not([hidden]) .pchoice:nth-child(1){animation-delay:.12s}
+#postMode:not([hidden]) .pchoice:nth-child(2){animation-delay:.2s}
+/* passage d'une étape à l'autre (choix → formulaire, une pièce → vrac…) */
+#postMode:not([hidden]),#postForm:not([hidden]),#postMulti:not([hidden]){animation:bpDepStep .32s cubic-bezier(.2,.8,.3,1)}
+/* flèche › qui bouge doucement pour inviter à cliquer */
+#mPost.open .pchoice::after{animation:bpDepArrow 1.6s ease-in-out 1s infinite}
+#mPost.open .pchoice:hover::after{animation:none}
+@media (prefers-reduced-motion:reduce){
+  #mPost.open,#mPost.open .box,#mPost.open .pchoice,#mPost.open .pchoice::after,
+  #postMode:not([hidden]),#postForm:not([hidden]),#postMulti:not([hidden]),#postMode:not([hidden]) .pchoice{animation:none!important}
+}
+
+/* ===== v34_7 · 2) Couverture du profil : plus de voile orange quand une photo est posée ===== */
+/* Sans photo : le fond orange reste tel quel. Avec photo : la photo apparaît avec ses vraies couleurs
+   (seul un très léger dégradé neutre en bas garde le nom lisible). */
+.pf-cover[style*="background-image"]::before{background:linear-gradient(to top,rgba(0,0,0,.42) 0%,rgba(0,0,0,.12) 38%,rgba(0,0,0,0) 62%)}
+.pf-cover[style*="background-image"] .pf-wv{background:rgba(255,255,255,.12)}
+.pf-cover[style*="background-image"] .pf-crown{display:none}
+.pf-cover[style*="background-image"] .pf-id h2,
+.pf-cover[style*="background-image"] .pf-id .meta{text-shadow:0 1px 5px rgba(0,0,0,.55)}
+.pf-cover[style*="background-image"] .pf-top .shoplogo{box-shadow:0 6px 18px rgba(0,0,0,.4)}
+</style>
 </body>
 </html>
