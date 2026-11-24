@@ -7206,5 +7206,311 @@ $('btnMenu').addEventListener('click', () => { $('mnOrders').textContent = isV()
 $('mnOrders').onclick = () => { if (typeof setMenu === 'function') setMenu(false); bpOpenOrders(); };
 })();
 </script>
+<!-- ===================== PORTEFEUILLE (vendeur + client) ===================== -->
+<style>
+.wl-card{margin:0 0 16px;border-radius:16px;padding:16px 16px 14px;color:#fff;
+  background:linear-gradient(135deg,#7a3a10 0%,#a2501a 62%,#c26a26 100%);
+  box-shadow:0 10px 24px rgba(122,58,16,.28)}
+.wl-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.wl-lbl{font-size:.82rem;opacity:.85;display:flex;align-items:center;gap:6px}
+.wl-lbl svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.wl-eye{background:rgba(255,255,255,.16);border:0;color:#fff;border-radius:999px;width:32px;height:32px;display:grid;place-items:center}
+.wl-eye svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.wl-bal{font:700 clamp(1.7rem,7vw,2.2rem)/1.15 Georgia,"Times New Roman",serif;margin:6px 0 2px;letter-spacing:.2px}
+.wl-bal small{font:600 .95rem "Segoe UI",Roboto,Arial,sans-serif;opacity:.85;margin-left:4px}
+.wl-pend{font-size:.8rem;color:#ffe3a3;min-height:1.1em}
+.wl-acts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.wl-acts button{border:0;border-radius:12px;padding:10px 6px;font-weight:700;font-size:.85rem;display:flex;flex-direction:column;align-items:center;gap:4px;
+  background:rgba(255,255,255,.14);color:#fff}
+.wl-acts button.main{background:#f2b705;color:#2a170b}
+.wl-acts svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.wl-acts button:hover{filter:brightness(1.08)}
+
+#mWallet .box{max-width:480px;padding:20px 18px}
+#mWallet h2{margin:0 0 4px}
+#mWallet .wl-sub{color:var(--muted);margin:0 0 12px;font-size:.9rem}
+.wl-tabs{display:flex;gap:6px;overflow-x:auto;margin:0 0 14px;padding-bottom:2px;scrollbar-width:none}
+.wl-tabs::-webkit-scrollbar{display:none}
+.wl-tabs button{flex:none;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;font-weight:700;font-size:.85rem;color:var(--ink)}
+.wl-tabs button[aria-selected="true"]{background:var(--forest);border-color:var(--forest);color:#fff}
+.wl-tabs .dot{display:inline-block;min-width:18px;height:18px;border-radius:9px;background:var(--red);color:#fff;font-size:.7rem;line-height:18px;text-align:center;margin-left:5px;padding:0 5px}
+.wl-pane[hidden]{display:none}
+.wl-ops{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0 12px}
+.wl-op{border:2px solid var(--line);background:#fff;border-radius:12px;padding:10px 4px;font-weight:700;font-size:.82rem;color:var(--ink);text-align:center}
+.wl-op[aria-pressed="true"]{border-color:var(--forest);background:#fff6ea}
+.wl-op i{display:block;width:26px;height:26px;border-radius:50%;margin:0 auto 5px}
+.wl-op[data-op="mvola"] i{background:#ffd200}
+.wl-op[data-op="orange"] i{background:#ff7900}
+.wl-op[data-op="airtel"] i{background:#e4002b}
+.wl-pane label{display:block;font-weight:700;font-size:.85rem;margin:10px 0 4px}
+.wl-quick{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.wl-quick button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 11px;font-size:.8rem;font-weight:600}
+.wl-how{background:#fff6ea;border:1px dashed #e0b27a;border-radius:10px;padding:10px 12px;font-size:.88rem;margin:10px 0}
+.wl-how b{color:var(--forest2)}
+.wl-how .num{font:700 1.15rem Georgia,serif;letter-spacing:.5px;user-select:all}
+.wl-go{width:100%;margin-top:14px;border:0;border-radius:10px;padding:12px;font-weight:700;background:var(--saffron);color:var(--ink)}
+.wl-go:disabled{opacity:.55}
+.wl-msg{min-height:1.3em;margin:8px 0 0;font-size:.88rem;color:var(--red)}
+.wl-msg.ok{color:#1c7a4a}
+.wl-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.wl-it{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff}
+.wl-ic{flex:none;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:800}
+.wl-ic.in{background:#e3f6ec;color:#1c7a4a}.wl-ic.out{background:#fdeaea;color:var(--red)}
+.wl-mid{flex:1;min-width:0}
+.wl-mid b{display:block;font-size:.9rem}
+.wl-mid small{color:var(--muted);display:block;font-size:.76rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wl-amt{text-align:right;font-weight:800;font-size:.9rem;white-space:nowrap}
+.wl-amt.in{color:#1c7a4a}.wl-amt.out{color:var(--red)}
+.wl-st{display:block;font-size:.7rem;font-weight:700;margin-top:2px}
+.wl-st.en_attente{color:#b57400}.wl-st.valide{color:#1c7a4a}.wl-st.refuse{color:var(--red)}
+.wl-empty{color:var(--muted);text-align:center;padding:18px 6px}
+.wl-adm{display:flex;gap:6px;margin-top:8px}
+.wl-adm button{flex:1;border:0;border-radius:8px;padding:8px;font-weight:700;font-size:.82rem}
+.wl-adm .ok{background:#1c7a4a;color:#fff}.wl-adm .no{background:var(--red);color:#fff}
+.wl-note{font-size:.76rem;color:var(--muted);margin-top:12px}
+</style>
+
+<div class="mask" id="mWallet"><div class="box" role="dialog" aria-modal="true" aria-labelledby="wlTitle">
+  <button class="x" id="wlClose" type="button" aria-label="Fermer">×</button>
+  <h2 id="wlTitle">Mon portefeuille</h2>
+  <p class="wl-sub">Solde disponible : <b id="wlSub">—</b></p>
+  <div class="wl-tabs" id="wlTabs" role="tablist">
+    <button type="button" role="tab" data-t="depot" aria-selected="true">Recharger</button>
+    <button type="button" role="tab" data-t="retrait" aria-selected="false">Retirer</button>
+    <button type="button" role="tab" data-t="histo" aria-selected="false">Historique</button>
+    <button type="button" role="tab" data-t="admin" aria-selected="false" id="wlTabAdm" hidden>Demandes<span class="dot" id="wlAdmN" hidden></span></button>
+  </div>
+
+  <div class="wl-pane" data-p="depot">
+    <label>Choisissez l’opérateur</label>
+    <div class="wl-ops" data-ops="depot">
+      <button type="button" class="wl-op" data-op="mvola" aria-pressed="false"><i></i>Mvola</button>
+      <button type="button" class="wl-op" data-op="orange" aria-pressed="false"><i></i>Orange Money</button>
+      <button type="button" class="wl-op" data-op="airtel" aria-pressed="false"><i></i>Airtel Money</button>
+    </div>
+    <div class="wl-how" id="wlHow" hidden></div>
+    <label for="wlDMont">Montant envoyé (Ar)</label>
+    <input id="wlDMont" type="text" inputmode="numeric" placeholder="Ex. 20 000" autocomplete="off">
+    <div class="wl-quick" id="wlQuick"><button type="button" data-v="5000">5 000</button><button type="button" data-v="10000">10 000</button><button type="button" data-v="20000">20 000</button><button type="button" data-v="50000">50 000</button></div>
+    <label for="wlDRef">Référence de la transaction</label>
+    <input id="wlDRef" type="text" placeholder="Reçue par SMS après le transfert" autocomplete="off" maxlength="40">
+    <label for="wlDNum">Numéro utilisé pour payer</label>
+    <input id="wlDNum" type="tel" placeholder="034 00 000 00" autocomplete="tel" maxlength="20">
+    <button class="wl-go" id="wlDGo" type="button">Envoyer ma demande de recharge</button>
+    <p class="wl-msg" id="wlDMsg" role="status"></p>
+    <p class="wl-note">Votre solde est crédité dès que l’équipe a vérifié le transfert.</p>
+  </div>
+
+  <div class="wl-pane" data-p="retrait" hidden>
+    <label>Recevoir sur</label>
+    <div class="wl-ops" data-ops="retrait">
+      <button type="button" class="wl-op" data-op="mvola" aria-pressed="false"><i></i>Mvola</button>
+      <button type="button" class="wl-op" data-op="orange" aria-pressed="false"><i></i>Orange Money</button>
+      <button type="button" class="wl-op" data-op="airtel" aria-pressed="false"><i></i>Airtel Money</button>
+    </div>
+    <label for="wlRMont">Montant à retirer (Ar)</label>
+    <input id="wlRMont" type="text" inputmode="numeric" placeholder="Minimum 5 000" autocomplete="off">
+    <label for="wlRNum">Numéro qui reçoit l’argent</label>
+    <input id="wlRNum" type="tel" placeholder="034 00 000 00" autocomplete="tel" maxlength="20">
+    <button class="wl-go" id="wlRGo" type="button">Demander le retrait</button>
+    <p class="wl-msg" id="wlRMsg" role="status"></p>
+    <p class="wl-note">Le montant est débité quand le retrait est validé et envoyé.</p>
+  </div>
+
+  <div class="wl-pane" data-p="histo" hidden><ul class="wl-list" id="wlHisto"></ul></div>
+  <div class="wl-pane" data-p="admin" hidden><ul class="wl-list" id="wlAdm"></ul></div>
+</div></div>
+
+<script>
+(function () {
+  'use strict';
+  /* ⚠️ À MODIFIER : vos vrais numéros marchands (là où les clients envoient l’argent) */
+  var WL_NUMS = { mvola: '034 00 000 00', orange: '032 00 000 00', airtel: '033 00 000 00' };
+  var WL_NAMES = { mvola: 'Mvola', orange: 'Orange Money', airtel: 'Airtel Money' };
+
+  var ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h13v4"/><path d="M3 7v10a2 2 0 0 0 2 2h14a1 1 0 0 0 1-1v-3"/><path d="M21 9H5"/><path d="M21 9v6h-4a3 3 0 0 1 0-6z"/></svg>';
+  var EYE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+  var I_PLUS = '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>';
+  var I_OUT = '<svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg>';
+  var I_LIST = '<svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>';
+
+  var $$ = function (id) { return document.getElementById(id); };
+  var fmt = function (n) { return String(Math.round(+n || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, '\u202f') + '\u00a0Ar'; };
+  var hidden = false, state = { solde: 0, pending: 0, tx: [], op: { depot: '', retrait: '' } };
+  var e = function (s) { return (typeof esc === 'function') ? esc(s) : String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var sb = function () { try { return SB && SB.from ? SB : null; } catch (x) { return null; } };
+  var me = function () { try { return user || null; } catch (x) { return null; } };
+
+  /* ---------- données ---------- */
+  async function load() {
+    var c = sb(), u = me(); if (!c || !u) return false;
+    try {
+      var w = await c.from('ann_wallets').select('solde').eq('user_id', u.id).maybeSingle();
+      state.solde = (w && w.data && +w.data.solde) || 0;
+      var t = await c.from('ann_wallet_tx').select('*').eq('user_id', u.id).order('cree_le', { ascending: false }).limit(50);
+      state.tx = (t && t.data) || [];
+      state.pending = state.tx.filter(function (x) { return x.statut === 'en_attente' && x.type === 'retrait'; })
+        .reduce(function (s, x) { return s + (+x.montant || 0); }, 0);
+      return true;
+    } catch (x) { return false; }
+  }
+
+  /* ---------- carte dans le profil ---------- */
+  function paintCards() {
+    document.querySelectorAll('.wl-card').forEach(function (c) {
+      var b = c.querySelector('.wl-bal'), p = c.querySelector('.wl-pend');
+      b.innerHTML = hidden ? '••••••<small>Ar</small>' : e(String(Math.round(state.solde)).replace(/\B(?=(\d{3})+(?!\d))/g, '\u202f')) + '<small>Ar</small>';
+      var n = state.tx.filter(function (x) { return x.statut === 'en_attente'; }).length;
+      p.textContent = n ? n + ' demande' + (n > 1 ? 's' : '') + ' en cours de traitement' : '';
+    });
+    var s = $$('wlSub'); if (s) s.textContent = hidden ? '••••••' : fmt(state.solde);
+  }
+  function cardHtml() {
+    return '<section class="wl-card" aria-label="Mon portefeuille">'
+      + '<div class="wl-top"><span class="wl-lbl">' + ICON + 'Mon portefeuille</span>'
+      + '<button class="wl-eye" type="button" data-wl="eye" aria-label="Afficher ou masquer le solde">' + EYE + '</button></div>'
+      + '<div class="wl-bal">…<small>Ar</small></div><div class="wl-pend"></div>'
+      + '<div class="wl-acts"><button type="button" class="main" data-wl="depot">' + I_PLUS + 'Recharger</button>'
+      + '<button type="button" data-wl="retrait">' + I_OUT + 'Retirer</button>'
+      + '<button type="button" data-wl="histo">' + I_LIST + 'Historique</button></div></section>';
+  }
+  function inject(root, mineCheck) {
+    if (!root || root.querySelector('.wl-card') || !me()) return;
+    var body = root.querySelector('.pf-body'); if (!body || !mineCheck(root)) return;
+    body.insertAdjacentHTML('afterbegin', cardHtml());
+    paintCards(); load().then(paintCards);
+  }
+  function watch(id, mineCheck) {
+    var root = $$(id); if (!root) return;
+    var run = function () { inject(root, mineCheck); };
+    new MutationObserver(run).observe(root, { childList: true });
+    run();
+  }
+
+  /* ---------- fenêtre ---------- */
+  function tab(t) {
+    document.querySelectorAll('#wlTabs button').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.t === t)); });
+    document.querySelectorAll('#mWallet .wl-pane').forEach(function (p) { p.hidden = p.dataset.p !== t; });
+    if (t === 'histo') renderHisto();
+    if (t === 'admin') loadAdmin();
+  }
+  async function openWallet(t) {
+    $$('mWallet').classList.add('open'); tab(t || 'depot');
+    await load(); paintCards(); if (!$$('wlHisto').hidden) renderHisto(); renderHisto();
+    checkAdmin();
+  }
+  function renderHisto() {
+    var ul = $$('wlHisto');
+    if (!state.tx.length) { ul.innerHTML = '<li class="wl-empty">Aucun mouvement pour le moment. Rechargez votre portefeuille pour commencer.</li>'; return; }
+    var lbl = { en_attente: 'En attente', valide: 'Validé', refuse: 'Refusé' };
+    ul.innerHTML = state.tx.map(function (x) {
+      var dep = x.type === 'depot';
+      return '<li class="wl-it"><span class="wl-ic ' + (dep ? 'in' : 'out') + '">' + (dep ? '+' : '−') + '</span>'
+        + '<span class="wl-mid"><b>' + (dep ? 'Recharge' : x.type === 'retrait' ? 'Retrait' : 'Ajustement') + ' · ' + e(WL_NAMES[x.operateur] || '') + '</b>'
+        + '<small>' + new Date(x.cree_le).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) + (x.note ? ' · ' + e(x.note) : '') + '</small></span>'
+        + '<span class="wl-amt ' + (dep ? 'in' : 'out') + '">' + (dep ? '+' : '−') + fmt(x.montant) + '<span class="wl-st ' + e(x.statut) + '">' + (lbl[x.statut] || '') + '</span></span></li>';
+    }).join('');
+  }
+
+  /* ---------- formulaires ---------- */
+  function num(v) { return parseInt(String(v).replace(/\D/g, ''), 10) || 0; }
+  function say(id, txt, ok) { var m = $$(id); m.textContent = txt; m.className = 'wl-msg' + (ok ? ' ok' : ''); }
+  function pickOp(kind, op) {
+    state.op[kind] = op;
+    document.querySelectorAll('[data-ops="' + kind + '"] .wl-op').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.op === op)); });
+    if (kind === 'depot') {
+      var h = $$('wlHow'); h.hidden = !op;
+      if (op) h.innerHTML = '1. Envoyez le montant par <b>' + e(WL_NAMES[op]) + '</b> au<br><span class="num">' + e(WL_NUMS[op]) + '</span><br>2. Recopiez la <b>référence</b> reçue par SMS ci-dessous.';
+    }
+  }
+  async function rpc(name, args, btn, msgId, okTxt) {
+    var c = sb(); if (!c) { say(msgId, 'Connexion indisponible. Réessayez.'); return false; }
+    btn.disabled = true; say(msgId, 'Envoi en cours…', true);
+    try {
+      var r = await c.rpc(name, args);
+      if (r.error) { say(msgId, (r.error.message || 'Une erreur est survenue.').replace(/^.*?:\s*/, '')); btn.disabled = false; return false; }
+      say(msgId, okTxt, true); btn.disabled = false; await load(); paintCards(); return true;
+    } catch (x) { say(msgId, 'Une erreur est survenue. Réessayez.'); btn.disabled = false; return false; }
+  }
+  async function sendDepot() {
+    var m = num($$('wlDMont').value), ref = $$('wlDRef').value.trim();
+    if (!state.op.depot) return say('wlDMsg', 'Choisissez un opérateur.');
+    if (m < 1000) return say('wlDMsg', 'Montant minimum : 1 000 Ar.');
+    if (ref.length < 6) return say('wlDMsg', 'Entrez la référence reçue par SMS.');
+    var ok = await rpc('wallet_demander_depot', { p_montant: m, p_operateur: state.op.depot, p_reference: ref, p_numero: $$('wlDNum').value }, $$('wlDGo'), 'wlDMsg', 'Demande envoyée. Votre solde sera crédité après vérification.');
+    if (ok) { $$('wlDMont').value = ''; $$('wlDRef').value = ''; renderHisto(); }
+  }
+  async function sendRetrait() {
+    var m = num($$('wlRMont').value);
+    if (!state.op.retrait) return say('wlRMsg', 'Choisissez un opérateur.');
+    if (m < 5000) return say('wlRMsg', 'Retrait minimum : 5 000 Ar.');
+    if (m > state.solde - state.pending) return say('wlRMsg', 'Solde disponible insuffisant (' + fmt(state.solde - state.pending) + ').');
+    if (num($$('wlRNum').value) < 9) return say('wlRMsg', 'Entrez le numéro qui recevra l’argent.');
+    var ok = await rpc('wallet_demander_retrait', { p_montant: m, p_operateur: state.op.retrait, p_numero: $$('wlRNum').value }, $$('wlRGo'), 'wlRMsg', 'Demande de retrait envoyée.');
+    if (ok) { $$('wlRMont').value = ''; renderHisto(); }
+  }
+
+  /* ---------- administrateur ---------- */
+  var admin = false;
+  async function checkAdmin() {
+    var c = sb(), u = me(); if (!c || !u) return;
+    try {
+      var r = await c.from('ann_admins').select('user_id').eq('user_id', u.id).maybeSingle();
+      admin = !!(r && r.data); $$('wlTabAdm').hidden = !admin;
+      if (admin) { var n = await c.from('ann_wallet_tx').select('id', { count: 'exact', head: true }).eq('statut', 'en_attente'); var d = $$('wlAdmN'); d.hidden = !(n.count > 0); d.textContent = n.count || ''; }
+    } catch (x) { admin = false; }
+  }
+  async function loadAdmin() {
+    var c = sb(), ul = $$('wlAdm'); if (!c || !admin) return;
+    ul.innerHTML = '<li class="wl-empty">Chargement…</li>';
+    var r = await c.from('ann_wallet_tx').select('*').eq('statut', 'en_attente').order('cree_le', { ascending: true }).limit(100);
+    var rows = (r && r.data) || [];
+    if (!rows.length) { ul.innerHTML = '<li class="wl-empty">Aucune demande en attente.</li>'; return; }
+    ul.innerHTML = rows.map(function (x) {
+      var dep = x.type === 'depot';
+      return '<li class="wl-it" style="display:block"><div style="display:flex;justify-content:space-between;gap:8px"><b>' + (dep ? 'Recharge' : 'Retrait') + ' · ' + e(WL_NAMES[x.operateur] || '') + '</b><b>' + fmt(x.montant) + '</b></div>'
+        + '<small style="color:var(--muted)">' + (dep ? 'Réf. <b>' + e(x.reference) + '</b> · ' : 'Envoyer à ') + e(x.numero || '—') + ' · ' + new Date(x.cree_le).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) + '</small>'
+        + '<div class="wl-adm"><button class="ok" data-tx="' + e(x.id) + '" data-a="1" type="button">' + (dep ? 'Valider le transfert' : 'Marquer comme envoyé') + '</button><button class="no" data-tx="' + e(x.id) + '" data-a="0" type="button">Refuser</button></div></li>';
+    }).join('');
+  }
+  async function traiter(id, ok, btn) {
+    var c = sb(); if (!c) return;
+    if (!ok && !confirm('Refuser cette demande ?')) return;
+    if (ok && !confirm('Confirmez-vous avoir vérifié ce transfert ?')) return;
+    btn.disabled = true;
+    var r = await c.rpc('wallet_traiter', { p_tx: id, p_accepter: ok, p_note: ok ? null : 'Refusé par l’équipe' });
+    if (r.error) { alert((r.error.message || 'Erreur').replace(/^.*?:\s*/, '')); btn.disabled = false; return; }
+    loadAdmin(); checkAdmin();
+  }
+
+  /* ---------- branchements ---------- */
+  document.addEventListener('click', function (ev) {
+    var b = ev.target.closest('[data-wl]');
+    if (b) { if (b.dataset.wl === 'eye') { hidden = !hidden; paintCards(); } else openWallet(b.dataset.wl); return; }
+    var o = ev.target.closest('.wl-op'); if (o) { pickOp(o.parentNode.dataset.ops, o.dataset.op); return; }
+    var q = ev.target.closest('#wlQuick button'); if (q) { $$('wlDMont').value = q.dataset.v.replace(/\B(?=(\d{3})+(?!\d))/g, ' '); return; }
+    var t = ev.target.closest('#wlTabs button'); if (t) { tab(t.dataset.t); return; }
+    var a = ev.target.closest('.wl-adm button'); if (a) { traiter(a.dataset.tx, a.dataset.a === '1', a); }
+  });
+  $$('wlClose').onclick = function () { $$('mWallet').classList.remove('open'); };
+  $$('mWallet').addEventListener('mousedown', function (ev) { if (ev.target === this) this.classList.remove('open'); });
+  $$('wlDGo').onclick = sendDepot; $$('wlRGo').onclick = sendRetrait;
+  ['wlDMont', 'wlRMont'].forEach(function (id) { $$(id).addEventListener('input', function () { var n = num(this.value); this.value = n ? String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') : ''; }); });
+
+  /* profil client : toujours « le mien » ; profil vendeur : seulement si c’est moi (bouton Modifier présent) */
+  watch('clientView', function () { return true; });
+  watch('shopView', function (root) { return !!root.querySelector('#pfEdit'); });
+
+  /* entrée dans le menu principal */
+  var mn = $$('mnProfile');
+  if (mn && !$$('mnWallet')) {
+    var bt = document.createElement('button'); bt.id = 'mnWallet'; bt.textContent = 'Mon portefeuille'; bt.hidden = mn.hidden;
+    mn.parentNode.insertBefore(bt, mn.nextSibling);
+    bt.onclick = function () { if (typeof setMenu === 'function') setMenu(false); openWallet('depot'); };
+    new MutationObserver(function () { bt.hidden = mn.hidden; }).observe(mn, { attributes: true, attributeFilter: ['hidden'] });
+  }
+})();
+</script>
+
 </body>
 </html>
