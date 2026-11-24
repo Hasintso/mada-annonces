@@ -7268,6 +7268,15 @@ $('mnOrders').onclick = () => { if (typeof setMenu === 'function') setMenu(false
 .wl-adm button{flex:1;border:0;border-radius:8px;padding:8px;font-weight:700;font-size:.82rem}
 .wl-adm .ok{background:#1c7a4a;color:#fff}.wl-adm .no{background:var(--red);color:#fff}
 .wl-note{font-size:.76rem;color:var(--muted);margin-top:12px}
+.wl-link{background:none;border:0;color:var(--forest);font-weight:700;font-size:.85rem;text-decoration:underline;margin-top:12px;padding:6px 0;display:block}
+.wl-wait{text-align:center;padding:14px 4px 4px}
+.wl-wait h3{font-size:1.15rem;margin:0 0 6px}
+.wl-wait p{margin:4px 0;font-size:.92rem}
+.wl-spin{width:54px;height:54px;border-radius:50%;border:5px solid #f0dcc4;border-top-color:var(--forest);margin:4px auto 14px;animation:wlspin 1s linear infinite}
+@keyframes wlspin{to{transform:rotate(360deg)}}
+.wl-tick{width:56px;height:56px;border-radius:50%;margin:4px auto 12px;display:grid;place-items:center;font:700 1.8rem Georgia,serif;color:#fff}
+.wl-tick.ok{background:#1c7a4a}.wl-tick.ko{background:var(--red)}
+@media(prefers-reduced-motion:reduce){.wl-spin{animation-duration:4s}}
 </style>
 
 <div class="mask" id="mWallet"><div class="box" role="dialog" aria-modal="true" aria-labelledby="wlTitle">
@@ -7288,6 +7297,19 @@ $('mnOrders').onclick = () => { if (typeof setMenu === 'function') setMenu(false
       <button type="button" class="wl-op" data-op="orange" aria-pressed="false"><i></i>Orange Money</button>
       <button type="button" class="wl-op" data-op="airtel" aria-pressed="false"><i></i>Airtel Money</button>
     </div>
+    <div id="wlAuto" hidden>
+      <div class="wl-how">Vous allez recevoir une <b>demande de paiement sur votre téléphone</b>. Il suffit de la valider avec votre code secret. Aucune référence à recopier.</div>
+      <label for="wlAMont">Montant à recharger (Ar)</label>
+      <input id="wlAMont" type="text" inputmode="numeric" placeholder="Ex. 20 000" autocomplete="off">
+      <div class="wl-quick" id="wlQuickA"><button type="button" data-v="5000">5 000</button><button type="button" data-v="10000">10 000</button><button type="button" data-v="20000">20 000</button><button type="button" data-v="50000">50 000</button></div>
+      <label for="wlANum">Votre numéro Mvola</label>
+      <input id="wlANum" type="tel" placeholder="034 00 000 00" autocomplete="tel" maxlength="20">
+      <button class="wl-go" id="wlAGo" type="button">Payer avec Mvola</button>
+      <p class="wl-msg" id="wlAMsg" role="status"></p>
+      <button class="wl-link" id="wlToManual" type="button">J’ai déjà payé : saisir la référence du SMS</button>
+    </div>
+    <div class="wl-wait" id="wlWait" hidden aria-live="polite"></div>
+    <div id="wlManual">
     <div class="wl-how" id="wlHow" hidden></div>
     <label for="wlDMont">Montant envoyé (Ar)</label>
     <input id="wlDMont" type="text" inputmode="numeric" placeholder="Ex. 20 000" autocomplete="off">
@@ -7299,6 +7321,7 @@ $('mnOrders').onclick = () => { if (typeof setMenu === 'function') setMenu(false
     <button class="wl-go" id="wlDGo" type="button">Envoyer ma demande de recharge</button>
     <p class="wl-msg" id="wlDMsg" role="status"></p>
     <p class="wl-note">Votre solde est crédité dès que l’équipe a vérifié le transfert.</p>
+    </div>
   </div>
 
   <div class="wl-pane" data-p="retrait" hidden>
@@ -7325,7 +7348,9 @@ $('mnOrders').onclick = () => { if (typeof setMenu === 'function') setMenu(false
 (function () {
   'use strict';
   /* ⚠️ À MODIFIER : vos vrais numéros marchands (là où les clients envoient l’argent) */
-  var WL_NUMS = { mvola: '038 69 493 66', orange: '032 00 000 00', airtel: '033 00 000 00' };
+  var WL_NUMS = { mvola: '034 00 000 00', orange: '032 00 000 00', airtel: '033 00 000 00' };
+  /* Paiement direct (le client valide avec son code secret) : passez à true APRÈS avoir déployé la fonction « wallet-pay » */
+  var WL_AUTO = { mvola: false, orange: false, airtel: false };
   var WL_NAMES = { mvola: 'Mvola', orange: 'Orange Money', airtel: 'Airtel Money' };
 
   var ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h13v4"/><path d="M3 7v10a2 2 0 0 0 2 2h14a1 1 0 0 0 1-1v-3"/><path d="M21 9H5"/><path d="M21 9v6h-4a3 3 0 0 1 0-6z"/></svg>';
@@ -7336,6 +7361,7 @@ $('mnOrders').onclick = () => { if (typeof setMenu === 'function') setMenu(false
 
   var $$ = function (id) { return document.getElementById(id); };
   var fmt = function (n) { return String(Math.round(+n || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, '\u202f') + '\u00a0Ar'; };
+  var forceManual = false, waiting = false, cur = null, poll = null;
   var hidden = false, state = { solde: 0, pending: 0, tx: [], op: { depot: '', retrait: '' } };
   var e = function (s) { return (typeof esc === 'function') ? esc(s) : String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   var sb = function () { try { return SB && SB.from ? SB : null; } catch (x) { return null; } };
@@ -7420,6 +7446,7 @@ $('mnOrders').onclick = () => { if (typeof setMenu === 'function') setMenu(false
     document.querySelectorAll('[data-ops="' + kind + '"] .wl-op').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.op === op)); });
     if (kind === 'depot') {
       var h = $$('wlHow'); h.hidden = !op;
+      forceManual = false; refreshDepotUi();
       if (op) h.innerHTML = '1. Envoyez le montant par <b>' + e(WL_NAMES[op]) + '</b> au<br><span class="num">' + e(WL_NUMS[op]) + '</span><br>2. Recopiez la <b>référence</b> reçue par SMS ci-dessous.';
     }
   }
@@ -7450,6 +7477,65 @@ $('mnOrders').onclick = () => { if (typeof setMenu === 'function') setMenu(false
     if (ok) { $$('wlRMont').value = ''; renderHisto(); }
   }
 
+  /* ---------- paiement direct : validation sur le téléphone ---------- */
+  function normTel(v) { var d = String(v || '').replace(/\D/g, ''); if (d.indexOf('261') === 0) d = '0' + d.slice(3); return d; }
+  function refreshDepotUi() {
+    var op = state.op.depot, auto = !!(op && WL_AUTO[op]) && !forceManual;
+    $$('wlAuto').hidden = waiting || !auto;
+    $$('wlManual').hidden = waiting || auto;
+    $$('wlWait').hidden = !waiting;
+    var g = $$('wlAGo'); if (g && op) g.textContent = 'Payer avec ' + (WL_NAMES[op] || '');
+    var lb = document.querySelector('label[for="wlANum"]'); if (lb && op) lb.textContent = 'Votre numéro ' + (WL_NAMES[op] || '');
+  }
+  function showWait(kind, a, b) {
+    waiting = true; var w = $$('wlWait'), h = '';
+    if (kind === 'wait') h = '<div class="wl-spin"></div><h3>Validez sur votre téléphone</h3><p>Une demande de <b>' + fmt(a) + '</b> a été envoyée au <b>' + e(b) + '</b>.</p><p>Ouvrez-la et entrez votre code secret.</p><p class="wl-note" id="wlWT">En attente de votre validation…</p><button class="wl-go" id="wlWCheck" type="button">J’ai validé : vérifier</button><button class="wl-link" id="wlWCancel" type="button" style="margin:10px auto 0">Annuler</button>';
+    if (kind === 'ok') h = '<div class="wl-tick ok">✓</div><h3>Recharge réussie</h3><p><b>' + fmt(a) + '</b> ont été ajoutés.</p><p>Nouveau solde : <b>' + fmt(state.solde) + '</b></p><button class="wl-go" id="wlWDone" type="button">Terminer</button>';
+    if (kind === 'ko') h = '<div class="wl-tick ko">!</div><h3>Paiement non abouti</h3><p>' + e(a || 'La demande a été refusée ou a expiré. Aucun montant n’a été ajouté.') + '</p><button class="wl-go" id="wlWDone" type="button">Réessayer</button>';
+    w.innerHTML = h; refreshDepotUi();
+  }
+  function endWait() { stopPoll(); waiting = false; cur = null; refreshDepotUi(); renderHisto(); }
+  function stopPoll() { if (poll) { clearInterval(poll); poll = null; } }
+  async function checkTx(id, remote) {
+    var c = sb(); if (!c) return 'en_attente';
+    try {
+      if (remote) { var r = await c.functions.invoke('wallet-pay', { body: { check: id } }); if (r && r.data && r.data.statut) return r.data.statut; }
+      var q = await c.from('ann_wallet_tx').select('statut').eq('id', id).maybeSingle();
+      return (q && q.data && q.data.statut) || 'en_attente';
+    } catch (x) { return 'en_attente'; }
+  }
+  async function onStatus(s) {
+    if (!cur) return;
+    if (s === 'valide') { stopPoll(); await load(); paintCards(); showWait('ok', cur.m); }
+    else if (s === 'refuse') { stopPoll(); showWait('ko'); }
+  }
+  function startWait(id, m, n) {
+    stopPoll(); cur = { id: id, m: m, n: n }; showWait('wait', m, n);
+    var t0 = Date.now(), busy = false, tick = 0;
+    poll = setInterval(async function () {
+      if (busy || !cur) return; busy = true; tick++;
+      try { await onStatus(await checkTx(id, tick % 4 === 0)); } finally { busy = false; }
+      if (poll && Date.now() - t0 > 180000) { stopPoll(); var t = $$('wlWT'); if (t) t.textContent = 'Toujours en attente. Appuyez sur « vérifier » après avoir validé.'; }
+    }, 3000);
+  }
+  async function payAuto() {
+    var op = state.op.depot, m = num($$('wlAMont').value), n = normTel($$('wlANum').value), btn = $$('wlAGo');
+    if (!op) return say('wlAMsg', 'Choisissez un opérateur.');
+    if (m < 1000) return say('wlAMsg', 'Montant minimum : 1 000 Ar.');
+    if (!/^03[2-9]\d{7}$/.test(n)) return say('wlAMsg', 'Entrez un numéro valide, par exemple 034 00 000 00.');
+    var c = sb(); if (!c) return say('wlAMsg', 'Connexion indisponible. Réessayez.');
+    btn.disabled = true; say('wlAMsg', 'Envoi de la demande…', true);
+    try {
+      var r = await c.functions.invoke('wallet-pay', { body: { montant: m, operateur: op, numero: n } });
+      if (r.error || !r.data || !r.data.tx_id) {
+        var msg = 'Le paiement direct est indisponible. Utilisez « J’ai déjà payé » ci-dessous.';
+        try { var j = await r.error.context.json(); if (j && j.error) msg = j.error; } catch (x) {}
+        say('wlAMsg', msg); btn.disabled = false; return;
+      }
+      say('wlAMsg', ''); btn.disabled = false; startWait(r.data.tx_id, m, n);
+    } catch (x) { say('wlAMsg', 'Une erreur est survenue. Réessayez.'); btn.disabled = false; }
+  }
+
   /* ---------- administrateur ---------- */
   var admin = false;
   async function checkAdmin() {
@@ -7457,14 +7543,14 @@ $('mnOrders').onclick = () => { if (typeof setMenu === 'function') setMenu(false
     try {
       var r = await c.from('ann_admins').select('user_id').eq('user_id', u.id).maybeSingle();
       admin = !!(r && r.data); $$('wlTabAdm').hidden = !admin;
-      if (admin) { var n = await c.from('ann_wallet_tx').select('id', { count: 'exact', head: true }).eq('statut', 'en_attente'); var d = $$('wlAdmN'); d.hidden = !(n.count > 0); d.textContent = n.count || ''; }
+      if (admin) { var n = await c.from('ann_wallet_tx').select('id,auto').eq('statut', 'en_attente').limit(200); var cnt = ((n && n.data) || []).filter(function (x) { return !x.auto; }).length; var d = $$('wlAdmN'); d.hidden = !(cnt > 0); d.textContent = cnt || ''; }
     } catch (x) { admin = false; }
   }
   async function loadAdmin() {
     var c = sb(), ul = $$('wlAdm'); if (!c || !admin) return;
     ul.innerHTML = '<li class="wl-empty">Chargement…</li>';
     var r = await c.from('ann_wallet_tx').select('*').eq('statut', 'en_attente').order('cree_le', { ascending: true }).limit(100);
-    var rows = (r && r.data) || [];
+    var rows = ((r && r.data) || []).filter(function (x) { return !x.auto; });
     if (!rows.length) { ul.innerHTML = '<li class="wl-empty">Aucune demande en attente.</li>'; return; }
     ul.innerHTML = rows.map(function (x) {
       var dep = x.type === 'depot';
@@ -7490,12 +7576,16 @@ $('mnOrders').onclick = () => { if (typeof setMenu === 'function') setMenu(false
     var o = ev.target.closest('.wl-op'); if (o) { pickOp(o.parentNode.dataset.ops, o.dataset.op); return; }
     var q = ev.target.closest('#wlQuick button'); if (q) { $$('wlDMont').value = q.dataset.v.replace(/\B(?=(\d{3})+(?!\d))/g, ' '); return; }
     var t = ev.target.closest('#wlTabs button'); if (t) { tab(t.dataset.t); return; }
+    var qa = ev.target.closest('#wlQuickA button'); if (qa) { $$('wlAMont').value = qa.dataset.v.replace(/\B(?=(\d{3})+(?!\d))/g, ' '); return; }
+    if (ev.target.closest('#wlToManual')) { forceManual = true; refreshDepotUi(); return; }
+    if (ev.target.closest('#wlWCheck')) { if (cur) checkTx(cur.id, true).then(onStatus); return; }
+    if (ev.target.closest('#wlWCancel') || ev.target.closest('#wlWDone')) { endWait(); return; }
     var a = ev.target.closest('.wl-adm button'); if (a) { traiter(a.dataset.tx, a.dataset.a === '1', a); }
   });
   $$('wlClose').onclick = function () { $$('mWallet').classList.remove('open'); };
   $$('mWallet').addEventListener('mousedown', function (ev) { if (ev.target === this) this.classList.remove('open'); });
-  $$('wlDGo').onclick = sendDepot; $$('wlRGo').onclick = sendRetrait;
-  ['wlDMont', 'wlRMont'].forEach(function (id) { $$(id).addEventListener('input', function () { var n = num(this.value); this.value = n ? String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') : ''; }); });
+  $$('wlDGo').onclick = sendDepot; $$('wlAGo').onclick = payAuto; $$('wlRGo').onclick = sendRetrait;
+  ['wlDMont', 'wlRMont', 'wlAMont'].forEach(function (id) { $$(id).addEventListener('input', function () { var n = num(this.value); this.value = n ? String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') : ''; }); });
 
   /* profil client : toujours « le mien » ; profil vendeur : seulement si c’est moi (bouton Modifier présent) */
   watch('clientView', function () { return true; });
