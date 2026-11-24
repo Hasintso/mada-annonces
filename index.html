@@ -1446,6 +1446,7 @@ body:not(.landing) #allHead:not([hidden])+#list.grid>.sl-info,body:not(.landing)
     <div class="rg-cta" hidden><button type="button" class="rg-go" id="rgGo" disabled>Choisissez un profil</button></div>
     <div class="or rg-or"><span>ou</span></div>
     <button type="button" class="gbtn rg-g" id="rgGoogle"><svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg><span>Continuer avec Google</span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+    <button type="button" class="gbtn rg-g fbtn" id="rgFacebook"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="#fff" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg><span>Continuer avec Facebook</span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
     <p class="rg-hint" id="rgHint" role="status"></p>
     <p class="rg-login">Vous avez déjà un compte ? <button type="button" id="rgLogin">Se connecter</button></p>
     <ul class="rg-trust">
@@ -1740,6 +1741,7 @@ body:not(.landing) #allHead:not([hidden])+#list.grid>.sl-info,body:not(.landing)
   <p class="asub" id="authSub"></p>
   <div id="socialRow">
     <button type="button" class="gbtn" id="gBtn"><svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg><span>Continuer avec Google</span></button>
+    <button type="button" class="gbtn fbtn" id="fBtn"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="#fff" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg><span>Continuer avec Facebook</span></button>
     <div class="or"><span>ou</span></div>
   </div>
   <form id="authForm" novalidate>
@@ -2304,6 +2306,17 @@ async function googleSignIn(msg) {
   } catch (err) { msg.textContent = authError(err && err.message); }
 }
 $('gBtn').onclick = () => { $('authMsg').className = 'msg'; googleSignIn($('authMsg')); };
+/* ===== Continuer avec Facebook (même principe que Google) ===== */
+const fbErr = m => /provider is not enabled|unsupported provider/i.test(String(m || '')) ? 'La connexion avec Facebook n\'est pas encore activée sur ce site. Utilisez votre e-mail pour le moment.' : (/email/i.test(String(m || '')) && /provider/i.test(String(m || '')) ? 'Facebook n\'a pas transmis d\'adresse e-mail. Ajoutez un e-mail à votre compte Facebook, ou utilisez Google / votre e-mail.' : authError(m));
+async function facebookSignIn(msg) {
+  msg.textContent = 'Redirection vers Facebook…';
+  try {
+    if (!sbReady) { await connectSB(); }
+    const { error } = await SB.auth.signInWithOAuth({ provider: 'facebook', options: { redirectTo: location.origin + location.pathname } });
+    if (error) msg.textContent = fbErr(error.message);
+  } catch (err) { msg.textContent = fbErr(err && err.message); }
+}
+$('fBtn').onclick = () => { $('authMsg').className = 'msg'; facebookSignIn($('authMsg')); };
 /* « Dernière étape » : on peut annuler. Le compte non terminé est déconnecté et on revient à la connexion (avec le bouton Google) */
 async function cancelProfile() {
   setAuthMode(false); close('mAuth');
@@ -2545,6 +2558,7 @@ function adRole(a) {
 }
 /* Publie une ou plusieurs annonces en y inscrivant le profil de l'auteur (si la colonne « role » n'existe pas encore, on publie sans) */
 async function insertAnnonces(payload) {
+  if (typeof modSuspended === 'function' && modSuspended()) return { data: null, error: { message: modSuspMsg() } };
   const r = accountRole();
   if (r) {
     const withRole = Array.isArray(payload) ? payload.map(x => ({ ...x, role: r })) : { ...payload, role: r };
@@ -2816,7 +2830,8 @@ function showAd(a) {
     <div class="meta" id="sellerLine"></div>
     <div class="desc">${esc(a.description)}</div>
     <div class="act">${tel ? `<a class="btn cta" href="tel:${esc(tel)}" style="text-decoration:none">Appeler ${esc(a.telephone)}</a>` : ''}
-    ${mine ? '<button class="btn alt" id="editAd">Modifier mon annonce</button><button class="btn danger" id="delAd">Supprimer mon annonce</button>' : ''}</div>`;
+    ${mine ? '<button class="btn alt" id="editAd">Modifier mon annonce</button><button class="btn danger" id="delAd">Supprimer mon annonce</button>' : ''}</div>
+    ${mine ? '' : '<button type="button" class="repbtn" id="repAd">⚑ Signaler cette annonce</button>'}`;
   Promise.resolve(SB.from('ann_boutiques').select('nom,avatar_url').eq('user_id', a.user_id).maybeSingle()).then(({ data }) => {
     const l = $('sellerLine'); if (!data || !l) return;
     l.innerHTML = '<span class="sline"><i>' + avatarHtml(data.avatar_url, data.nom) + '</i>Vendu par <a href="#" id="seeShop" style="font-weight:700">' + esc(data.nom) + '</a></span>';
@@ -2827,6 +2842,7 @@ function showAd(a) {
   const mb2 = $('msgAd');
   if (mb2) mb2.onclick = () => openChat(a);
   const ed = $('editAd'); if (ed) ed.onclick = () => openEdit(a);
+  const rp = $('repAd'); if (rp) rp.onclick = () => openReport(a);
   const d = $('delAd');
   if (d) d.onclick = async () => {
     if (!confirm('Supprimer cette annonce définitivement ?')) return;
@@ -3408,6 +3424,14 @@ $('rgGoogle').onclick = () => {                 /* Google : il faut d'abord un p
     const c = $('rgCards'); c.classList.remove('shake'); void c.offsetWidth; c.classList.add('shake'); return;
   }
   roleSet(pickedRole); googleSignIn(h);
+};
+$('rgFacebook').onclick = () => {               /* Facebook : même règle, on choisit d'abord un profil */
+  const h = $('rgHint'); h.textContent = '';
+  if (!pickedRole) {
+    h.textContent = 'Choisissez d\'abord votre profil ci-dessus.';
+    const c = $('rgCards'); c.classList.remove('shake'); void c.offsetWidth; c.classList.add('shake'); return;
+  }
+  roleSet(pickedRole); facebookSignIn(h);
 };
 $('rgLogin').onclick = () => { setAuthMode(false); open('mAuth'); };   /* déjà un compte : connexion directe, sans choisir de profil */
 setAuthView('login');
@@ -6824,5 +6848,186 @@ main .head a#seeAll:hover,main .head a#seeAll:focus-visible{color:var(--bp-o3);b
 .pf-cover[style*="background-image"] .pf-id .meta{text-shadow:0 1px 5px rgba(0,0,0,.55)}
 .pf-cover[style*="background-image"] .pf-top .shoplogo{box-shadow:0 6px 18px rgba(0,0,0,.4)}
 </style>
+<style id="bpFacebook">
+/* ===== v34_8 · Continuer avec Facebook ===== */
+.gbtn.fbtn{background:#1877f2;border-color:#1877f2;color:#fff;box-shadow:0 2px 0 #1259b5}
+.gbtn.fbtn:hover{background:#166fe0;box-shadow:0 4px 12px rgba(24,119,242,.4)}
+.gbtn.fbtn:active{transform:translateY(2px);box-shadow:none}
+#socialRow .fbtn{margin-top:10px}
+#roleGate .rg-g.fbtn{margin-top:12px;background:#1877f2;border-color:#1877f2;color:#fff;box-shadow:0 10px 24px rgba(24,119,242,.25)}
+#roleGate .rg-g.fbtn:hover{background:#166fe0;box-shadow:0 12px 28px rgba(24,119,242,.4)}
+#roleGate .rg-g.fbtn .chev{color:#fff}
+</style>
+<!-- ===== v34_9 : signalement d'annonce + modération + sanctions ===== -->
+<div class="mask" id="mReport"><div class="box" role="dialog" aria-modal="true" aria-label="Signaler une annonce">
+  <button class="x" data-close aria-label="Fermer">×</button>
+  <h2>Signaler cette annonce</h2>
+  <p class="meta" id="repTitle"></p>
+  <div id="repMotifs"></div>
+  <label for="repDet">Précisions (facultatif)</label>
+  <textarea id="repDet" rows="3" maxlength="500" placeholder="Dites-nous ce qui ne va pas"></textarea>
+  <button type="button" class="btn danger" id="repGo" style="width:100%;margin-top:14px;cursor:pointer">Envoyer le signalement</button>
+  <p class="msg" id="repMsg" role="status"></p>
+</div></div>
+<div class="mask" id="mMod"><div class="box wide" role="dialog" aria-modal="true" aria-label="Modération">
+  <button class="x" data-close aria-label="Fermer">×</button>
+  <h2>Modération</h2>
+  <div class="modtabs"><button type="button" class="on" data-t="new">À traiter <b id="modN"></b></button><button type="button" data-t="done">Traités</button><button type="button" data-t="sanc">Sanctions</button></div>
+  <div id="modList"></div>
+</div></div>
+<style id="bpModeration">
+.repbtn{display:block;margin:14px auto 0;background:none;border:0;color:var(--muted);font-size:.88rem;text-decoration:underline;cursor:pointer}
+.repbtn:hover{color:var(--red)}
+#mReport .box,#mMod .box{background:var(--surf,#fff);color:var(--ink)}
+#mReport h2,#mMod h2{margin:0 0 6px;font-size:1.25rem}
+.repo{display:flex;align-items:center;gap:10px;margin:0;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font-weight:600;cursor:pointer}
+.repo+.repo{margin-top:8px}
+.repo input{width:auto;margin:0;accent-color:#f26a00}
+.repo:has(input:checked){border-color:#f26a00;background:rgba(242,106,0,.08)}
+#repDet{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit;resize:vertical}
+.msg.ok{color:#1c7a3d}
+.modtabs{display:flex;gap:8px;margin:10px 0 14px;overflow-x:auto}
+.modtabs button{flex:none;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:8px 14px;font-weight:700;cursor:pointer}
+.modtabs button.on{background:#f26a00;border-color:#f26a00;color:#fff}
+.modc{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px;background:var(--card,#fff)}
+.modc h3{margin:0 0 4px;font-size:1.02rem}
+.modm{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.modm span{background:rgba(242,106,0,.12);color:#a2501a;border-radius:999px;padding:3px 10px;font-size:.8rem;font-weight:700}
+.modc blockquote{margin:6px 0;padding:6px 10px;border-left:3px solid var(--line);color:var(--muted);font-size:.9rem}
+.moda{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.moda .btn{padding:8px 12px;font-size:.86rem;cursor:pointer}
+#modFab{position:fixed;left:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:90;display:flex;align-items:center;gap:8px;padding:10px 14px;border:0;border-radius:999px;background:#2a170b;color:#fff;font-weight:700;box-shadow:0 8px 20px rgba(0,0,0,.3);cursor:pointer}
+#modFab i{font-style:normal;background:#f26a00;border-radius:999px;min-width:20px;padding:1px 6px;font-size:.8rem;text-align:center}
+#sancBar{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;gap:10px;align-items:flex-start;padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top,0px));background:#b3261e;color:#fff;font-size:.9rem;font-weight:600}
+#sancBar button{margin-left:auto;background:none;border:0;color:#fff;font-size:1.4rem;line-height:1;cursor:pointer}
+</style>
+<script>
+(() => {
+const MOTIFS = [['illicite','Produit interdit ou illicite'],['image','Image floue ou inappropriée'],['video','Vidéo obscène'],['arnaque','Arnaque ou faux prix'],['categorie','Mauvaise catégorie ou doublon'],['autre','Autre']];
+const MLAB = Object.fromEntries(MOTIFS);
+let isAdmin = false, sanc = [], modTab = 'new', modData = [], repAd = null;
+
+/* ---- fenêtres : fermeture (croix, clic à côté) ---- */
+['mReport','mMod'].forEach(id => { const m = $(id);
+  m.querySelectorAll('[data-close]').forEach(b => b.onclick = () => close(id));
+  m.addEventListener('mousedown', e => { if (e.target === m) close(id); }); });
+
+/* ---- sanctions du compte connecté ---- */
+const activeSusp = () => sanc.find(s => s.actif && (s.type === 'blocage' || (s.type === 'suspension' && s.jusqu_au && new Date(s.jusqu_au).getTime() > Date.now()))) || null;
+window.modSuspended = () => !!activeSusp();
+window.modSuspMsg = () => { const s = activeSusp(); if (!s) return ''; return s.type === 'blocage' ? 'Votre compte est bloqué : vous ne pouvez plus publier.' : 'Votre compte est suspendu jusqu\'au ' + new Date(s.jusqu_au).toLocaleDateString('fr-FR') + ' : vous ne pouvez pas publier pour le moment.'; };
+const seen = () => { try { return JSON.parse(localStorage.getItem('bpSancSeen') || '[]'); } catch (e) { return []; } };
+const markSeen = id => { try { const a = seen(); a.push(id); localStorage.setItem('bpSancSeen', JSON.stringify(a.slice(-50))); } catch (e) {} };
+function noticeBar() {
+  let bar = $('sancBar'); const s = activeSusp(), w = sanc.find(x => x.type === 'avertissement' && x.actif && !seen().includes(x.id));
+  if (!s && !w) { if (bar) bar.remove(); return; }
+  const txt = s ? modSuspMsg() + (s.motif ? ' Motif : ' + s.motif + '.' : '') : 'Avertissement de Bustoplay : ' + (w.motif || 'annonce non conforme') + '. En cas de récidive, votre compte sera suspendu 30 jours.';
+  if (!bar) { bar = document.createElement('div'); bar.id = 'sancBar'; bar.setAttribute('role', 'alert'); document.body.appendChild(bar); }
+  bar.innerHTML = '<span></span><button type="button" aria-label="Fermer">×</button>';
+  bar.firstChild.textContent = txt;
+  bar.lastChild.onclick = () => { if (!s) markSeen(w.id); bar.remove(); };
+}
+
+/* ---- bouton flottant « Modération » (administrateurs seulement) ---- */
+function fab(n) {
+  let b = $('modFab');
+  if (!isAdmin) { if (b) b.remove(); return; }
+  if (!b) { b = document.createElement('button'); b.id = 'modFab'; b.type = 'button'; b.onclick = () => { open('mMod'); loadMod(); }; document.body.appendChild(b); }
+  b.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.400 8-8 9-4.600-1-8-4-8-9V6z"/></svg>Modération' + (n ? '<i>' + n + '</i>' : '');
+  const t = $('modN'); if (t) t.textContent = n ? '(' + n + ')' : '';
+}
+async function refreshCount() { try { const r = await SB.from('ann_signalements').select('id', { count: 'exact', head: true }).eq('statut', 'nouveau'); fab(r.count || 0); } catch (e) { fab(0); } }
+async function modCheck() {
+  if (!user || !sbReady) { isAdmin = false; sanc = []; fab(0); noticeBar(); return; }
+  try { const r = await SB.from('ann_admins').select('user_id').eq('user_id', user.id).maybeSingle(); isAdmin = !!(r && r.data); } catch (e) { isAdmin = false; }
+  try { const r = await SB.from('ann_sanctions').select('*').eq('user_id', user.id).order('cree_le', { ascending: false }).limit(20); sanc = r.error ? [] : (r.data || []); } catch (e) { sanc = []; }
+  noticeBar();
+  if (isAdmin) refreshCount(); else fab(0);
+}
+let last = '__';
+setInterval(() => { const id = (user && user.id) || ''; if (id !== last) { last = id; modCheck(); } }, 1500);
+setInterval(() => { if (isAdmin && !document.hidden) refreshCount(); }, 60000);
+
+/* ---- signaler une annonce ---- */
+window.openReport = a => {
+  repAd = a; $('repTitle').textContent = a.titre || '';
+  $('repMotifs').innerHTML = MOTIFS.map(([k, l], i) => `<label class="repo"><input type="radio" name="repm" value="${k}"${i === 0 ? ' checked' : ''}><span>${esc(l)}</span></label>`).join('');
+  $('repDet').value = ''; $('repMsg').textContent = ''; $('repMsg').className = 'msg'; $('repGo').disabled = false; open('mReport');
+};
+$('repGo').onclick = async () => {
+  const k = (document.querySelector('input[name="repm"]:checked') || {}).value; if (!k || !repAd) return;
+  const msg = $('repMsg'), go = $('repGo'); go.disabled = true; msg.className = 'msg'; msg.textContent = 'Envoi…';
+  try {
+    if (!sbReady) await connectSB();
+    const { error } = await SB.from('ann_signalements').insert({ annonce_id: String(repAd.id), annonce_titre: String(repAd.titre || '').slice(0, 150), vendeur_id: repAd.user_id, motif: k, details: $('repDet').value.trim().slice(0, 500) || null });
+    if (error) { go.disabled = false; msg.textContent = error.code === '23505' ? 'Vous avez déjà signalé cette annonce. Merci, nous l\'examinons.' : (/relation|does not exist|schema cache/i.test(error.message || '') ? 'Le signalement n\'est pas encore activé sur ce site.' : 'Envoi impossible : ' + error.message); return; }
+    msg.className = 'msg ok'; msg.textContent = 'Merci ! Votre signalement a été envoyé à l\'équipe Bustoplay.'; setTimeout(() => close('mReport'), 1400);
+  } catch (e) { go.disabled = false; msg.textContent = 'Connexion impossible. Réessayez.'; }
+};
+
+/* ---- panneau de modération ---- */
+async function names(ids) {
+  const out = {}; ids = [...new Set(ids.filter(Boolean))]; if (!ids.length) return out;
+  for (const t of ['ann_clients', 'ann_boutiques']) { try { const r = await SB.from(t).select('user_id,nom').in('user_id', ids); (r.data || []).forEach(x => { if (x.nom) out[x.user_id] = x.nom; }); } catch (e) {} }
+  return out;
+}
+async function loadSanc(L) {
+  const r = await SB.from('ann_sanctions').select('*').eq('actif', true).in('type', ['suspension', 'blocage']).order('cree_le', { ascending: false }).limit(100);
+  const rows = r.data || [], nm = await names(rows.map(x => x.user_id));
+  L.innerHTML = rows.length ? rows.map(s => `<article class="modc"><h3>${esc(nm[s.user_id] || String(s.user_id).slice(0, 8))}</h3><div class="meta">${s.type === 'blocage' ? 'Bloqué définitivement' : 'Suspendu jusqu\'au ' + esc(new Date(s.jusqu_au).toLocaleDateString('fr-FR'))} · ${esc(s.motif || '')}</div><div class="moda"><button type="button" class="btn alt" data-lift="${esc(s.id)}" data-u="${esc(s.user_id)}">Lever la sanction</button></div></article>`).join('') : '<p class="meta">Aucune sanction en cours.</p>';
+}
+async function loadMod() {
+  const L = $('modList'); L.innerHTML = '<p class="meta">Chargement…</p>';
+  document.querySelectorAll('#mMod .modtabs button').forEach(b => b.classList.toggle('on', b.dataset.t === modTab));
+  try {
+    if (modTab === 'sanc') { await loadSanc(L); return; }
+    const r = await SB.from('ann_signalements').select('*').in('statut', modTab === 'new' ? ['nouveau'] : ['traite', 'rejete']).order('cree_le', { ascending: false }).limit(300);
+    if (r.error) { L.innerHTML = '<p class="msg"></p>'; L.firstChild.textContent = r.error.message; return; }
+    const g = new Map();
+    (r.data || []).forEach(x => { let o = g.get(x.annonce_id); if (!o) { o = { annonce_id: x.annonce_id, titre: x.annonce_titre, vendeur_id: x.vendeur_id, ids: [], motifs: {}, details: [], decision: x.decision, date: x.cree_le }; g.set(x.annonce_id, o); }
+      o.ids.push(x.id); o.motifs[x.motif] = (o.motifs[x.motif] || 0) + 1; if (x.details) o.details.push(x.details); });
+    modData = [...g.values()]; const nm = await names(modData.map(o => o.vendeur_id));
+    L.innerHTML = modData.length ? modData.map((o, i) => `<article class="modc" data-i="${i}">
+      <h3>${esc(o.titre || 'Annonce')}</h3>
+      <div class="meta">Vendeur : ${esc(nm[o.vendeur_id] || String(o.vendeur_id || '').slice(0, 8))} · ${o.ids.length} signalement${o.ids.length > 1 ? 's' : ''} · ${esc(ago(o.date))}</div>
+      <div class="modm">${Object.entries(o.motifs).map(([k, n]) => `<span>${esc(MLAB[k] || k)}${n > 1 ? ' ×' + n : ''}</span>`).join('')}</div>
+      ${o.details.slice(0, 3).map(d => `<blockquote>${esc(d)}</blockquote>`).join('')}
+      ${modTab === 'new' ? `<div class="moda"><button type="button" class="btn alt" data-a="voir">Voir l'annonce</button><button type="button" class="btn plain" data-a="masquer">Masquer</button><button type="button" class="btn plain" data-a="avertir">Avertir</button><button type="button" class="btn plain" data-a="suspendre">Suspendre 30 j</button><button type="button" class="btn danger" data-a="bloquer">Bloquer</button><button type="button" class="btn plain" data-a="rejeter">Rejeter</button></div>` : `<div class="meta">${esc(o.decision || '')}</div>`}
+    </article>`).join('') : '<p class="meta">Rien à afficher.</p>';
+  } catch (e) { L.innerHTML = '<p class="msg">Chargement impossible.</p>'; }
+}
+async function modAct(o, a, btn) {
+  if (a === 'voir') { const r = await SB.from('ann_annonces').select('*, ann_categories(nom)').eq('id', o.annonce_id).maybeSingle(); if (r.data) showAd(r.data); else alert('Annonce introuvable (déjà supprimée ?).'); return; }
+  const vid = o.vendeur_id, motif = Object.keys(o.motifs).map(k => MLAB[k] || k).join(', ');
+  if (!vid && a !== 'rejeter' && a !== 'masquer') { alert('Vendeur inconnu pour ce signalement.'); return; }
+  const lab = { masquer: 'Masquer cette annonce', avertir: 'Envoyer un avertissement au vendeur', suspendre: 'Suspendre le vendeur 30 jours et masquer toutes ses annonces', bloquer: 'Bloquer définitivement le vendeur et masquer toutes ses annonces', rejeter: 'Rejeter ce signalement' }[a];
+  if (!confirm(lab + ' ?')) return;
+  btn.disabled = true; const errs = [], chk = r => { if (r && r.error) errs.push(r.error.message); return r; }; let decision = '';
+  try {
+    if (a === 'masquer') { chk(await SB.from('ann_annonces').update({ statut: 'masque' }).eq('id', o.annonce_id)); decision = 'Annonce masquée'; }
+    if (a === 'avertir') { const m = prompt('Message pour le vendeur (facultatif)', motif); if (m === null) { btn.disabled = false; return; }
+      chk(await SB.from('ann_sanctions').insert({ user_id: vid, type: 'avertissement', motif: m || motif, signalement_id: o.ids[0] })); decision = 'Avertissement envoyé'; }
+    if (a === 'suspendre' || a === 'bloquer') { const sp = a === 'suspendre';
+      chk(await SB.from('ann_annonces').update({ statut: sp ? 'suspendu' : 'bloque' }).eq('user_id', vid).eq('statut', 'valide'));
+      if (!errs.length) chk(await SB.from('ann_sanctions').insert({ user_id: vid, type: sp ? 'suspension' : 'blocage', motif, jusqu_au: sp ? new Date(Date.now() + 30 * 864e5).toISOString() : null, signalement_id: o.ids[0] }));
+      decision = sp ? 'Vendeur suspendu 30 jours' : 'Vendeur bloqué'; }
+    if (a === 'rejeter') decision = 'Signalement rejeté';
+    if (!errs.length) chk(await SB.from('ann_signalements').update({ statut: a === 'rejeter' ? 'rejete' : 'traite', decision }).in('id', o.ids));
+  } catch (e) { errs.push(e.message || 'erreur'); }
+  if (errs.length) { alert('Action impossible : ' + errs[0]); btn.disabled = false; return; }
+  loadMod(); refreshCount();
+}
+$('modList').onclick = async e => {
+  const lift = e.target.closest('button[data-lift]');
+  if (lift) { if (!confirm('Lever cette sanction et rétablir les annonces du vendeur ?')) return; lift.disabled = true;
+    const r1 = await SB.from('ann_sanctions').update({ actif: false }).eq('id', lift.dataset.lift);
+    if (r1.error) { alert('Action impossible : ' + r1.error.message); lift.disabled = false; return; }
+    await SB.from('ann_annonces').update({ statut: 'valide' }).eq('user_id', lift.dataset.u).in('statut', ['suspendu', 'bloque']);
+    loadMod(); return; }
+  const b = e.target.closest('button[data-a]'), c = b && b.closest('.modc'); if (b && c) modAct(modData[+c.dataset.i], b.dataset.a, b);
+};
+$('mMod').querySelector('.modtabs').onclick = e => { const b = e.target.closest('button'); if (!b) return; modTab = b.dataset.t; loadMod(); };
+})();
+</script>
 </body>
 </html>
