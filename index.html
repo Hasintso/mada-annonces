@@ -1054,6 +1054,8 @@ body.rolepick{overflow:hidden}
 .nt-b{display:flex;flex-direction:column;gap:6px;flex:none}
 .nt-empty{color:var(--muted);padding:8px 0}
 .nt-find{width:100%;margin-bottom:10px;padding:10px 12px;border:1px solid var(--line,#e6e6e6);border-radius:10px;font:inherit}
+/* « Je cherche » en bas du profil client */
+.pf-seekt{margin:0;padding:10px 12px;border-left:4px solid #f26a00;background:#fff6ea;border-radius:8px;font-weight:700;overflow-wrap:anywhere}
 /* une seule carte (Client) : centrée, sans colonne vide */
 .rg-cards{grid-template-columns:1fr!important;max-width:360px!important;margin-left:auto!important;margin-right:auto!important}
 
@@ -1766,6 +1768,8 @@ body:not(.landing) #allHead:not([hidden])+#list.grid>.sl-info,body:not(.landing)
       <div class="phonebox"><span>🇲🇬 +261</span><input id="phone" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="34 12 345 67" aria-describedby="phoneHint"></div>
       <p class="phint" id="phoneHint">9 chiffres, commençant par 32, 33, 34, 36, 37 ou 38</p>
       <label for="region">Votre région</label><select id="region" autocomplete="off"><option value="">Choisissez votre région</option></select>
+      <div id="fCherche"><label for="cherche">Je cherche… <b style="color:#c24e00">(obligatoire)</b></label><input id="cherche" maxlength="120" autocomplete="off" placeholder="Ex. : des vêtements, un fournisseur, un créateur…">
+      <p class="phint">Dites aux vendeurs ce que vous cherchez : ce sera écrit en bas de votre profil.</p></div>
     </div>
     <div id="fEmail"><label for="email">Adresse e-mail</label><input id="email" type="email" autocomplete="email" placeholder="vous@exemple.com"></div>
     <div id="fPass"><label for="pass">Mot de passe</label>
@@ -1899,6 +1903,7 @@ body:not(.landing) #allHead:not([hidden])+#list.grid>.sl-info,body:not(.landing)
     <label for="clNom">Nom complet</label><input id="clNom" maxlength="60" required autocomplete="name" placeholder="Ex. : Hery Rakoto">
     <label for="clRegion">Région</label><select id="clRegion" required></select>
     <label for="clTel">Numéro WhatsApp / téléphone</label><div class="phonebox"><span>🇲🇬 +261</span><input id="clTel" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="34 12 345 67" required></div><p class="phint" id="clTelHint">9 chiffres, commençant par 32, 33, 34, 36, 37 ou 38</p>
+    <label for="clCherche">Je cherche… <b style="color:#c24e00">(obligatoire)</b></label><input id="clCherche" maxlength="120" required autocomplete="off" placeholder="Ex. : des vêtements, un fournisseur, un créateur…">
     <label for="clMail">Adresse e-mail</label><input id="clMail" type="email" readonly style="background:var(--paper)">
     <p class="msg" id="clMsg" role="status"></p>
     <div class="act" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button class="btn cta" id="clGo" type="submit">Enregistrer mon profil</button></div>
@@ -2286,8 +2291,10 @@ const AV = {
   signup2: { t: 'Sécurisez votre compte', s: 'Étape 2 sur 2 · E-mail et mot de passe', go: 'Créer mon compte', sw: ['Vous avez déjà un compte ?', 'Se connecter'] },
   forgot:  { t: 'Mot de passe oublié', s: 'Entrez votre e-mail : nous vous envoyons un lien pour en choisir un nouveau.', go: 'Envoyer le lien', sw: null },
   reset:   { t: 'Nouveau mot de passe', s: 'Choisissez un mot de passe d\'au moins 6 caractères.', go: 'Enregistrer', sw: null },
-  complete:{ t: 'Dernière étape', s: 'Ajoutez votre numéro et votre région pour terminer votre compte.', go: 'Terminer', sw: null }
+  complete:{ t: 'Dernière étape', s: 'Ajoutez votre numéro, votre région et ce que vous cherchez pour terminer votre compte.', go: 'Terminer', sw: null }
 };
+/* « Je cherche… » : obligatoire pour tous les clients (pas pour le propriétaire-vendeur) */
+const chercheNeeded = () => { try { return (user ? accountRole() : (roleGet() || 'client')) !== 'vendeur'; } catch (e) { return true; } };
 function updMeter() {
   const p = $('pass').value, bar = $('passBar'); let sc = 0;
   if (p.length >= 6) sc++; if (p.length >= 8) sc++; if (/[A-Za-z]/.test(p) && /\d/.test(p)) sc++;
@@ -2302,6 +2309,7 @@ function setAuthView(v) {
   const c = AV[v];
   $('authTitle').textContent = c.t; $('authSub').textContent = c.s; $('authGo').textContent = c.go;
   $('stepA').hidden = !(v === 'signup1' || v === 'complete');
+  $('fCherche').hidden = !chercheNeeded();
   $('socialRow').hidden = !(v === 'login' || v === 'signup1');
   $('mAuth').classList.toggle('lock', v === 'complete'); $('cancelRow').hidden = v !== 'complete';
   $('fEmail').hidden = !(v === 'login' || v === 'signup2' || v === 'forgot');
@@ -2375,7 +2383,10 @@ $('authForm').onsubmit = async e => {
     if (name.length < 2) { msg.textContent = 'Entrez votre nom complet.'; return; }
     if (!MG_PHONE_RE.test(nat)) { msg.textContent = 'Numéro de téléphone invalide : après +261, il doit commencer par 32, 33, 34, 36, 37 ou 38 et compter 9 chiffres. Exemple : 34 12 345 67.'; return; }
     if (!MG_REGIONS.includes(region)) { msg.textContent = 'Choisissez votre région dans la liste.'; return; }
+    const cherche = $('cherche').value.trim().replace(/\s+/g, ' ');
+    if (chercheNeeded() && cherche.length < 3) { msg.textContent = 'Écrivez ce que vous cherchez (obligatoire). Exemple : des vêtements, un fournisseur…'; $('cherche').focus(); return; }
     signupInfo = { full_name: name, phone, region };
+    if (chercheNeeded()) signupInfo.cherche = cherche;
     if (v === 'complete') {                                  /* compte créé avec Google : on enregistre téléphone + région */
       go.disabled = true; msg.textContent = 'Un instant…';
       try {
@@ -2603,8 +2614,10 @@ async function syncClientPublic() {
     if (!user || accountRole() !== 'client') return;
     const d = clientData(), base = { user_id: user.id, nom: d.full_name || null, avatar_url: safeUrl(d.avatar_url) ? d.avatar_url : null, region: d.region || null };
     const row = Object.assign({}, base, { telephone: d.phone || null, email: d.email || null, cover_url: safeUrl(d.cover_url) ? d.cover_url : null, cree_le: (user && user.created_at) || null });
-    const sig = JSON.stringify(row); if (sig === _clSig) return;
-    let { error } = await SB.from('ann_clients').upsert(row, { onConflict: 'user_id' });
+    const rowC = Object.assign({}, row, { cherche: String(d.cherche || '').trim() || null });
+    const sig = JSON.stringify(rowC); if (sig === _clSig) return;
+    let { error } = await SB.from('ann_clients').upsert(rowC, { onConflict: 'user_id' });
+    if (error) ({ error } = await SB.from('ann_clients').upsert(row, { onConflict: 'user_id' }));   /* colonne « cherche » pas encore ajoutée */
     if (error) ({ error } = await SB.from('ann_clients').upsert(base, { onConflict: 'user_id' }));   /* colonnes pas encore ajoutées : on garde l'ancien comportement */
     if (!error) _clSig = sig;
   } catch (e) {}
@@ -3022,7 +3035,9 @@ function logSearch(t) {
 async function ntProfiles(ids) {
   const map = {}; ids = [...new Set(ids)].filter(Boolean);
   if (!ids.length) return map;
-  try { const { data } = await SB.from('ann_clients').select('user_id,nom,avatar_url,region').in('user_id', ids); (data || []).forEach(x => map[x.user_id] = x); } catch (e) {}
+  try { let r = await SB.from('ann_clients').select('user_id,nom,avatar_url,region,cherche').in('user_id', ids);
+    if (r.error) r = await SB.from('ann_clients').select('user_id,nom,avatar_url,region').in('user_id', ids);
+    (r.data || []).forEach(x => map[x.user_id] = x); } catch (e) {}
   return map;
 }
 const ntAv = (p, nom) => safeUrl(p && p.avatar_url) ? `<img class="nt-av" src="${esc(p.avatar_url)}" alt="" loading="lazy">` : `<span class="nt-av">${initial(nom)}</span>`;
@@ -3058,8 +3073,9 @@ async function ntRender() {
     box.querySelectorAll('[data-w]').forEach(b => b.onclick = () => { const x = list[+b.dataset.w], nom = (map[x.client_id] || {}).nom || x.client_nom || 'Client';
       ntWrite(x.client_id, nom, '', 'Recherche : ' + x.terme, 'Bonjour ' + nom + ', vous cherchez « ' + x.terme + ' » ? Je peux vous proposer ce qu\'il vous faut.'); });
   } else {
-    const [rc, ra, rr] = await Promise.all([
-      SB.from('ann_clients').select('user_id,nom,avatar_url,region').limit(500),
+    let rc = await SB.from('ann_clients').select('user_id,nom,avatar_url,region,cherche').limit(500);
+    if (rc.error) rc = await SB.from('ann_clients').select('user_id,nom,avatar_url,region').limit(500);
+    const [ra, rr] = await Promise.all([
       SB.from('ann_annonces').select('user_id,role,titre,cree_le').eq('statut', 'valide').order('cree_le', { ascending: false }).limit(1000),
       Promise.resolve(SB.from('ann_recherches').select('client_id,terme,cree_le').order('cree_le', { ascending: false }).limit(500)).catch(() => ({ data: [] }))]);
     if (rc.error) return bad('Impossible de charger les clients.');
@@ -3069,7 +3085,7 @@ async function ntRender() {
     const list = (rc.data || []).filter(c => c.user_id !== user.id).sort((a, b) => (nb[b.user_id] || 0) - (nb[a.user_id] || 0) || String(a.nom || '').localeCompare(String(b.nom || ''))); if (tab !== ntTab) return;
     if (!list.length) return bad('Aucun client avec un profil complété pour le moment.');
     box.innerHTML = '<input class="nt-find" id="ntFind" type="search" placeholder="Chercher un client : nom, région…" aria-label="Chercher un client">' + list.map((c, i) => { const nom = c.nom || 'Client', n = nb[c.user_id] || 0;
-      return `<div class="nt-row" data-s="${esc((nom + ' ' + (c.region || '')).toLowerCase())}">${ntAv(c, nom)}<div class="nt-t"><b>${esc(nom)}</b><span>${n ? n + (n > 1 ? ' commandes publiées' : ' commande publiée') : 'Pas de commande'}${last[c.user_id] ? ' · a cherché « ' + esc(last[c.user_id]) + ' »' : ''}</span><small>${esc(c.region || '')}</small></div>
+      return `<div class="nt-row" data-s="${esc((nom + ' ' + (c.region || '')).toLowerCase())}">${ntAv(c, nom)}<div class="nt-t"><b>${esc(nom)}</b><span>${c.cherche ? 'Je cherche : <b>' + esc(c.cherche) + '</b>' : ''}</span><span>${n ? n + (n > 1 ? ' commandes publiées' : ' commande publiée') : 'Pas de commande'}${last[c.user_id] ? ' · a cherché « ' + esc(last[c.user_id]) + ' »' : ''}</span><small>${esc(c.region || '')}</small></div>
         <div class="nt-b"><button type="button" class="btn cta" data-w="${i}">Écrire</button></div></div>`; }).join('');
     box.querySelectorAll('[data-w]').forEach(b => b.onclick = () => { const c = list[+b.dataset.w], nom = c.nom || 'Client';
       ntWrite(c.user_id, nom, '', 'Bustoplay', 'Bonjour ' + nom + ', bienvenue sur Bustoplay. Que cherchez-vous ? Je peux vous aider.'); });
@@ -3519,12 +3535,15 @@ function syncRole() {
   renderRole(); ensureProfile();
 }
 /* Compte Google (ou ancien compte) sans téléphone ni région : on les demande avant d'entrer */
-function needProfile() { const m = (user && user.user_metadata) || {}; return !!user && !(m.phone && MG_REGIONS.includes(m.region)); }
+function needProfile() { const m = (user && user.user_metadata) || {}; return !!user && (!(m.phone && MG_REGIONS.includes(m.region)) || (accountRole() === 'client' && String(m.cherche || '').trim().length < 3)); }
 function ensureProfile() {
   if (!needProfile() || !$('roleGate').hidden) return;
   if ($('mAuth').classList.contains('open') && authView === 'complete') return;
   const m = user.user_metadata || {};
   setAuthView('complete'); $('fullname').value = $('fullname').value || m.full_name || m.name || '';
+  { const n = mgNational(m.phone || ''); if (n && !$('phone').value) { $('phone').value = mgFormat(n); $('phone').dispatchEvent(new Event('input')); } }
+  if (MG_REGIONS.includes(m.region) && !$('region').value) $('region').value = m.region;
+  if (!$('cherche').value) $('cherche').value = m.cherche || '';
   open('mAuth');
 }
 async function pickRole(r) {
@@ -3694,11 +3713,11 @@ function renderProfileBtn() {
 $('btnProfile').onclick = () => { if (!user) return; if (accountRole() === 'vendeur') openShop(user.id); else openClientProfile(); };
 
 /* ===== Profil client : photo, nom, région, téléphone, e-mail (enregistrés avec le compte) ===== */
-const CL_TOTAL = 5;
+const CL_TOTAL = 6;
 var clBlob = null, clAvatar = '', clRemove = false;
 function clientData() {
   const m = (user && user.user_metadata) || {};
-  return { avatar_url: m.avatar_url || m.picture || '', full_name: m.full_name || m.name || '', region: m.region || '', phone: m.phone || m.telephone || '', email: (user && user.email) || '', cover_url: m.cover_url || '' };
+  return { avatar_url: m.avatar_url || m.picture || '', full_name: m.full_name || m.name || '', region: m.region || '', phone: m.phone || m.telephone || '', email: (user && user.email) || '', cover_url: m.cover_url || '', cherche: String(m.cherche || '') };
 }
 function clientMissing(d) {
   d = d || {}; const m = [];
@@ -3707,12 +3726,13 @@ function clientMissing(d) {
   if (!MG_REGIONS.includes(d.region)) m.push('région');
   if (!mgTel(d.phone || '')) m.push('numéro');
   if (!/^\S+@\S+\.\S+$/.test(d.email || '')) m.push('e-mail');
+  if (String(d.cherche || '').trim().length < 3) m.push('ce que vous cherchez');
   return m;
 }
 const clientPct = d => Math.round((CL_TOTAL - clientMissing(d).length) / CL_TOTAL * 100);
 function clFormData() {
   return { avatar_url: (clBlob || (clAvatar && !clRemove)) ? (clAvatar || 'https://local/photo') : '', full_name: $('clNom').value, region: $('clRegion').value,
-    phone: $('clTel').value ? '+261' + mgNational($('clTel').value) : '', email: $('clMail').value };
+    phone: $('clTel').value ? '+261' + mgNational($('clTel').value) : '', email: $('clMail').value, cherche: $('clCherche').value };
 }
 function clProgress() {
   const d = clFormData(), miss = clientMissing(d), p = clientPct(d);
@@ -3739,12 +3759,13 @@ $('clPhoto').onchange = async e => {
 $('clAvDel').onclick = () => { clBlob = null; clRemove = true; clPreview(); };
 ['clNom', 'clTel'].forEach(id => $(id).addEventListener('input', () => { if (id === 'clNom' && !clBlob && !(clAvatar && !clRemove)) clPreview(); else clProgress(); }));
 $('clRegion').addEventListener('change', clProgress);
+$('clCherche').addEventListener('input', clProgress);
 function openClientEdit() {
   if (!user) return;
   const d = clientData(); clBlob = null; clRemove = false; clAvatar = d.avatar_url;
   $('clNom').value = d.full_name; $('clRegion').value = MG_REGIONS.includes(d.region) ? d.region : '';
   const n = mgNational(d.phone || ''); $('clTel').value = n ? mgFormat(n) : ''; $('clTel').dispatchEvent(new Event('input'));
-  $('clMail').value = d.email; const msg = $('clMsg'); msg.className = 'msg'; msg.textContent = '';
+  $('clCherche').value = d.cherche; $('clMail').value = d.email; const msg = $('clMsg'); msg.className = 'msg'; msg.textContent = '';
   clPreview(); close('mClientView'); open('mClient');
 }
 
@@ -3772,8 +3793,11 @@ function renderClientView() {
           ${rw('calendar', 'Membre depuis', esc(since || '—'))}
         </div></div>
       ${complete ? '' : `<div class="pf-prog"><b>Profil complété à ${clientPct(d)} %</b><div class="pf-bar"><i style="width:${clientPct(d)}%"></i></div>Il manque : ${esc(miss.join(', '))}. Un profil complet rassure les vendeurs.</div>`}
+      <div class="pf-about pf-seek"><div class="pf-ah"><h3>${I('user')}Je cherche</h3><button class="pf-mod" id="cvSeekEdit" type="button">${I('edit')}Modifier</button></div>
+        <p class="pf-seekt">${d.cherche.trim() ? esc(d.cherche.trim()) : 'Non renseigné (obligatoire)'}</p></div>
       <div class="pf-foot"><button type="button" class="pf-out" id="cvOut">${I('logout')}Se déconnecter</button></div>
     </div>`;
+  $('cvSeekEdit').onclick = () => openClientEdit();
   $('cvEdit').onclick = () => openClientEdit();
   $('cvOut').onclick = () => { close('mClientView'); $('btnAuth').click(); };
   /* photo de couverture : réduite à 1600 px, enregistrée avec le compte (cover_url) */
@@ -3816,6 +3840,8 @@ $('clForm').onsubmit = async e => {
   if (name.length < 2) { msg.textContent = 'Entrez votre nom complet.'; $('clNom').focus(); return; }
   if (!MG_REGIONS.includes(region)) { msg.textContent = 'Choisissez votre région dans la liste.'; $('clRegion').focus(); return; }
   if (!tel) { msg.textContent = TEL_ERR; $('clTel').focus(); return; }
+  const cherche = $('clCherche').value.trim().replace(/\s+/g, ' ');
+  if (cherche.length < 3) { msg.textContent = 'Écrivez ce que vous cherchez (obligatoire).'; $('clCherche').focus(); return; }
   if (!sbReady) { msg.textContent = 'Connexion indisponible, réessayez dans un instant.'; return; }
   go.disabled = true;
   try {
@@ -3826,7 +3852,7 @@ $('clForm').onsubmit = async e => {
       if (up.error) throw new Error('Photo non envoyée : ' + up.error.message);
       url = bucket.getPublicUrl(path).data.publicUrl;
     }
-    const { error } = await SB.auth.updateUser({ data: { full_name: name, region, phone: '+261' + mgNational($('clTel').value), avatar_url: url || null } });
+    const { error } = await SB.auth.updateUser({ data: { full_name: name, region, phone: '+261' + mgNational($('clTel').value), cherche, avatar_url: url || null } });
     if (error) throw error;
     user = (await SB.auth.getUser()).data.user || user;
     clAvatar = url; clBlob = null; clRemove = false; clPreview(); renderProfileBtn(); syncClientPublic();
@@ -7728,5 +7754,6 @@ $('mnOrders').onclick = () => { if (typeof setMenu === 'function') setMenu(false
   }
 })();
 </script>
+
 </body>
 </html>
